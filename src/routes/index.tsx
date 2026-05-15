@@ -34,7 +34,6 @@ interface TabDef {
   id: TabId;
   label: string;
   icon: React.ReactNode;
-  premium?: boolean;
 }
 
 const TABS: TabDef[] = [
