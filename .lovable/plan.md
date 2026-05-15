@@ -8,7 +8,7 @@ Simulador de uniforme esportivo mobile-first. SVG editável em tempo real, palet
 Incluso:
 - 1 modelo (#BR041) com vista frente e costas
 - Edição de cores por peça: corpo, manga esquerda, manga direita, gola, shorts
-- 6 abas de seleção de peça/categoria (camisa lisa, camisa listrada, shorts longo, shorts curto, texto, escudo premium)
+- 6 abas de seleção de peça/categoria (camisa lisa, camisa listrada, shorts longo, shorts curto, texto, escudo) — todas liberadas, sem bloqueio de plano
 - Paleta de 13 cores fixas + cor personalizada (color picker nativo)
 - Reset, zoom, troca frente/costas
 - Salvar design (modal com nome) → `localStorage`
@@ -104,7 +104,7 @@ Atualizar `src/styles.css`:
 - Tudo client-side; rota única `/` em `src/routes/index.tsx` substitui o placeholder
 - Sem TanStack loaders (estado é puramente local, `useState`)
 - Tabs com `overflow-x-auto scrollbar-none` (utility custom no styles.css)
-- Botão "premium" (escudo) abre toast "Disponível em breve"
+- Todas as abas (incluindo escudo) estão totalmente acessíveis; sistema de planos será adicionado no futuro
 - Flip frente/costas: botão discreto sobre o canvas (canto superior direito do preview) com `RefreshCw` rotacionando
 
 ## Critério de pronto
