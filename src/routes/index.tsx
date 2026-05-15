@@ -43,7 +43,7 @@ const TABS: TabDef[] = [
   { id: "shortsLong", label: "Calção longo", icon: <ShortsIcon long /> },
   { id: "shortsShort", label: "Calção curto", icon: <ShortsIcon /> },
   { id: "text", label: "Número", icon: <TypeIcon className="h-6 w-6" /> },
-  { id: "badge", label: "Escudo", icon: <Shield className="h-6 w-6" />, premium: true },
+  { id: "badge", label: "Escudo", icon: <Shield className="h-6 w-6" /> },
 ];
 
 function StripedShirt() {
@@ -71,7 +71,6 @@ function Index() {
   const [savedToast, setSavedToast] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("Modelo BR041");
-  const [premiumToast, setPremiumToast] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const applyColor = (color: string, partOverride?: PartId) => {
@@ -88,11 +87,6 @@ function Index() {
   };
 
   const handleTab = (id: TabId) => {
-    if (id === "badge") {
-      setPremiumToast(true);
-      setTimeout(() => setPremiumToast(false), 1800);
-      return;
-    }
     setState((s) => ({ ...s, activeTab: id }));
   };
 
@@ -203,17 +197,11 @@ function Index() {
                 title={t.label}
                 onClick={() => handleTab(t.id)}
                 className={[
-                  "relative grid h-14 w-14 shrink-0 place-items-center rounded-[12px] transition",
-                  t.premium ? "bg-neutral-300 text-neutral-600" : "bg-[#4A4A4A] text-white",
+                  "relative grid h-14 w-14 shrink-0 place-items-center rounded-[12px] bg-[#4A4A4A] text-white transition",
                   active ? "ring-2 ring-neutral-800 ring-offset-2" : "hover:opacity-90",
                 ].join(" ")}
               >
                 {t.icon}
-                {t.premium && (
-                  <span className="absolute -top-2 right-1 rounded-[3px] bg-neutral-500 px-1 py-[1px] text-[8px] font-semibold tracking-wider text-white">
-                    PREMIUM
-                  </span>
-                )}
               </button>
             );
           })}
@@ -286,11 +274,6 @@ function Index() {
       {savedToast && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-neutral-900 px-4 py-2 text-sm text-white shadow-lg">
           {savedToast}
-        </div>
-      )}
-      {premiumToast && (
-        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-neutral-900 px-4 py-2 text-sm text-white shadow-lg">
-          Recurso premium — disponível em breve
         </div>
       )}
     </div>
