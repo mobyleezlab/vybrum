@@ -1,197 +1,177 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
-  ChevronLeft,
-  Save,
-  Download,
-  RotateCcw,
-  ZoomIn,
-  RefreshCw,
-  Shirt,
-  Type as TypeIcon,
-  Shield,
-  Pipette,
+  ChevronLeft, Save, Download, Undo2, Redo2,
+  Shirt, Type as TypeIcon, Shield, Palette, Sparkles,
 } from "lucide-react";
-import { UniformFrente } from "@/components/kit/UniformFrente";
-import { UniformCostas } from "@/components/kit/UniformCostas";
+import { KitCanvas } from "@/components/kit/KitCanvas";
+import { ColorPanel } from "@/components/kit/panels/ColorPanel";
+import { PatternPanel } from "@/components/kit/panels/PatternPanel";
+import { TextPanel } from "@/components/kit/panels/TextPanel";
+import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import {
-  INITIAL_STATE,
-  PALETTE,
-  TAB_TO_PART,
-  DEFAULT_COLORS,
-  type KitState,
-  type PartId,
-  type TabId,
+  INITIAL_STATE, TAB_TO_PART, type KitState, type PartId, type TabId,
 } from "@/lib/kit-state";
-import { exportKitPng } from "@/lib/kit-export";
+import { useHistory } from "@/lib/kit-history";
+import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
 import { saveDesign } from "@/lib/kit-storage";
 
-export const Route = createFileRoute("/")({
-  component: Index,
-});
+export const Route = createFileRoute("/")({ component: Index });
 
-interface TabDef {
-  id: TabId;
-  label: string;
-  icon: React.ReactNode;
-}
-
-const TABS: TabDef[] = [
-  { id: "jersey", label: "Camisa", icon: <Shirt className="h-6 w-6" /> },
-  { id: "jerseyStriped", label: "Camisa listrada", icon: <StripedShirt /> },
-  { id: "shortsLong", label: "Calção longo", icon: <ShortsIcon long /> },
-  { id: "shortsShort", label: "Calção curto", icon: <ShortsIcon /> },
-  { id: "text", label: "Número", icon: <TypeIcon className="h-6 w-6" /> },
-  { id: "badge", label: "Escudo", icon: <Shield className="h-6 w-6" /> },
+const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
+  { id: "body", label: "Camisa", icon: <Shirt className="h-5 w-5" /> },
+  { id: "sleeves", label: "Mangas", icon: <ShirtSleeves /> },
+  { id: "collar", label: "Gola", icon: <CollarIcon /> },
+  { id: "pattern", label: "Estampa camisa", icon: <Sparkles className="h-5 w-5" /> },
+  { id: "shorts", label: "Calção", icon: <ShortsIcon /> },
+  { id: "shortsPattern", label: "Estampa calção", icon: <Palette className="h-5 w-5" /> },
+  { id: "name", label: "Nome", icon: <TypeIcon className="h-5 w-5" /> },
+  { id: "number", label: "Número", icon: <NumberIcon /> },
+  { id: "badgeChest", label: "Escudo peito", icon: <Shield className="h-5 w-5" /> },
+  { id: "badgeShorts", label: "Escudo calção", icon: <ShieldShorts /> },
 ];
 
-function StripedShirt() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 6l3-2 3 1h4l3-1 3 2-2 3-2-1v11H8V8L6 9z" />
-      <line x1="10" y1="9" x2="10" y2="20" />
-      <line x1="14" y1="9" x2="14" y2="20" />
-    </svg>
-  );
+function ShirtSleeves() {
+  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M4 6l4-2 1 3h6l1-3 4 2-2 4-2-1v9H8v-9l-2 1z"/></svg>);
 }
-
-function ShortsIcon({ long = false }: { long?: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d={long ? "M4 4h16l-1 16h-6l-1-9-1 9H5z" : "M4 4h16l-1 11h-6l-1-6-1 6H5z"} />
-      <line x1="12" y1="4" x2="12" y2="9" />
-    </svg>
-  );
+function CollarIcon() {
+  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M6 4l6 5 6-5M9 7l3 4 3-4"/></svg>);
+}
+function ShortsIcon() {
+  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M4 4h16l-1 13h-6l-1-7-1 7H5z"/></svg>);
+}
+function NumberIcon() {
+  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><text x="12" y="18" textAnchor="middle" fontFamily="Bebas Neue, sans-serif" fontSize="16" fill="currentColor" stroke="none">10</text></svg>);
+}
+function ShieldShorts() {
+  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6z"/><path d="M9 18v3M15 18v3"/></svg>);
 }
 
 function Index() {
-  const [state, setState] = useState<KitState>(INITIAL_STATE);
-  const [selectedPart, setSelectedPart] = useState<PartId>("body");
-  const [zoom, setZoom] = useState(1);
+  const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
+  const [zoom, setZoom] = useState(1.15);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [savedToast, setSavedToast] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const [saveName, setSaveName] = useState("Modelo BR041");
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
-  const applyColor = (color: string, partOverride?: PartId) => {
-    const part = partOverride ?? selectedPart;
-    setState((s) => ({
-      ...s,
-      selectedColor: color,
-      partColors: part ? { ...s.partColors, [part]: color } : s.partColors,
-    }));
+  const handleTab = (id: TabId) => {
+    set((s) => ({ ...s, activeTab: id, selectedPart: TAB_TO_PART[id] ?? s.selectedPart }), false);
   };
 
   const handlePartClick = (part: PartId) => {
-    setSelectedPart(part);
-    setState((s) => ({ ...s, partColors: { ...s.partColors, [part]: s.selectedColor } }));
+    set((s) => ({ ...s, selectedPart: part, partColors: { ...s.partColors, [part]: s.selectedColor } }));
   };
 
-  const handleTab = (id: TabId) => {
-    const mapped = TAB_TO_PART[id];
-    if (mapped) setSelectedPart(mapped);
-    setState((s) => ({ ...s, activeTab: id }));
+  const applyColor = (color: string) => {
+    set((s) => ({
+      ...s, selectedColor: color,
+      partColors: { ...s.partColors, [s.selectedPart]: color },
+    }));
   };
 
   const handleReset = () => {
-    setState((s) => ({ ...s, partColors: { ...DEFAULT_COLORS } }));
-    setZoom(1);
+    set(INITIAL_STATE);
+    setZoom(1.15); setPan({ x: 0, y: 0 });
   };
 
-  const handleFlip = () => {
-    setState((s) => ({ ...s, view: s.view === "front" ? "back" : "front" }));
-  };
+  const handleFlip = () => set((s) => ({ ...s, view: s.view === "front" ? "back" : "front" }), false);
 
-  const handleZoom = () => setZoom((z) => (z >= 1.6 ? 1 : +(z + 0.2).toFixed(2)));
-
-  const handleDownload = async () => {
-    if (!canvasRef.current) return;
-    await exportKitPng(canvasRef.current, `kit-BR041-${state.view}.png`);
-  };
+  const toast = (msg: string) => { setSavedToast(msg); setTimeout(() => setSavedToast(null), 1800); };
 
   const handleSave = () => {
     saveDesign(saveName.trim() || "Sem nome", state);
     setSaveOpen(false);
-    setSavedToast("Modelo salvo!");
-    setTimeout(() => setSavedToast(null), 1800);
+    toast("Modelo salvo!");
+  };
+
+  const downloadPng = async () => {
+    if (!exportRef.current) return;
+    setDownloadOpen(false);
+    await exportKitPng(exportRef.current, `kit-${state.view}.png`);
+  };
+  const downloadSvg = () => {
+    if (!svgRef.current) return;
+    setDownloadOpen(false);
+    exportKitSvg(svgRef.current, `kit-${state.view}.svg`);
+  };
+
+  const renderPanel = () => {
+    switch (state.activeTab) {
+      case "body":
+      case "sleeves":
+      case "collar":
+      case "shorts":
+        return <ColorPanel value={state.partColors[state.selectedPart]} onChange={applyColor} />;
+      case "pattern":
+        return (
+          <PatternPanel
+            pattern={state.pattern} onPattern={(p) => set((s) => ({ ...s, pattern: p }))}
+            color={state.partColors.pattern}
+            onColor={(c) => set((s) => ({ ...s, partColors: { ...s.partColors, pattern: c } }))}
+          />
+        );
+      case "shortsPattern":
+        return (
+          <PatternPanel
+            pattern={state.shortsPattern} onPattern={(p) => set((s) => ({ ...s, shortsPattern: p }))}
+            color={state.partColors.shortsPattern}
+            onColor={(c) => set((s) => ({ ...s, partColors: { ...s.partColors, shortsPattern: c } }))}
+          />
+        );
+      case "name":
+        return <TextPanel label="Nome do jogador" layer={state.playerName} sizeRange={[40, 140]}
+          onChange={(l) => set((s) => ({ ...s, playerName: l, view: "back" }))} />;
+      case "number":
+        return <TextPanel label="Número" numeric layer={state.playerNumberBack} sizeRange={[80, 320]}
+          onChange={(l) => set((s) => ({ ...s, playerNumberBack: l, playerNumberFront: { ...s.playerNumberFront, value: l.value, font: l.font, color: l.color } }))} />;
+      case "badgeChest":
+        return <BadgePanel layer={state.badgeChest} onChange={(l) => set((s) => ({ ...s, badgeChest: l, view: "front" }))} />;
+      case "badgeShorts":
+        return <BadgePanel layer={state.badgeShorts} onChange={(l) => set((s) => ({ ...s, badgeShorts: l, view: "front" }))} />;
+    }
   };
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="mx-auto flex min-h-screen max-w-[420px] flex-col px-4 pb-6 pt-3">
+      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col px-4 pb-6 pt-3 md:max-w-2xl">
         {/* Header */}
         <header className="flex h-14 items-center justify-between">
-          <button
-            aria-label="Voltar"
-            className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100"
-          >
+          <button aria-label="Voltar" className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
             <ChevronLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-[13px] font-medium tracking-[0.18em] text-neutral-500">
-            MODELO #BR041
-          </h1>
+          <h1 className="text-[13px] font-medium tracking-[0.18em] text-neutral-500">MODELO #BR041</h1>
           <div className="flex items-center gap-1">
-            <button
-              aria-label="Salvar"
-              onClick={() => setSaveOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100"
-            >
-              <Save className="h-5 w-5" />
+            <button aria-label="Desfazer" onClick={undo} disabled={!canUndo}
+              className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100 disabled:opacity-30">
+              <Undo2 className="h-4 w-4" />
             </button>
-            <button
-              aria-label="Baixar"
-              onClick={handleDownload}
-              className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100"
-            >
-              <Download className="h-5 w-5" />
+            <button aria-label="Refazer" onClick={redo} disabled={!canRedo}
+              className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100 disabled:opacity-30">
+              <Redo2 className="h-4 w-4" />
+            </button>
+            <button aria-label="Salvar" onClick={() => setSaveOpen(true)}
+              className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
+              <Save className="h-4 w-4" />
+            </button>
+            <button aria-label="Baixar" onClick={() => setDownloadOpen(true)}
+              className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
+              <Download className="h-4 w-4" />
             </button>
           </div>
         </header>
 
-        {/* Canvas */}
-        <div className="relative mt-2 rounded-2xl bg-[#ECECEC] p-3" style={{ height: 360 }}>
-          <button
-            onClick={handleFlip}
-            aria-label="Frente / Costas"
-            className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
-
-          <div
-            ref={canvasRef}
-            className="flex h-full w-full items-center justify-center overflow-hidden"
-          >
-            <div
-              className="h-full w-full transition-transform duration-300"
-              style={{ transform: `scale(${zoom})` }}
-            >
-              {state.view === "front" ? (
-                <UniformFrente colors={state.partColors} onPartClick={handlePartClick} />
-              ) : (
-                <UniformCostas colors={state.partColors} onPartClick={handlePartClick} />
-              )}
-            </div>
-          </div>
-
-          <button
-            onClick={handleReset}
-            aria-label="Reset"
-            className="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </button>
-          <button
-            onClick={handleZoom}
-            aria-label="Zoom"
-            className="absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </button>
-        </div>
+        <KitCanvas
+          state={state} onPartClick={handlePartClick} onFlip={handleFlip} onReset={handleReset}
+          zoom={zoom} setZoom={setZoom} pan={pan} setPan={setPan}
+          exportRef={exportRef} svgRef={svgRef}
+        />
 
         {/* Tabs */}
-        <div className="mt-5 flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((t) => {
             const active = state.activeTab === t.id;
             return (
@@ -200,46 +180,20 @@ function Index() {
                 title={t.label}
                 onClick={() => handleTab(t.id)}
                 className={[
-                  "relative grid h-14 w-14 shrink-0 place-items-center rounded-[12px] bg-[#4A4A4A] text-white transition",
-                  active ? "ring-2 ring-neutral-800 ring-offset-2" : "hover:opacity-90",
+                  "relative flex h-14 w-14 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[12px] text-[9px] font-medium transition",
+                  active ? "bg-[#1a1a1a] text-white ring-2 ring-[#2196F3] ring-offset-2" : "bg-[#4A4A4A] text-white hover:bg-[#3a3a3a]",
                 ].join(" ")}
               >
                 {t.icon}
+                <span className="px-1 leading-tight">{t.label.split(" ")[0]}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Palette */}
-        <div className="mt-6">
-          <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-neutral-400">
-            Selecione a cor
-          </p>
-          <div className="grid grid-cols-7 gap-3">
-            {PALETTE.map((c) => {
-              const sel = state.selectedColor.toLowerCase() === c.toLowerCase();
-              return (
-                <button
-                  key={c}
-                  onClick={() => applyColor(c)}
-                  aria-label={c}
-                  className={[
-                    "h-9 w-9 rounded-full transition",
-                    sel ? "ring-2 ring-[#2196F3] ring-offset-2" : "hover:scale-105",
-                  ].join(" ")}
-                  style={{ backgroundColor: c }}
-                />
-              );
-            })}
-            <label className="grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-neutral-200 text-neutral-500 transition hover:bg-neutral-50">
-              <Pipette className="h-4 w-4" />
-              <input
-                type="color"
-                className="absolute h-0 w-0 opacity-0"
-                onChange={(e) => applyColor(e.target.value)}
-              />
-            </label>
-          </div>
+        {/* Panel */}
+        <div key={state.activeTab} className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          {renderPanel()}
         </div>
       </div>
 
@@ -249,31 +203,36 @@ function Index() {
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
             <h2 className="text-base font-semibold text-neutral-900">Salvar modelo</h2>
             <p className="mt-1 text-sm text-neutral-500">Dê um nome ao seu design.</p>
-            <input
-              autoFocus
-              value={saveName}
-              onChange={(e) => setSaveName(e.target.value)}
-              className="mt-4 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-[#2196F3]"
-            />
+            <input autoFocus value={saveName} onChange={(e) => setSaveName(e.target.value)}
+              className="mt-4 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-[#2196F3]" />
             <div className="mt-5 flex justify-end gap-2">
-              <button
-                onClick={() => setSaveOpen(false)}
-                className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100"
-              >
-                Cancelar
+              <button onClick={() => setSaveOpen(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100">Cancelar</button>
+              <button onClick={handleSave} className="rounded-lg bg-[#2196F3] px-4 py-2 text-sm font-medium text-white hover:opacity-90">Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Download dialog */}
+      {downloadOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-6" onClick={() => setDownloadOpen(false)}>
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-base font-semibold text-neutral-900">Baixar uniforme</h2>
+            <p className="mt-1 text-sm text-neutral-500">Escolha o formato.</p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <button onClick={downloadPng} className="rounded-xl border border-neutral-200 p-4 text-left transition hover:border-[#2196F3] hover:bg-[#2196F3]/5">
+                <div className="text-sm font-semibold">PNG</div>
+                <div className="mt-1 text-xs text-neutral-500">Alta resolução, fundo transparente</div>
               </button>
-              <button
-                onClick={handleSave}
-                className="rounded-lg bg-[#2196F3] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-              >
-                Salvar
+              <button onClick={downloadSvg} className="rounded-xl border border-neutral-200 p-4 text-left transition hover:border-[#2196F3] hover:bg-[#2196F3]/5">
+                <div className="text-sm font-semibold">SVG</div>
+                <div className="mt-1 text-xs text-neutral-500">Vetor editável</div>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toasts */}
       {savedToast && (
         <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-neutral-900 px-4 py-2 text-sm text-white shadow-lg">
           {savedToast}

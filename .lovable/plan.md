@@ -1,117 +1,145 @@
+# Plano — Editor de Uniformes Profissional
 
-# Kit Designer — Plano do MVP
+Refatoração completa do editor para um configurador dinâmico baseado em camadas SVG, com texto, escudos, fontes e preview ampliado.
 
-Simulador de uniforme esportivo mobile-first. SVG editável em tempo real, paleta de cores por peça, frente/costas, salvar e exportar PNG. Sem backend nesta fase (Lovable Cloud está desabilitado) — persistência local via `localStorage`. Estrutura preparada para evoluir para Supabase + premium + IA depois.
+## 1. SVGs em camadas editáveis
 
-## Escopo do MVP (Fase 1)
+Reescrever `UniformFrente.tsx` e `UniformCostas.tsx` a partir dos SVGs anexados (viewBox `0 0 1080 1080`), com IDs/classes padronizados e cada parte como `<g>` independente clicável:
 
-Incluso:
-- 1 modelo (#BR041) com vista frente e costas
-- Edição de cores por peça: corpo, manga esquerda, manga direita, gola, shorts
-- 6 abas de seleção de peça/categoria (camisa lisa, camisa listrada, shorts longo, shorts curto, texto, escudo) — todas liberadas, sem bloqueio de plano
-- Paleta de 13 cores fixas + cor personalizada (color picker nativo)
-- Reset, zoom, troca frente/costas
-- Salvar design (modal com nome) → `localStorage`
-- Exportar PNG do uniforme
-- Animação suave na troca de cor
+- `fill-body` — corpo da camisa
+- `fill-sleeve` — mangas
+- `fill-collar` — gola
+- `fill-pattern` — listras/estampa da camisa (novo `<g>` sobreposto ao corpo, com padrões SVG: listras verticais, horizontais, sólido)
+- `fill-shorts` — calção
+- `fill-shorts-pattern` — listras do calção
+- `fill-details` — detalhes secundários (punhos, faixa lateral)
+- `costuras` — overlay decorativo (não-clicável)
 
-Fora de escopo (fases futuras): patterns, logos, IA, mockup 3D, marketplace, auth, multi-modelo.
+Camadas de conteúdo (renderizadas por cima):
+- `<g id="badge-chest">` (frente) e `<g id="badge-shorts">` (calção) — `<image href>` posicionável
+- `<text id="player-name">` (costas, centralizado)
+- `<text id="player-number-back">` (costas, abaixo do nome)
+- `<text id="player-number-front">` (frente, peito ou calção)
 
-## Estrutura de arquivos
+## 2. Estado centralizado (`src/lib/kit-state.ts`)
 
-```
-src/
-  routes/
-    index.tsx                 # Tela única do designer
-  components/
-    kit/
-      KitHeader.tsx           # Voltar / título / salvar / download
-      UniformCanvas.tsx       # Wrapper do SVG + zoom + flip + reset
-      UniformFrente.tsx       # SVG inline com IDs editáveis
-      UniformCostas.tsx       # SVG inline com IDs editáveis
-      PartTabs.tsx            # 6 abas scroll horizontal
-      ColorPalette.tsx        # Grid 7col + eyedropper
-      SaveDialog.tsx          # Modal "Modelo salvo!"
-  lib/
-    kit-state.ts              # Tipos + defaults + helpers
-    kit-export.ts             # html-to-image → PNG
-    kit-storage.ts            # save/load localStorage
-```
-
-## Modelo de estado
+Expandir `KitState`:
 
 ```ts
-type PartId = 'body' | 'sleeveLeft' | 'sleeveRight' | 'collar' | 'shorts';
-type TabId = 'jersey' | 'jerseyStriped' | 'shortsLong' | 'shortsShort' | 'text' | 'badge';
+type PartId = 'body'|'sleeves'|'collar'|'pattern'|'shorts'|'shortsPattern'|'details';
+type PatternKind = 'solid'|'verticalStripes'|'horizontalStripes'|'sash';
+
+interface TextLayer { value: string; font: string; size: number; color: string; offsetX: number; offsetY: number; }
+interface BadgeLayer { src: string|null; x: number; y: number; size: number; }
 
 interface KitState {
-  view: 'front' | 'back';
+  view: 'front'|'back';
+  partColors: Record<PartId,string>;
+  pattern: PatternKind;
+  shortsPattern: PatternKind;
+  playerName: TextLayer;
+  playerNumber: TextLayer;
+  badgeChest: BadgeLayer;
+  badgeShorts: BadgeLayer;
+  zoom: number;        // 0.5–2.0
+  pan: {x:number;y:number};
+  selectedPart: PartId;
   activeTab: TabId;
-  selectedColor: string;
-  partColors: Record<PartId, string>;
 }
 ```
 
-Mapeamento aba → peças que recebem a próxima cor:
-- jersey / jerseyStriped → body (+ pattern futuro)
-- shortsLong / shortsShort → shorts
-- text / badge → reservados para fase 2 (sem efeito agora, mas UI ativa)
+Histórico undo/redo: stack `past[] / future[]` em hook `useKitHistory` envolvendo `setState`.
 
-Para edição direta de manga/gola, clicar na própria peça do SVG seleciona-a (UX inteligente mencionada no brief). Aba é o caminho rápido; clique no SVG é o caminho preciso.
+## 3. Painéis por aba
 
-## SVG
+Substituir abas atuais por painel dinâmico abaixo da paleta, controlado por `activeTab`:
 
-Reusar os SVGs anexos (`hub_sports_layout_uniforme_frente.svg` e `_costa.svg`) inline em componentes React. Atribuir `id` e `data-part` a cada `<path>` do grupo correspondente:
-- `#shorts path` → `data-part="shorts"`
-- `#mangas path` → split em sleeveLeft/sleeveRight (o SVG atual é uma única path; faremos clip por reflexão CSS ou cor única `sleeves` no MVP — decisão: tratar mangas como uma única peça `sleeves` para simplificar; "esquerda/direita separadas" entra em fase 2)
-- `#camisa path` → `data-part="body"`
-- `#gola path` → `data-part="collar"`
+- **Camisa / Mangas / Gola / Calção** — paleta de cor aplica em `partColors[selectedPart]`
+- **Listras (camisa)** — seletor visual de padrão + cor `pattern`
+- **Listras (calção)** — idem para shorts
+- **Nome** — input texto + slider tamanho + seletor fonte + cor + offset Y
+- **Número** — input numérico + tamanho + fonte + cor + posição (frente/costas/short)
+- **Escudo peito / Escudo calção** — grid de escudos predefinidos (`src/assets/badges/*.svg` placeholders) + slider tamanho + arrastar para reposicionar; estrutura preparada para upload futuro (input file desabilitado por ora, mas com handler stub)
 
-Ajuste do tipo: `PartId = 'body' | 'sleeves' | 'collar' | 'shorts'`. Cores aplicadas via `fill={partColors[part]}` com `transition: fill 200ms`.
+## 4. Fontes
 
-## Paleta de cores
+`src/styles.css`: importar via Google Fonts — Bebas Neue, Anton, Teko, Oswald, Russo One, Rajdhani, Orbitron. Expor lista em `kit-state.ts` (`SPORT_FONTS`) usada pelo seletor visual (cada item renderiza "ABC 10" na própria fonte).
 
-Constantes exatas conforme brief:
+## 5. Preview ampliado e zoom
+
+`src/routes/index.tsx`:
+
+- Aumentar a altura do canvas para `min(70vh, 560px)` em mobile e `60vh` em telas maiores; reduzir padding interno para `p-2`.
+- SVG `preserveAspectRatio="xMidYMid meet"` com `viewBox` ajustado para enquadrar (`200 0 700 1080`) — uniforme passa a ocupar ~85% da área.
+- Zoom inicial `1.1`; range `0.5–2.0`.
+- Botão de zoom abre popover com `<Slider>` (Radix) horizontal mostrando `{Math.round(zoom*100)}%`.
+- Scroll do mouse no canvas → ajusta zoom (`onWheel`, `e.preventDefault`, step 0.05).
+- Pinch mobile: gesto de 2 dedos via `pointerdown/move/up` rastreando distância entre 2 pointers ativos.
+- Pan: quando `zoom > 1`, drag com mouse/touch atualiza `pan`. `transform: translate3d(pan.x,pan.y,0) scale(zoom)` + `will-change: transform` para aceleração GPU.
+- Limites: clamp de `pan` proporcional a `(zoom-1) * canvasSize/2`.
+- Transições: `transition-transform duration-200 ease-out` no flip e troca de cor (já existe `fill` transition).
+
+## 6. Toolbar e ações
+
+Header reorganizado: voltar | título | undo | redo | salvar | download.
+- Undo/Redo com ícones `Undo2`/`Redo2` (lucide), desabilitados quando stacks vazios.
+- Reset (canto inferior esquerdo do canvas) → restaura `INITIAL_STATE` preservando histórico.
+- Flip (canto superior direito) — animação cross-fade 200ms entre frente/costas.
+
+## 7. Exportação
+
+`src/lib/kit-export.ts`:
+
+- `exportKitPng(node, name)` — `toPng` com `backgroundColor: 'transparent'`, `pixelRatio: 4`.
+- `exportKitSvg(state)` — gera string SVG a partir de função pura `renderKitSvg(state, view)` (mesma usada nos componentes), serializa via `XMLSerializer`, baixa como `.svg`.
+- Modal de download com 2 opções: PNG / SVG.
+
+## 8. Estrutura de arquivos
+
 ```
-['#F5E52A','#F5A623','#F07D1A','#E85D00','#E52222','#D61FA0','#8B00E8',
- '#3B22E8','#2196F3','#00BFA5','#1ACC2A','#8BC34A','#111111']
+src/
+  components/kit/
+    UniformFrente.tsx        # camadas + IDs padronizados
+    UniformCostas.tsx        # idem
+    KitCanvas.tsx            # wrapper preview + zoom/pan/pinch
+    KitToolbar.tsx           # header undo/redo/save/download
+    KitTabs.tsx              # tira de abas
+    panels/
+      ColorPanel.tsx         # paleta (reutilizada por body/sleeves/collar/shorts)
+      PatternPanel.tsx       # seletor de padrão + cor
+      TextPanel.tsx          # nome/número
+      BadgePanel.tsx         # grid escudos + tamanho
+      FontPicker.tsx
+    patterns/
+      StripesVertical.tsx    # <pattern> SVG reutilizável
+      StripesHorizontal.tsx
+      Sash.tsx
+  lib/
+    kit-state.ts             # types + INITIAL_STATE + listas
+    kit-history.ts           # hook undo/redo
+    kit-export.ts            # PNG + SVG
+    kit-storage.ts           # localStorage (mantido)
+  assets/badges/             # 6 escudos SVG placeholder
+  routes/index.tsx           # composição
 ```
-+ botão eyedropper que abre `<input type="color">` nativo.
 
-Cor selecionada tem ring externo (`ring-2 ring-blue-500 ring-offset-2`).
+## 9. Mobile-first e visual premium
 
-## Layout
+- Container `max-w-[480px]` em mobile, expande para `max-w-2xl` em `md:` com canvas maior.
+- Controles flutuantes sobre o canvas usam `bg-white/70 backdrop-blur` para não cobrir o uniforme.
+- Animações: `framer-motion` já não está no projeto — usar Tailwind `transition-*` e `animate-fade-in` (definido em `tailwind.config`/`styles.css`).
+- Feedback de seleção de parte: ring colorido 2px no `<g>` ativo (via filtro `drop-shadow`).
 
-- `max-w-[420px] mx-auto` fundo branco
-- Stack vertical: Header (56px) → Canvas (h-80, bg `#ECECEC`, rounded-xl) → PartTabs (scroll-x, py-3) → ColorPalette (grid-cols-7 gap-3)
-- Lucide icons: `ChevronLeft`, `Save`, `Download`, `RotateCcw`, `ZoomIn`, `Shirt`, `ShirtIcon` (listrada via custom), `Type`, `Shield`, `Pipette`
+## 10. Sem bloqueios premium
 
-## Export & Save
+Todas as abas, fontes, escudos, exportação SVG e undo/redo permanecem 100% acessíveis — nenhum gate.
 
-- **PNG**: `html-to-image` (`bun add html-to-image`) — leve, sem deps nativas, funciona no Worker. Captura o `<div>` do canvas e dispara download.
-- **Save**: serializa `KitState` em `localStorage` chave `kit-designer:designs:<uuid>`. Modal com input de nome.
+---
 
-## Design tokens
+### Detalhes técnicos
 
-Atualizar `src/styles.css`:
-- `--background: oklch(1 0 0)` (já é branco)
-- `--muted: oklch(0.96 0 0)` (canvas bg `#ECECEC`)
-- `--accent: oklch(0.62 0.19 259)` (ring azul `#2196F3`)
-- Tipografia: Inter (já default Tailwind) com tracking-widest no título do header
-
-## Detalhes técnicos
-
-- Tudo client-side; rota única `/` em `src/routes/index.tsx` substitui o placeholder
-- Sem TanStack loaders (estado é puramente local, `useState`)
-- Tabs com `overflow-x-auto scrollbar-none` (utility custom no styles.css)
-- Todas as abas (incluindo escudo) estão totalmente acessíveis; sistema de planos será adicionado no futuro
-- Flip frente/costas: botão discreto sobre o canvas (canto superior direito do preview) com `RefreshCw` rotacionando
-
-## Critério de pronto
-
-- Trocar cor da paleta atualiza o SVG instantaneamente com transição
-- Aba ativa tem borda destacada
-- Reset restaura cores padrão (body `#1A3DB5`, sleeves/shorts `#00E5C8`, collar branco)
-- Download gera PNG fiel ao preview
-- Salvar persiste e mostra confirmação
-- Funciona bem em viewport 375px (iPhone)
+- Padrões SVG implementados como `<defs><pattern id="p-stripes-v" patternUnits="userSpaceOnUse" width="60" height="10"><rect .../></pattern></defs>` e referenciados via `fill="url(#p-stripes-v)"` na camada `pattern` por cima do corpo (com `clip-path` no shape do corpo).
+- Texto curvo no nome usa `<textPath>` opcionalmente; v1 entrega texto reto centralizado.
+- Pinch zoom: implementação manual com Pointer Events (sem libs novas).
+- Sem novas dependências npm além de talvez `nanoid` — usar `crypto.randomUUID()` que já existe.
+- SSR safe: tudo client-side, mas evitar `window` em escopo de módulo.
