@@ -39,17 +39,21 @@ export function KitTabs({
     const el = ref.current;
     if (!el) return;
     drag.current = { x: e.clientX, sl: el.scrollLeft, moved: false };
-    el.setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!drag.current || !ref.current) return;
     const dx = e.clientX - drag.current.x;
-    if (Math.abs(dx) > 3) drag.current.moved = true;
-    ref.current.scrollLeft = drag.current.sl - dx;
+    if (Math.abs(dx) > 4) {
+      if (!drag.current.moved) {
+        drag.current.moved = true;
+        ref.current.setPointerCapture(e.pointerId);
+      }
+      ref.current.scrollLeft = drag.current.sl - dx;
+    }
   };
-  const onPointerUp = (e: React.PointerEvent) => {
-    if (drag.current?.moved) e.preventDefault();
-    drag.current = null;
+  const onPointerUp = () => {
+    // keep `moved` flag briefly so the upcoming click can be suppressed
+    setTimeout(() => { drag.current = null; }, 0);
   };
   const scrollBy = (n: number) => ref.current?.scrollBy({ left: n, behavior: "smooth" });
 
