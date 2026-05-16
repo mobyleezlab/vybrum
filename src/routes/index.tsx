@@ -5,6 +5,7 @@ import {
   Shirt, Type as TypeIcon, Shield, Palette, Sparkles,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
+import { KitTabs } from "@/components/kit/KitTabs";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { PatternPanel } from "@/components/kit/panels/PatternPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
@@ -49,7 +50,7 @@ function ShieldShorts() {
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
-  const [zoom, setZoom] = useState(1.15);
+  const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [savedToast, setSavedToast] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -75,7 +76,7 @@ function Index() {
 
   const handleReset = () => {
     set(INITIAL_STATE);
-    setZoom(1.15); setPan({ x: 0, y: 0 });
+    setZoom(1); setPan({ x: 0, y: 0 });
   };
 
   const handleFlip = () => set((s) => ({ ...s, view: s.view === "front" ? "back" : "front" }), false);
@@ -136,10 +137,10 @@ function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col px-4 pb-6 pt-3 md:max-w-2xl">
+    <div className="min-h-screen bg-neutral-100 md:py-6">
+      <div className="mx-auto flex min-h-screen max-w-[420px] flex-col bg-white px-4 pb-6 pt-3 md:min-h-0 md:rounded-3xl md:shadow-xl md:ring-1 md:ring-neutral-200">
         {/* Header */}
-        <header className="flex h-14 items-center justify-between">
+        <header className="flex h-12 items-center justify-between">
           <button aria-label="Voltar" className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
             <ChevronLeft className="h-6 w-6" />
           </button>
@@ -170,29 +171,10 @@ function Index() {
           exportRef={exportRef} svgRef={svgRef}
         />
 
-        {/* Tabs */}
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {TABS.map((t) => {
-            const active = state.activeTab === t.id;
-            return (
-              <button
-                key={t.id}
-                title={t.label}
-                onClick={() => handleTab(t.id)}
-                className={[
-                  "relative flex h-14 w-14 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[12px] text-[9px] font-medium transition",
-                  active ? "bg-[#1a1a1a] text-white ring-2 ring-[#2196F3] ring-offset-2" : "bg-[#4A4A4A] text-white hover:bg-[#3a3a3a]",
-                ].join(" ")}
-              >
-                {t.icon}
-                <span className="px-1 leading-tight">{t.label.split(" ")[0]}</span>
-              </button>
-            );
-          })}
-        </div>
+        <KitTabs tabs={TABS} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
 
         {/* Panel */}
-        <div key={state.activeTab} className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div key={state.activeTab} className="mt-4 max-h-[40vh] overflow-y-auto pr-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
           {renderPanel()}
         </div>
       </div>

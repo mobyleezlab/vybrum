@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RefreshCw, RotateCcw, ZoomIn } from "lucide-react";
+import { RefreshCw, RotateCcw, ZoomIn, Maximize2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { KitSvg } from "./KitSvg";
 import type { KitState, PartId } from "@/lib/kit-state";
@@ -76,7 +76,13 @@ export function KitCanvas({
   };
 
   return (
-    <div className="relative mt-2 rounded-2xl bg-[#ECECEC] p-2" style={{ height: "min(62vh, 540px)" }}>
+    <div
+      className="relative mt-2 rounded-2xl bg-[#ECECEC] p-2"
+      style={{ height: "clamp(320px, 50vh, 480px)" }}
+      onPointerDownCapture={(e) => {
+        if (showZoom && !(e.target as HTMLElement).closest("[data-zoom-ui]")) setShowZoom(false);
+      }}
+    >
       <button
         onClick={onFlip}
         aria-label="Frente / Costas"
@@ -115,29 +121,40 @@ export function KitCanvas({
         <RotateCcw className="h-4 w-4" />
       </button>
 
-      <div className="absolute bottom-3 right-3 flex items-center gap-2">
-        {showZoom && (
-          <div className="flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 shadow-sm backdrop-blur">
-            <Slider
-              value={[zoom * 100]}
-              min={50}
-              max={200}
-              step={5}
-              onValueChange={(v) => setZoom(v[0] / 100)}
-              className="w-32"
-            />
-            <span className="w-10 text-right text-xs font-medium text-neutral-700 tabular-nums">
-              {Math.round(zoom * 100)}%
-            </span>
-          </div>
-        )}
+      <div className="absolute bottom-3 right-3 flex items-center gap-2" data-zoom-ui>
         <button
-          onClick={() => setShowZoom((s) => !s)}
-          aria-label="Zoom"
+          onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
+          aria-label="Ajustar 100%"
           className="grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
         >
-          <ZoomIn className="h-4 w-4" />
+          <Maximize2 className="h-4 w-4" />
         </button>
+        <div className="relative">
+          {showZoom && (
+            <div className="absolute bottom-12 right-0 flex w-12 flex-col items-center gap-2 rounded-2xl bg-white/95 px-2 py-3 shadow-lg backdrop-blur">
+              <span className="text-[10px] font-medium text-neutral-700 tabular-nums">
+                {Math.round(zoom * 100)}%
+              </span>
+              <div className="h-32">
+                <Slider
+                  orientation="vertical"
+                  value={[zoom * 100]}
+                  min={50}
+                  max={200}
+                  step={5}
+                  onValueChange={(v) => setZoom(v[0] / 100)}
+                />
+              </div>
+            </div>
+          )}
+          <button
+            onClick={() => setShowZoom((s) => !s)}
+            aria-label="Zoom"
+            className="grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
