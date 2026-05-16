@@ -66,6 +66,7 @@ function ShortsIcon({ long = false }: { long?: boolean }) {
 
 function Index() {
   const [state, setState] = useState<KitState>(INITIAL_STATE);
+  const [selectedPart, setSelectedPart] = useState<PartId>("body");
   const [zoom, setZoom] = useState(1);
   const [savedToast, setSavedToast] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -73,7 +74,7 @@ function Index() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const applyColor = (color: string, partOverride?: PartId) => {
-    const part = partOverride ?? TAB_TO_PART[state.activeTab];
+    const part = partOverride ?? selectedPart;
     setState((s) => ({
       ...s,
       selectedColor: color,
@@ -82,10 +83,13 @@ function Index() {
   };
 
   const handlePartClick = (part: PartId) => {
+    setSelectedPart(part);
     setState((s) => ({ ...s, partColors: { ...s.partColors, [part]: s.selectedColor } }));
   };
 
   const handleTab = (id: TabId) => {
+    const mapped = TAB_TO_PART[id];
+    if (mapped) setSelectedPart(mapped);
     setState((s) => ({ ...s, activeTab: id }));
   };
 
