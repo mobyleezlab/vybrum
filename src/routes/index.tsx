@@ -11,17 +11,14 @@ import {
   Type as TypeIcon,
   Shield,
   Pipette,
-  Layers as LayersIcon,
 } from "lucide-react";
 import { UniformFrente } from "@/components/kit/UniformFrente";
 import { UniformCostas } from "@/components/kit/UniformCostas";
-import { LayersPanel } from "@/components/kit/LayersPanel";
 import {
   INITIAL_STATE,
   PALETTE,
   TAB_TO_PART,
   DEFAULT_COLORS,
-  DEFAULT_LAYERS,
   type KitState,
   type PartId,
   type TabId,
@@ -73,7 +70,6 @@ function Index() {
   const [savedToast, setSavedToast] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("Modelo BR041");
-  const [layersOpen, setLayersOpen] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const applyColor = (color: string, partOverride?: PartId) => {
@@ -94,11 +90,7 @@ function Index() {
   };
 
   const handleReset = () => {
-    setState((s) => ({
-      ...s,
-      partColors: { ...DEFAULT_COLORS },
-      layers: DEFAULT_LAYERS.map((l) => ({ ...l })),
-    }));
+    setState((s) => ({ ...s, partColors: { ...DEFAULT_COLORS } }));
     setZoom(1);
   };
 
@@ -120,24 +112,6 @@ function Index() {
     setTimeout(() => setSavedToast(null), 1800);
   };
 
-  const toggleLayer = (id: string) => {
-    setState((s) => ({
-      ...s,
-      layers: s.layers.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l)),
-    }));
-  };
-
-  const moveLayer = (id: string, dir: -1 | 1) => {
-    setState((s) => {
-      const arr = [...s.layers];
-      const i = arr.findIndex((l) => l.id === id);
-      const j = i + dir;
-      if (i < 0 || j < 0 || j >= arr.length) return s;
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-      return { ...s, layers: arr };
-    });
-  };
-
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto flex min-h-screen max-w-[420px] flex-col px-4 pb-6 pt-3">
@@ -153,13 +127,6 @@ function Index() {
             MODELO #BR041
           </h1>
           <div className="flex items-center gap-1">
-            <button
-              aria-label="Camadas"
-              onClick={() => setLayersOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100"
-            >
-              <LayersIcon className="h-5 w-5" />
-            </button>
             <button
               aria-label="Salvar"
               onClick={() => setSaveOpen(true)}
@@ -196,21 +163,9 @@ function Index() {
               style={{ transform: `scale(${zoom})` }}
             >
               {state.view === "front" ? (
-                <UniformFrente
-                  colors={state.partColors}
-                  layers={state.layers}
-                  playerNumber={state.playerNumber}
-                  playerName={state.playerName}
-                  onPartClick={handlePartClick}
-                />
+                <UniformFrente colors={state.partColors} onPartClick={handlePartClick} />
               ) : (
-                <UniformCostas
-                  colors={state.partColors}
-                  layers={state.layers}
-                  playerNumber={state.playerNumber}
-                  playerName={state.playerName}
-                  onPartClick={handlePartClick}
-                />
+                <UniformCostas colors={state.partColors} onPartClick={handlePartClick} />
               )}
             </div>
           </div>
@@ -320,18 +275,6 @@ function Index() {
           {savedToast}
         </div>
       )}
-
-      <LayersPanel
-        open={layersOpen}
-        layers={state.layers}
-        onClose={() => setLayersOpen(false)}
-        onToggle={toggleLayer}
-        onMove={moveLayer}
-        playerNumber={state.playerNumber}
-        playerName={state.playerName}
-        onNumberChange={(v) => setState((s) => ({ ...s, playerNumber: v }))}
-        onNameChange={(v) => setState((s) => ({ ...s, playerName: v }))}
-      />
     </div>
   );
 }
