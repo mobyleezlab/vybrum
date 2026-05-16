@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import type { KitState, PartId, PatternKind } from "@/lib/kit-state";
+import type { KitState, PartId } from "@/lib/kit-state";
 
 interface Props {
   state: KitState;
@@ -28,51 +28,14 @@ const BACK = {
 
 const SHORTS_D = "M759.7,875.6c-8.7-91.9-33.6-182.7-33.6-182.7l-186,19.3-186-19.3s-25,90.8-33.6,182.7c-8.7,91.9-12.3,125.1-12.3,125.1,0,0,76.1,50,200.2,16.3,0,0,14-143,31.7-151.7,17.8,8.7,31.7,151.7,31.7,151.7,124.1,33.7,200.2-16.3,200.2-16.3,0,0-3.6-33.2-12.3-125.1Z";
 
-function patternDef(id: string, kind: PatternKind, color: string) {
-  switch (kind) {
-    case "verticalStripes":
-      return (
-        <pattern id={id} patternUnits="userSpaceOnUse" width="80" height="100">
-          <rect x="20" width="20" height="100" fill={color} />
-          <rect x="55" width="10" height="100" fill={color} />
-        </pattern>
-      );
-    case "horizontalStripes":
-      return (
-        <pattern id={id} patternUnits="userSpaceOnUse" width="100" height="80">
-          <rect y="20" width="100" height="20" fill={color} />
-          <rect y="55" width="100" height="10" fill={color} />
-        </pattern>
-      );
-    case "diagonal":
-      return (
-        <pattern id={id} patternUnits="userSpaceOnUse" width="60" height="60" patternTransform="rotate(45)">
-          <rect width="20" height="60" fill={color} />
-        </pattern>
-      );
-    case "sash":
-      return (
-        <pattern id={id} patternUnits="userSpaceOnUse" width="1080" height="1080">
-          <rect x="-200" y="280" width="1500" height="120" fill={color} transform="rotate(-22 540 540)" />
-        </pattern>
-      );
-    default:
-      return null;
-  }
-}
-
 export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, interactive = true }, ref) => {
-  const { partColors, view, pattern, shortsPattern, selectedPart } = state;
+  const { partColors, view } = state;
   const G = view === "front" ? FRONT : BACK;
   const click = (p: PartId) => (e: React.MouseEvent) => {
     if (!interactive) return;
     e.stopPropagation();
     onPartClick?.(p);
   };
-  const ringFor = (p: PartId): React.CSSProperties =>
-    interactive && selectedPart === p
-      ? { filter: "drop-shadow(0 0 6px #2196F3) drop-shadow(0 0 6px #2196F3)" }
-      : {};
 
   return (
     <svg
@@ -82,41 +45,24 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
       className="h-full w-full"
       preserveAspectRatio="xMidYMid meet"
     >
-      <defs>
-        <clipPath id="clip-body">
-          <path d={G.body} />
-        </clipPath>
-        <clipPath id="clip-shorts">
-          <path d={SHORTS_D} />
-        </clipPath>
-        {patternDef("pat-body", pattern, partColors.pattern)}
-        {patternDef("pat-shorts", shortsPattern, partColors.shortsPattern)}
-      </defs>
-
       {/* Shorts */}
-      <g onClick={click("shorts")} style={{ cursor: interactive ? "pointer" : "default", ...ringFor("shorts") }}>
+      <g onClick={click("shorts")} style={{ cursor: interactive ? "pointer" : "default" }}>
         <path d={SHORTS_D} fill={partColors.shorts} {...stroke} />
-        {shortsPattern !== "solid" && (
-          <rect x="0" y="0" width="1080" height="1080" fill="url(#pat-shorts)" clipPath="url(#clip-shorts)" />
-        )}
       </g>
 
       {/* Sleeves */}
-      <g onClick={click("sleeves")} style={{ cursor: interactive ? "pointer" : "default", ...ringFor("sleeves") }}>
+      <g onClick={click("sleeves")} style={{ cursor: interactive ? "pointer" : "default" }}>
         <path d={G.sleeves} fill={partColors.sleeves} {...stroke} />
       </g>
 
       {/* Body */}
-      <g onClick={click("body")} style={{ cursor: interactive ? "pointer" : "default", ...ringFor("body") }}>
+      <g onClick={click("body")} style={{ cursor: interactive ? "pointer" : "default" }}>
         <path d={G.body} fill={partColors.body} {...stroke} />
-        {pattern !== "solid" && (
-          <rect x="0" y="0" width="1080" height="1080" fill="url(#pat-body)" clipPath="url(#clip-body)" pointerEvents="none" />
-        )}
       </g>
 
       {/* Details (cuffs/side bands on front only) */}
       {view === "front" && (
-        <g onClick={click("details")} style={{ cursor: interactive ? "pointer" : "default", ...ringFor("details") }}>
+        <g onClick={click("details")} style={{ cursor: interactive ? "pointer" : "default" }}>
           <rect x="693.2" y="710.5" width="42.9" height="163.1" transform="translate(-150.2 167.5) rotate(-12.1)" fill={partColors.details} {...stroke} />
           <rect x="343.9" y="710.5" width="42.9" height="163.1" transform="translate(556.4 1643.1) rotate(-167.9)" fill={partColors.details} {...stroke} />
           <rect x="274" y="214" width="42.9" height="112.4" transform="translate(63.2 -55.9) rotate(12.1)" fill={partColors.details} {...stroke} />
@@ -125,7 +71,7 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
       )}
 
       {/* Collar */}
-      <g onClick={click("collar")} style={{ cursor: interactive ? "pointer" : "default", ...ringFor("collar") }}>
+      <g onClick={click("collar")} style={{ cursor: interactive ? "pointer" : "default" }}>
         {G.collar.map((d, i) => (
           <path key={i} d={d} fill={partColors.collar} {...stroke} />
         ))}
@@ -142,28 +88,41 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
         <path style={stitchStyle} d="M770,982.6s-76.6,48.6-199.9,19.2" />
       </g>
 
-      {/* Player number on front (small, chest right) */}
+      {/* FRONT: chest number (left chest) + shorts number (right leg) */}
       {view === "front" && state.playerNumberFront.value && (
-        <text
-          x={640}
-          y={280 + state.playerNumberFront.offsetY}
-          fontFamily={state.playerNumberFront.font}
-          fontSize={state.playerNumberFront.size}
-          fill={state.playerNumberFront.color}
-          textAnchor="middle"
-          pointerEvents="none"
-        >
-          {state.playerNumberFront.value}
-        </text>
+        <>
+          <text
+            x={440}
+            y={281 + state.playerNumberFront.offsetY}
+            fontFamily={state.playerNumberFront.font}
+            fontSize={state.playerNumberFront.size}
+            fill={state.playerNumberFront.color}
+            textAnchor="middle"
+            pointerEvents="none"
+          >
+            {state.playerNumberFront.value}
+          </text>
+          <text
+            x={710}
+            y={973}
+            fontFamily={state.playerNumberFront.font}
+            fontSize={60}
+            fill={state.playerNumberFront.color}
+            textAnchor="middle"
+            pointerEvents="none"
+          >
+            {state.playerNumberFront.value}
+          </text>
+        </>
       )}
 
-      {/* Back: name + big number */}
+      {/* BACK: name + big number */}
       {view === "back" && (
         <>
           {state.playerName.value && (
             <text
               x={540}
-              y={260 + state.playerName.offsetY}
+              y={280 + state.playerName.offsetY}
               fontFamily={state.playerName.font}
               fontSize={state.playerName.size}
               fill={state.playerName.color}
@@ -177,7 +136,7 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
           {state.playerNumberBack.value && (
             <text
               x={540}
-              y={520 + state.playerNumberBack.offsetY}
+              y={535 + state.playerNumberBack.offsetY}
               fontFamily={state.playerNumberBack.font}
               fontSize={state.playerNumberBack.size}
               fill={state.playerNumberBack.color}
@@ -190,22 +149,7 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
         </>
       )}
 
-      {/* Number on shorts */}
-      {view === "front" && state.playerNumberFront.value && (
-        <text
-          x={420}
-          y={970}
-          fontFamily={state.playerNumberFront.font}
-          fontSize={70}
-          fill={state.playerNumberFront.color}
-          textAnchor="middle"
-          pointerEvents="none"
-        >
-          {state.playerNumberFront.value}
-        </text>
-      )}
-
-      {/* Badges */}
+      {/* Chest badge (right chest, front only) */}
       {view === "front" && state.badgeChest.src && (
         <image
           href={state.badgeChest.src}
@@ -213,16 +157,6 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
           y={state.badgeChest.y - state.badgeChest.size / 2}
           width={state.badgeChest.size}
           height={state.badgeChest.size}
-          pointerEvents="none"
-        />
-      )}
-      {view === "front" && state.badgeShorts.src && (
-        <image
-          href={state.badgeShorts.src}
-          x={state.badgeShorts.x - state.badgeShorts.size / 2}
-          y={state.badgeShorts.y - state.badgeShorts.size / 2}
-          width={state.badgeShorts.size}
-          height={state.badgeShorts.size}
           pointerEvents="none"
         />
       )}

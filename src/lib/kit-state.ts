@@ -2,29 +2,17 @@ export type PartId =
   | "body"
   | "sleeves"
   | "collar"
-  | "pattern"
   | "shorts"
-  | "shortsPattern"
   | "details";
-
-export type PatternKind =
-  | "solid"
-  | "verticalStripes"
-  | "horizontalStripes"
-  | "sash"
-  | "diagonal";
 
 export type TabId =
   | "body"
   | "sleeves"
   | "collar"
-  | "pattern"
   | "shorts"
-  | "shortsPattern"
   | "name"
   | "number"
-  | "badgeChest"
-  | "badgeShorts";
+  | "badge";
 
 export interface TextLayer {
   value: string;
@@ -47,13 +35,10 @@ export interface KitState {
   selectedColor: string;
   selectedPart: PartId;
   partColors: Record<PartId, string>;
-  pattern: PatternKind;
-  shortsPattern: PatternKind;
   playerName: TextLayer;
   playerNumberBack: TextLayer;
   playerNumberFront: TextLayer;
   badgeChest: BadgeLayer;
-  badgeShorts: BadgeLayer;
 }
 
 export const SPORT_FONTS = [
@@ -76,9 +61,7 @@ export const DEFAULT_COLORS: Record<PartId, string> = {
   body: "#1A3DB5",
   sleeves: "#00E5C8",
   collar: "#FFFFFF",
-  pattern: "#FFFFFF",
   shorts: "#00E5C8",
-  shortsPattern: "#1A3DB5",
   details: "#FFB600",
 };
 
@@ -86,9 +69,7 @@ export const TAB_TO_PART: Partial<Record<TabId, PartId>> = {
   body: "body",
   sleeves: "sleeves",
   collar: "collar",
-  pattern: "pattern",
   shorts: "shorts",
-  shortsPattern: "shortsPattern",
 };
 
 // Inline SVG badge presets (data URIs so we don't need asset files)
@@ -113,11 +94,8 @@ export const INITIAL_STATE: KitState = {
   selectedColor: "#1A3DB5",
   selectedPart: "body",
   partColors: { ...DEFAULT_COLORS },
-  pattern: "solid",
-  shortsPattern: "solid",
   playerName: { value: "JOGADOR", font: "Bebas Neue", size: 70, color: "#FFFFFF", offsetY: 0 },
   playerNumberBack: { value: "10", font: "Bebas Neue", size: 250, color: "#FFFFFF", offsetY: 0 },
-  playerNumberFront: { value: "10", font: "Bebas Neue", size: 60, color: "#FFFFFF", offsetY: 0 },
-  badgeChest: { src: null, x: 660, y: 250, size: 90 },
-  badgeShorts: { src: null, x: 360, y: 940, size: 70 },
+  playerNumberFront: { value: "10", font: "Bebas Neue", size: 70, color: "#FFFFFF", offsetY: 0 },
+  badgeChest: { src: null, x: 655, y: 258, size: 75 },
 };

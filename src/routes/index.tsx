@@ -2,12 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Palette, Sparkles,
+  Shirt, Type as TypeIcon, Shield,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
-import { PatternPanel } from "@/components/kit/panels/PatternPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import {
@@ -23,13 +22,10 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "body", label: "Camisa", icon: <Shirt className="h-5 w-5" /> },
   { id: "sleeves", label: "Mangas", icon: <ShirtSleeves /> },
   { id: "collar", label: "Gola", icon: <CollarIcon /> },
-  { id: "pattern", label: "Estampa camisa", icon: <Sparkles className="h-5 w-5" /> },
   { id: "shorts", label: "Calção", icon: <ShortsIcon /> },
-  { id: "shortsPattern", label: "Estampa calção", icon: <Palette className="h-5 w-5" /> },
   { id: "name", label: "Nome", icon: <TypeIcon className="h-5 w-5" /> },
   { id: "number", label: "Número", icon: <NumberIcon /> },
-  { id: "badgeChest", label: "Escudo peito", icon: <Shield className="h-5 w-5" /> },
-  { id: "badgeShorts", label: "Escudo calção", icon: <ShieldShorts /> },
+  { id: "badge", label: "Escudo", icon: <Shield className="h-5 w-5" /> },
 ];
 
 function ShirtSleeves() {
@@ -43,9 +39,6 @@ function ShortsIcon() {
 }
 function NumberIcon() {
   return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><text x="12" y="18" textAnchor="middle" fontFamily="Bebas Neue, sans-serif" fontSize="16" fill="currentColor" stroke="none">10</text></svg>);
-}
-function ShieldShorts() {
-  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v5c0 4-3 7-7 8-4-1-7-4-7-8V6z"/><path d="M9 18v3M15 18v3"/></svg>);
 }
 
 function Index() {
@@ -72,11 +65,6 @@ function Index() {
       ...s, selectedColor: color,
       partColors: { ...s.partColors, [s.selectedPart]: color },
     }));
-  };
-
-  const handleReset = () => {
-    set(INITIAL_STATE);
-    setZoom(1); setPan({ x: 0, y: 0 });
   };
 
   const handleFlip = () => set((s) => ({ ...s, view: s.view === "front" ? "back" : "front" }), false);
@@ -107,32 +95,14 @@ function Index() {
       case "collar":
       case "shorts":
         return <ColorPanel value={state.partColors[state.selectedPart]} onChange={applyColor} />;
-      case "pattern":
-        return (
-          <PatternPanel
-            pattern={state.pattern} onPattern={(p) => set((s) => ({ ...s, pattern: p }))}
-            color={state.partColors.pattern}
-            onColor={(c) => set((s) => ({ ...s, partColors: { ...s.partColors, pattern: c } }))}
-          />
-        );
-      case "shortsPattern":
-        return (
-          <PatternPanel
-            pattern={state.shortsPattern} onPattern={(p) => set((s) => ({ ...s, shortsPattern: p }))}
-            color={state.partColors.shortsPattern}
-            onColor={(c) => set((s) => ({ ...s, partColors: { ...s.partColors, shortsPattern: c } }))}
-          />
-        );
       case "name":
         return <TextPanel label="Nome do jogador" layer={state.playerName} sizeRange={[40, 140]}
-          onChange={(l) => set((s) => ({ ...s, playerName: l, view: "back" }))} />;
+          onChange={(l) => set((s) => ({ ...s, playerName: l }))} />;
       case "number":
         return <TextPanel label="Número" numeric layer={state.playerNumberBack} sizeRange={[80, 320]}
           onChange={(l) => set((s) => ({ ...s, playerNumberBack: l, playerNumberFront: { ...s.playerNumberFront, value: l.value, font: l.font, color: l.color } }))} />;
-      case "badgeChest":
-        return <BadgePanel layer={state.badgeChest} onChange={(l) => set((s) => ({ ...s, badgeChest: l, view: "front" }))} />;
-      case "badgeShorts":
-        return <BadgePanel layer={state.badgeShorts} onChange={(l) => set((s) => ({ ...s, badgeShorts: l, view: "front" }))} />;
+      case "badge":
+        return <BadgePanel layer={state.badgeChest} onChange={(l) => set((s) => ({ ...s, badgeChest: l }))} />;
     }
   };
 
@@ -166,7 +136,7 @@ function Index() {
         </header>
 
         <KitCanvas
-          state={state} onPartClick={handlePartClick} onFlip={handleFlip} onReset={handleReset}
+          state={state} onPartClick={handlePartClick} onFlip={handleFlip}
           zoom={zoom} setZoom={setZoom} pan={pan} setPan={setPan}
           exportRef={exportRef} svgRef={svgRef}
         />

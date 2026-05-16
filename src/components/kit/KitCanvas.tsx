@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RefreshCw, RotateCcw, ZoomIn, Maximize2 } from "lucide-react";
+import { RefreshCw, ZoomIn, Maximize2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { KitSvg } from "./KitSvg";
 import type { KitState, PartId } from "@/lib/kit-state";
@@ -8,7 +8,6 @@ interface Props {
   state: KitState;
   onPartClick: (p: PartId) => void;
   onFlip: () => void;
-  onReset: () => void;
   zoom: number;
   setZoom: (n: number) => void;
   pan: { x: number; y: number };
@@ -18,7 +17,7 @@ interface Props {
 }
 
 export function KitCanvas({
-  state, onPartClick, onFlip, onReset, zoom, setZoom, pan, setPan, exportRef, svgRef,
+  state, onPartClick, onFlip, zoom, setZoom, pan, setPan, exportRef, svgRef,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [showZoom, setShowZoom] = useState(false);
@@ -112,14 +111,6 @@ export function KitCanvas({
           <KitSvg ref={svgRef} state={state} onPartClick={onPartClick} />
         </div>
       </div>
-
-      <button
-        onClick={onReset}
-        aria-label="Reset"
-        className="absolute bottom-3 left-3 grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
-      >
-        <RotateCcw className="h-4 w-4" />
-      </button>
 
       <div className="absolute bottom-3 right-3 flex items-center gap-2" data-zoom-ui>
         <button
