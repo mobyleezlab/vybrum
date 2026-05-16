@@ -1,11 +1,19 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Upload, Trash2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { BADGE_PRESETS, type BadgeLayer } from "@/lib/kit-state";
 
 export function BadgePanel({
-  layer, onChange,
-}: { layer: BadgeLayer; onChange: (l: BadgeLayer) => void }) {
+  chest, shorts, onChangeChest, onChangeShorts,
+}: {
+  chest: BadgeLayer;
+  shorts: BadgeLayer;
+  onChangeChest: (l: BadgeLayer) => void;
+  onChangeShorts: (l: BadgeLayer) => void;
+}) {
+  const [target, setTarget] = useState<"chest" | "shorts">("chest");
+  const layer = target === "chest" ? chest : shorts;
+  const onChange = target === "chest" ? onChangeChest : onChangeShorts;
   const fileRef = useRef<HTMLInputElement>(null);
   const onFile = (f: File | null) => {
     if (!f) return;
@@ -15,6 +23,30 @@ export function BadgePanel({
   };
   return (
     <div className="space-y-4">
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTarget("chest")}
+          className={[
+            "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition",
+            target === "chest"
+              ? "border-[#2196F3] bg-[#2196F3]/5 text-[#2196F3]"
+              : "border-neutral-200 text-neutral-600 hover:bg-neutral-50",
+          ].join(" ")}
+        >
+          Peito
+        </button>
+        <button
+          onClick={() => setTarget("shorts")}
+          className={[
+            "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition",
+            target === "shorts"
+              ? "border-[#2196F3] bg-[#2196F3]/5 text-[#2196F3]"
+              : "border-neutral-200 text-neutral-600 hover:bg-neutral-50",
+          ].join(" ")}
+        >
+          Calção
+        </button>
+      </div>
       <div>
         <p className="mb-2 text-[11px] font-medium uppercase tracking-widest text-neutral-400">Escolha um escudo</p>
         <div className="grid grid-cols-6 gap-2">
@@ -62,20 +94,6 @@ export function BadgePanel({
           <span>Tamanho</span><span className="tabular-nums">{layer.size}px</span>
         </div>
         <Slider value={[layer.size]} min={40} max={200} step={2} onValueChange={(v) => onChange({ ...layer, size: v[0] })} />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <div className="mb-1 flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-neutral-400">
-            <span>Posição X</span><span className="tabular-nums">{layer.x}</span>
-          </div>
-          <Slider value={[layer.x]} min={200} max={880} step={2} onValueChange={(v) => onChange({ ...layer, x: v[0] })} />
-        </div>
-        <div>
-          <div className="mb-1 flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-neutral-400">
-            <span>Posição Y</span><span className="tabular-nums">{layer.y}</span>
-          </div>
-          <Slider value={[layer.y]} min={80} max={1020} step={2} onValueChange={(v) => onChange({ ...layer, y: v[0] })} />
-        </div>
       </div>
     </div>
   );

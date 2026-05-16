@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield,
+  Shirt, Type as TypeIcon, Shield, Sparkles,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -10,7 +10,7 @@ import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import {
-  INITIAL_STATE, TAB_TO_PART, type KitState, type PartId, type TabId,
+  INITIAL_STATE, TAB_TO_PART, type KitState, type TabId,
 } from "@/lib/kit-state";
 import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
@@ -23,6 +23,9 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: "sleeves", label: "Mangas", icon: <ShirtSleeves /> },
   { id: "collar", label: "Gola", icon: <CollarIcon /> },
   { id: "shorts", label: "Calção", icon: <ShortsIcon /> },
+  { id: "estampaFrente", label: "Estampa Frente", icon: <Sparkles className="h-5 w-5" /> },
+  { id: "estampaCostas", label: "Estampa Costas", icon: <Sparkles className="h-5 w-5" /> },
+  { id: "estampaCalcao", label: "Estampa Calção", icon: <Sparkles className="h-5 w-5" /> },
   { id: "name", label: "Nome", icon: <TypeIcon className="h-5 w-5" /> },
   { id: "number", label: "Número", icon: <NumberIcon /> },
   { id: "badge", label: "Escudo", icon: <Shield className="h-5 w-5" /> },
@@ -54,10 +57,6 @@ function Index() {
 
   const handleTab = (id: TabId) => {
     set((s) => ({ ...s, activeTab: id, selectedPart: TAB_TO_PART[id] ?? s.selectedPart }), false);
-  };
-
-  const handlePartClick = (part: PartId) => {
-    set((s) => ({ ...s, selectedPart: part, partColors: { ...s.partColors, [part]: s.selectedColor } }));
   };
 
   const applyColor = (color: string) => {
@@ -94,6 +93,9 @@ function Index() {
       case "sleeves":
       case "collar":
       case "shorts":
+      case "estampaFrente":
+      case "estampaCostas":
+      case "estampaCalcao":
         return <ColorPanel value={state.partColors[state.selectedPart]} onChange={applyColor} />;
       case "name":
         return <TextPanel label="Nome do jogador" layer={state.playerName} sizeRange={[40, 140]}
@@ -102,7 +104,14 @@ function Index() {
         return <TextPanel label="Número" numeric layer={state.playerNumberBack} sizeRange={[80, 320]}
           onChange={(l) => set((s) => ({ ...s, playerNumberBack: l, playerNumberFront: { ...s.playerNumberFront, value: l.value, font: l.font, color: l.color } }))} />;
       case "badge":
-        return <BadgePanel layer={state.badgeChest} onChange={(l) => set((s) => ({ ...s, badgeChest: l }))} />;
+        return (
+          <BadgePanel
+            chest={state.badgeChest}
+            shorts={state.badgeShorts}
+            onChangeChest={(l) => set((s) => ({ ...s, badgeChest: l }))}
+            onChangeShorts={(l) => set((s) => ({ ...s, badgeShorts: l }))}
+          />
+        );
     }
   };
 
@@ -136,7 +145,7 @@ function Index() {
         </header>
 
         <KitCanvas
-          state={state} onPartClick={handlePartClick} onFlip={handleFlip}
+          state={state} onFlip={handleFlip}
           zoom={zoom} setZoom={setZoom} pan={pan} setPan={setPan}
           exportRef={exportRef} svgRef={svgRef}
         />
@@ -144,7 +153,7 @@ function Index() {
         <KitTabs tabs={TABS} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
 
         {/* Panel */}
-        <div key={state.activeTab} className="mt-4 max-h-[40vh] overflow-y-auto pr-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div key={state.activeTab} className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
           {renderPanel()}
         </div>
       </div>

@@ -28,14 +28,9 @@ const BACK = {
 
 const SHORTS_D = "M759.7,875.6c-8.7-91.9-33.6-182.7-33.6-182.7l-186,19.3-186-19.3s-25,90.8-33.6,182.7c-8.7,91.9-12.3,125.1-12.3,125.1,0,0,76.1,50,200.2,16.3,0,0,14-143,31.7-151.7,17.8,8.7,31.7,151.7,31.7,151.7,124.1,33.7,200.2-16.3,200.2-16.3,0,0-3.6-33.2-12.3-125.1Z";
 
-export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, interactive = true }, ref) => {
+export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state }, ref) => {
   const { partColors, view } = state;
   const G = view === "front" ? FRONT : BACK;
-  const click = (p: PartId) => (e: React.MouseEvent) => {
-    if (!interactive) return;
-    e.stopPropagation();
-    onPartClick?.(p);
-  };
 
   return (
     <svg
@@ -46,36 +41,47 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
       preserveAspectRatio="xMidYMid meet"
     >
       {/* Shorts */}
-      <g onClick={click("shorts")} style={{ cursor: interactive ? "pointer" : "default" }}>
-        <path d={SHORTS_D} fill={partColors.shorts} {...stroke} />
-      </g>
+      <path d={SHORTS_D} fill={partColors.shorts} {...stroke} />
+
+      {/* Shorts side stripes (estampa calção) */}
+      <rect x="693.2" y="710.6" width="42.9" height="163.1" transform="translate(-150.2 167.4) rotate(-12.1)" fill={partColors.estampaCalcao} {...stroke} />
+      <rect x="283.6" y="770.6" width="163.1" height="42.9" transform="translate(-485.8 983.1) rotate(-77.9)" fill={partColors.estampaCalcao} {...stroke} />
 
       {/* Sleeves */}
-      <g onClick={click("sleeves")} style={{ cursor: interactive ? "pointer" : "default" }}>
-        <path d={G.sleeves} fill={partColors.sleeves} {...stroke} />
-      </g>
+      <path d={G.sleeves} fill={partColors.sleeves} {...stroke} />
 
       {/* Body */}
-      <g onClick={click("body")} style={{ cursor: interactive ? "pointer" : "default" }}>
-        <path d={G.body} fill={partColors.body} {...stroke} />
-      </g>
+      <path d={G.body} fill={partColors.body} {...stroke} />
 
-      {/* Details (cuffs/side bands on front only) */}
+      {/* Body stripes (estampa frente / costas) */}
+      {view === "front" ? (
+        <>
+          <rect x="518.6" y="201.1" width="42.9" height="461.1" fill={partColors.estampaFrente} {...stroke} />
+          <rect x="610.2" y="323.7" width="42.9" height="338.6" fill={partColors.estampaFrente} {...stroke} />
+          <rect x="426.9" y="323.7" width="42.9" height="338.6" fill={partColors.estampaFrente} {...stroke} />
+        </>
+      ) : (
+        <>
+          <rect x="518.6" y="201.1" width="42.9" height="461.1" fill={partColors.estampaCostas} {...stroke} />
+          <rect x="610.2" y="323.7" width="42.9" height="338.6" fill={partColors.estampaCostas} {...stroke} />
+          <rect x="426.9" y="323.7" width="42.9" height="338.6" fill={partColors.estampaCostas} {...stroke} />
+        </>
+      )}
+
+      {/* Sleeve cuffs (front only) */}
       {view === "front" && (
-        <g onClick={click("details")} style={{ cursor: interactive ? "pointer" : "default" }}>
+        <>
           <rect x="693.2" y="710.5" width="42.9" height="163.1" transform="translate(-150.2 167.5) rotate(-12.1)" fill={partColors.details} {...stroke} />
           <rect x="343.9" y="710.5" width="42.9" height="163.1" transform="translate(556.4 1643.1) rotate(-167.9)" fill={partColors.details} {...stroke} />
           <rect x="274" y="214" width="42.9" height="112.4" transform="translate(63.2 -55.9) rotate(12.1)" fill={partColors.details} {...stroke} />
           <rect x="763.1" y="214" width="42.9" height="112.4" transform="translate(1608.4 369.7) rotate(167.9)" fill={partColors.details} {...stroke} />
-        </g>
+        </>
       )}
 
       {/* Collar */}
-      <g onClick={click("collar")} style={{ cursor: interactive ? "pointer" : "default" }}>
-        {G.collar.map((d, i) => (
-          <path key={i} d={d} fill={partColors.collar} {...stroke} />
-        ))}
-      </g>
+      {G.collar.map((d, i) => (
+        <path key={i} d={d} fill={partColors.collar} {...stroke} />
+      ))}
 
       {/* Stitching overlay */}
       <g pointerEvents="none">
@@ -157,6 +163,18 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, onPartClick, in
           y={state.badgeChest.y - state.badgeChest.size / 2}
           width={state.badgeChest.size}
           height={state.badgeChest.size}
+          pointerEvents="none"
+        />
+      )}
+
+      {/* Shorts badge (front only) */}
+      {view === "front" && state.badgeShorts.src && (
+        <image
+          href={state.badgeShorts.src}
+          x={state.badgeShorts.x - state.badgeShorts.size / 2}
+          y={state.badgeShorts.y - state.badgeShorts.size / 2}
+          width={state.badgeShorts.size}
+          height={state.badgeShorts.size}
           pointerEvents="none"
         />
       )}

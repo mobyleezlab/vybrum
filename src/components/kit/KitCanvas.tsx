@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { RefreshCw, ZoomIn, Maximize2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { KitSvg } from "./KitSvg";
-import type { KitState, PartId } from "@/lib/kit-state";
+import type { KitState } from "@/lib/kit-state";
 
 interface Props {
   state: KitState;
-  onPartClick: (p: PartId) => void;
   onFlip: () => void;
   zoom: number;
   setZoom: (n: number) => void;
@@ -17,7 +16,7 @@ interface Props {
 }
 
 export function KitCanvas({
-  state, onPartClick, onFlip, zoom, setZoom, pan, setPan, exportRef, svgRef,
+  state, onFlip, zoom, setZoom, pan, setPan, exportRef, svgRef,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [showZoom, setShowZoom] = useState(false);
@@ -108,7 +107,7 @@ export function KitCanvas({
             willChange: "transform",
           }}
         >
-          <KitSvg ref={svgRef} state={state} onPartClick={onPartClick} />
+          <KitSvg ref={svgRef} state={state} />
         </div>
       </div>
 
