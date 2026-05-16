@@ -1,57 +1,64 @@
-# Ajustes do editor
+# Plano de ajustes do editor de uniformes
 
-## 1. Experiência "mobile no desktop"
+## 1. Remover botão "Resetar" do canvas
+**Arquivo:** `src/components/kit/KitCanvas.tsx` e `src/routes/index.tsx`
+- Remover o `<button>` com `RotateCcw` (canto inferior esquerdo) e a prop `onReset`.
+- Remover `handleReset` em `index.tsx`. (O botão `Maximize2` continua resetando zoom/pan).
 
-Forçar o editor a se renderizar como um app mobile mesmo em telas grandes:
+## 2. Remover seleção visual da parte clicada no uniforme
+**Arquivo:** `src/components/kit/KitSvg.tsx`
+- Remover a função `ringFor` e o `filter: drop-shadow(...)` aplicado quando `selectedPart` está ativa. Os grupos continuam clicáveis (para trocar cor), mas sem highlight azul.
 
-- Remover o `md:max-w-2xl` do container em `src/routes/index.tsx`. Manter `max-w-[420px]` fixo, centralizado, com sombra leve e cantos arredondados em telas ≥ `md` para parecer um "device frame".
-- Fundo da página em `bg-neutral-100` para destacar o frame branco no desktop.
+## 3, 4, 5 e 10. Reposicionar número, nome e escudo conforme o SVG enviado
+**Arquivos:** `src/lib/kit-state.ts`, `src/components/kit/KitSvg.tsx`
 
-## 2. Acesso à tira de abas (botões cortados à direita)
+Coordenadas extraídas dos SVGs anexados (viewBox 0 0 1080 1080):
 
-A barra de abas tem 10 itens e estoura a largura no mobile/frame. Substituir o scroll-touch puro por interação universal:
+| Elemento | Vista | x (text-anchor middle) | y (baseline) | font-size |
+|---|---|---|---|---|
+| Número peito | front | 440 | 281 | 70 |
+| Escudo peito | front | 632 (centro ~655) | centro ~258 | ~75 |
+| Número calção | front | 710 | 973 | 60 |
+| Escudo calção | front | 360 (centro ~380) | centro ~950 | ~70 |
+| Nome jogador | back | 540 | 280 | 70 |
+| Número grande | back | 540 | 535 | 250 |
 
-- Arrastar com o mouse para rolar (pointer down + move atualiza `scrollLeft`), além do swipe nativo.
-- Rolar com a roda do mouse vertical → converte em `scrollLeft`.
-- Indicadores de borda: gradientes brancos (`mask`) à esquerda/direita aparecem quando há mais conteúdo, sinalizando que rola.
-- Pequenos chevrons (`ChevronLeft`/`ChevronRight`) flutuantes nas bordas, visíveis só quando há overflow naquele lado, que rolam ~120px por clique.
+Ações:
+- Atualizar `INITIAL_STATE.playerNumberFront`, `badgeChest.x/y`, `badgeShorts.x/y`, `playerName`, `playerNumberBack` para esses valores.
+- Em `KitSvg.tsx`, ajustar os `<text>` para usar essas coordenadas absolutas (sem cálculos do tipo `280 + offsetY` que estavam desalinhados). Manter `offsetY` apenas como fine-tuning relativo (somado/subtraído ao y base).
+- Remover `text-anchor="middle"` do número do calção (no SVG é `text-anchor="start"` em x=691.9).
 
-Implementação: hook simples `useDragScroll` em `KitTabs.tsx` (componente novo extraído de `index.tsx`).
+## 6 e 7. Botões Nome e Número não devem mudar a vista automaticamente
+**Arquivo:** `src/routes/index.tsx`
+- Remover `view: "back"` e `view: "front"` dos handlers `onChange` em `renderPanel` para os casos `name`, `number`, `badgeChest`.
+- Usuário usa o botão de flip (canto superior direito do canvas) manualmente.
 
-## 3. Layout sem comprometer o uniforme
+## 8. Unificar botões de escudo
+**Arquivos:** `src/routes/index.tsx`, `src/lib/kit-state.ts`, `src/components/kit/panels/BadgePanel.tsx`
+- Remover a aba `badgeShorts` da lista `TABS` e do tipo `TabId`.
+- Remover `badgeShorts` do `KitState` e `INITIAL_STATE`.
+- Remover renderização do escudo no calção em `KitSvg.tsx`.
+- A aba "Escudo" passa a editar apenas `badgeChest` (peito).
 
-Reorganizar verticalmente para garantir que canvas, abas e painel caibam sem cortar:
+## 9. Remover estampas pré-definidas
+**Arquivos:** `src/routes/index.tsx`, `src/lib/kit-state.ts`, `src/components/kit/KitSvg.tsx`, deletar `src/components/kit/panels/PatternPanel.tsx`
+- Remover as abas `pattern` e `shortsPattern` da lista `TABS` e do tipo `TabId`.
+- Remover `pattern`, `shortsPattern`, `partColors.pattern`, `partColors.shortsPattern` do estado.
+- Remover toda a lógica de `patternDef`, `<defs>` de pattern, `<clipPath>` e os `<rect fill="url(#pat-...)">` em `KitSvg.tsx`. Camisa e calção ficam apenas com cor sólida.
+- Deletar `PatternPanel.tsx` e seu import em `index.tsx`.
 
-- Canvas com altura responsiva: `clamp(320px, 50vh, 480px)` (em vez do atual `min(62vh, 540px)`), liberando espaço inferior.
-- Abas em altura `h-12` e `text-[9px]` (mais compactas), espaçamento `gap-2`.
-- Painel inferior com `max-h` + `overflow-y-auto` discreto, para que paletas/sliders não empurrem a página.
-- Header do app `h-12` (era `h-14`).
+Quando o usuário enviar arquivos SVG personalizados de estampa, faremos uma feature de upload separada que substitui a malha do corpo/calção pelo SVG enviado.
 
-## 4. Zoom inicial 100%
+## Detalhes técnicos
 
-- `useState(1.0)` no `index.tsx` (era `1.15`).
-- `handleReset` também volta para `1.0`.
+- Os SVGs enviados usam `viewBox="0 0 1080 1080"` (igual ao atual), então as coordenadas mapeiam 1:1 sem conversão.
+- O `viewBox` atual do `KitSvg` é `180 0 720 1080` (cropped). Mantemos esse crop — as coordenadas absolutas (ex.: x=440) continuam válidas pois estão dentro da janela visível 180-900.
+- Nenhuma mudança em `kit-export.ts`, `kit-history.ts`, `KitTabs.tsx` ou `KitCanvas.tsx` (exceto remoção do botão reset).
+- Estado de zoom inicial permanece 1.0.
 
-## 5. Slider de zoom vertical + botão "ajustar"
-
-Reformular o controle de zoom dentro de `KitCanvas.tsx`:
-
-- Substituir o popover horizontal por um popover **vertical** que abre **acima** do botão de zoom (canto inferior direito do canvas).
-- Conteúdo do popover (de cima para baixo):
-  - Porcentagem atual (`{n}%`).
-  - `<Slider orientation="vertical">` (Radix já suporta) com altura `h-32`, range 50–200%, step 5.
-- Ao lado do botão de zoom, um novo botão com ícone `Maximize2` (setas de expansão) que reseta zoom para `1.0` e `pan` para `{x:0,y:0}` — "ajustar à tela 100%".
-- Clicar fora do popover fecha (overlay invisível ou `onPointerDown` no canvas).
-
-### Componente de slider vertical
-
-O `Slider` atual (`src/components/ui/slider.tsx`) está hardcoded em horizontal. Atualizar para repassar `orientation` e adicionar variantes verticais nos `Track`/`Range`/`Thumb` (largura/altura trocadas quando vertical).
-
----
-
-## Arquivos afetados
-
-- `src/routes/index.tsx` — container, header compacto, zoom inicial, extrai `KitTabs`.
-- `src/components/kit/KitCanvas.tsx` — popover vertical, botão maximize, altura do canvas.
-- `src/components/kit/KitTabs.tsx` *(novo)* — abas com drag-scroll, wheel→horizontal, chevrons.
-- `src/components/ui/slider.tsx` — suporte a `orientation="vertical"`.
+## Arquivos alterados
+- `src/lib/kit-state.ts` (tipo + estado inicial enxutos)
+- `src/components/kit/KitSvg.tsx` (sem highlight, sem patterns, posições corretas, sem escudo do calção)
+- `src/components/kit/KitCanvas.tsx` (sem botão reset, sem prop onReset)
+- `src/routes/index.tsx` (TABS reduzidas, sem auto-flip, sem handleReset, sem import PatternPanel)
+- `src/components/kit/panels/PatternPanel.tsx` (deletado)
