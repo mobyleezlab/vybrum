@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Upload, Trash2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { BADGE_PRESETS, type BadgeLayer } from "@/lib/kit-state";
