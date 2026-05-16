@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Palette, Sparkles,
+  Shirt, Type as TypeIcon, Shield,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -65,11 +65,6 @@ function Index() {
       ...s, selectedColor: color,
       partColors: { ...s.partColors, [s.selectedPart]: color },
     }));
-  };
-
-  const handleReset = () => {
-    set(INITIAL_STATE);
-    setZoom(1); setPan({ x: 0, y: 0 });
   };
 
   const handleFlip = () => set((s) => ({ ...s, view: s.view === "front" ? "back" : "front" }), false);
