@@ -3,7 +3,10 @@ export type PartId =
   | "sleeves"
   | "collar"
   | "shorts"
-  | "details";
+  | "details"
+  | "estampaFrente"
+  | "estampaCostas"
+  | "estampaCalcao";
 
 export type TabId =
   | "body"
@@ -12,7 +15,10 @@ export type TabId =
   | "shorts"
   | "name"
   | "number"
-  | "badge";
+  | "badge"
+  | "estampaFrente"
+  | "estampaCostas"
+  | "estampaCalcao";
 
 export interface TextLayer {
   value: string;
@@ -39,6 +45,7 @@ export interface KitState {
   playerNumberBack: TextLayer;
   playerNumberFront: TextLayer;
   badgeChest: BadgeLayer;
+  badgeShorts: BadgeLayer;
 }
 
 export const SPORT_FONTS = [
@@ -63,6 +70,9 @@ export const DEFAULT_COLORS: Record<PartId, string> = {
   collar: "#FFFFFF",
   shorts: "#00E5C8",
   details: "#FFB600",
+  estampaFrente: "#E52222",
+  estampaCostas: "#E52222",
+  estampaCalcao: "#E52222",
 };
 
 export const TAB_TO_PART: Partial<Record<TabId, PartId>> = {
@@ -70,6 +80,9 @@ export const TAB_TO_PART: Partial<Record<TabId, PartId>> = {
   sleeves: "sleeves",
   collar: "collar",
   shorts: "shorts",
+  estampaFrente: "estampaFrente",
+  estampaCostas: "estampaCostas",
+  estampaCalcao: "estampaCalcao",
 };
 
 // Inline SVG badge presets (data URIs so we don't need asset files)
@@ -98,4 +111,5 @@ export const INITIAL_STATE: KitState = {
   playerNumberBack: { value: "10", font: "Bebas Neue", size: 250, color: "#FFFFFF", offsetY: 0 },
   playerNumberFront: { value: "10", font: "Bebas Neue", size: 70, color: "#FFFFFF", offsetY: 0 },
   badgeChest: { src: null, x: 655, y: 258, size: 75 },
+  badgeShorts: { src: null, x: 360, y: 950, size: 70 },
 };
