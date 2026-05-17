@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RefreshCw, ZoomIn, Maximize2 } from "lucide-react";
+import { RefreshCw, Minus, Plus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { KitSvg } from "./KitSvg";
 import type { KitState } from "@/lib/kit-state";
@@ -19,19 +19,17 @@ export function KitCanvas({
   state, onFlip, zoom, setZoom, pan, setPan, exportRef, svgRef,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [showZoom, setShowZoom] = useState(false);
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
   const pinch = useRef<{ d: number; z: number } | null>(null);
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
 
-  // Wheel zoom
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const delta = -e.deltaY * 0.0015;
-      setZoom(Math.min(2, Math.max(0.5, +(zoom + delta).toFixed(2))));
+      setZoom(Math.min(2.5, Math.max(0.5, +(zoom + delta).toFixed(2))));
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
@@ -47,7 +45,6 @@ export function KitCanvas({
       setDrag({ x: e.clientX - pan.x, y: e.clientY - pan.y });
     }
   };
-
   const onPointerMove = (e: React.PointerEvent) => {
     if (!pointers.current.has(e.pointerId)) return;
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -55,18 +52,17 @@ export function KitCanvas({
       const [a, b] = [...pointers.current.values()];
       const d = Math.hypot(b.x - a.x, b.y - a.y);
       const next = pinch.current.z * (d / pinch.current.d);
-      setZoom(Math.min(2, Math.max(0.5, +next.toFixed(2))));
+      setZoom(Math.min(2.5, Math.max(0.5, +next.toFixed(2))));
       return;
     }
     if (drag && zoom > 1) {
-      const max = 200 * (zoom - 1);
+      const max = 250 * (zoom - 1);
       setPan({
         x: Math.max(-max, Math.min(max, e.clientX - drag.x)),
         y: Math.max(-max, Math.min(max, e.clientY - drag.y)),
       });
     }
   };
-
   const onPointerUp = (e: React.PointerEvent) => {
     pointers.current.delete(e.pointerId);
     if (pointers.current.size < 2) pinch.current = null;
@@ -76,10 +72,7 @@ export function KitCanvas({
   return (
     <div
       className="relative mt-2 rounded-2xl bg-[#ECECEC] p-2"
-      style={{ height: "clamp(320px, 50vh, 480px)" }}
-      onPointerDownCapture={(e) => {
-        if (showZoom && !(e.target as HTMLElement).closest("[data-zoom-ui]")) setShowZoom(false);
-      }}
+      style={{ height: "clamp(420px, 62vh, 620px)" }}
     >
       <button
         onClick={onFlip}
@@ -111,40 +104,34 @@ export function KitCanvas({
         </div>
       </div>
 
-      <div className="absolute bottom-3 right-3 flex items-center gap-2" data-zoom-ui>
+      {/* Zoom slider inline */}
+      <div className="absolute bottom-3 left-1/2 z-10 flex w-[78%] -translate-x-1/2 items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 shadow-sm backdrop-blur">
         <button
-          onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
-          aria-label="Ajustar 100%"
-          className="grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
+          onClick={() => setZoom(Math.max(0.5, +(zoom - 0.1).toFixed(2)))}
+          className="grid h-6 w-6 place-items-center rounded-full text-neutral-700 hover:bg-neutral-100"
+          aria-label="Diminuir"
         >
-          <Maximize2 className="h-4 w-4" />
+          <Minus className="h-3.5 w-3.5" />
         </button>
-        <div className="relative">
-          {showZoom && (
-            <div className="absolute bottom-12 right-0 flex w-12 flex-col items-center gap-2 rounded-2xl bg-white/95 px-2 py-3 shadow-lg backdrop-blur">
-              <span className="text-[10px] font-medium text-neutral-700 tabular-nums">
-                {Math.round(zoom * 100)}%
-              </span>
-              <div className="h-32">
-                <Slider
-                  orientation="vertical"
-                  value={[zoom * 100]}
-                  min={50}
-                  max={200}
-                  step={5}
-                  onValueChange={(v) => setZoom(v[0] / 100)}
-                />
-              </div>
-            </div>
-          )}
-          <button
-            onClick={() => setShowZoom((s) => !s)}
-            aria-label="Zoom"
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </button>
+        <div className="flex-1">
+          <Slider
+            value={[zoom * 100]}
+            min={50}
+            max={250}
+            step={5}
+            onValueChange={(v) => setZoom(v[0] / 100)}
+          />
         </div>
+        <button
+          onClick={() => setZoom(Math.min(2.5, +(zoom + 0.1).toFixed(2)))}
+          className="grid h-6 w-6 place-items-center rounded-full text-neutral-700 hover:bg-neutral-100"
+          aria-label="Aumentar"
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </button>
+        <span className="w-10 text-right text-[10px] font-medium tabular-nums text-neutral-600">
+          {Math.round(zoom * 100)}%
+        </span>
       </div>
     </div>
   );
