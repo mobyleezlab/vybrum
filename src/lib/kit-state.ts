@@ -1,51 +1,58 @@
+/**
+ * Cada PartId corresponde EXATAMENTE a um id de <g> dentro dos SVGs
+ * de uniforme (kit-front.svg / kit-back.svg). Trocar a cor de um
+ * PartId pinta apenas aquele grupo.
+ */
 export type PartId =
-  | "body"
-  | "sleeves"
-  | "collar"
-  | "shorts"
-  | "details"
-  | "estampaFrente"
-  | "estampaCostas"
-  | "estampaCalcao";
+  // Frente
+  | "costuras_frente"
+  | "gola_frente"
+  | "mangas_frente"
+  | "camisa_frente"
+  | "short_frente"
+  | "estampa_mangas_frente"
+  | "estampa_camisa_frente"
+  | "estampa_short_frente"
+  | "escudo_camisa_frente"
+  | "escudo_short_frente"
+  // Verso
+  | "costuras_verso"
+  | "gola_verso"
+  | "mangas_verso"
+  | "camisa_verso"
+  | "short_verso"
+  | "estampa_mangas_verso"
+  | "estampa_camisa_verso"
+  | "estampa_short_verso";
 
-export type TabId =
-  | "body"
-  | "sleeves"
-  | "collar"
-  | "shorts"
-  | "name"
-  | "number"
-  | "badge"
-  | "estampaFrente"
-  | "estampaCostas"
-  | "estampaCalcao";
+export type TextId =
+  | "numero_camisa_frente"
+  | "numero_camisa_verso"
+  | "numero_short_frente"
+  | "nome_camisa_verso";
+
+export type BadgeId = "escudo_camisa_frente" | "escudo_short_frente";
+
+export type TabId = PartId | TextId;
 
 export interface TextLayer {
   value: string;
   font: string;
-  size: number;
   color: string;
-  offsetY: number;
 }
 
 export interface BadgeLayer {
   src: string | null;
-  x: number;
-  y: number;
-  size: number;
+  size: number; // multiplicador relativo ao bbox (1 = igual ao placeholder)
 }
 
 export interface KitState {
   view: "front" | "back";
   activeTab: TabId;
-  selectedColor: string;
-  selectedPart: PartId;
+  selectedPart: PartId | null;
   partColors: Record<PartId, string>;
-  playerName: TextLayer;
-  playerNumberBack: TextLayer;
-  playerNumberFront: TextLayer;
-  badgeChest: BadgeLayer;
-  badgeShorts: BadgeLayer;
+  texts: Record<TextId, TextLayer>;
+  badges: Record<BadgeId, BadgeLayer>;
 }
 
 export const SPORT_FONTS = [
@@ -65,24 +72,63 @@ export const PALETTE: string[] = [
 ];
 
 export const DEFAULT_COLORS: Record<PartId, string> = {
-  body: "#1A3DB5",
-  sleeves: "#00E5C8",
-  collar: "#FFFFFF",
-  shorts: "#00E5C8",
-  details: "#FFB600",
-  estampaFrente: "#E52222",
-  estampaCostas: "#E52222",
-  estampaCalcao: "#E52222",
+  // Frente
+  costuras_frente: "#4b4b4b",
+  gola_frente: "#FFB600",
+  mangas_frente: "#0669F7",
+  camisa_frente: "#5D08BF",
+  short_frente: "#18ED87",
+  estampa_mangas_frente: "#4B4B4B",
+  estampa_camisa_frente: "#4B4B4B",
+  estampa_short_frente: "#4B4B4B",
+  escudo_camisa_frente: "#FFFFFF",
+  escudo_short_frente: "#FFFFFF",
+  // Verso
+  costuras_verso: "#4b4b4b",
+  gola_verso: "#FFB600",
+  mangas_verso: "#0669F7",
+  camisa_verso: "#5D08BF",
+  short_verso: "#18ED87",
+  estampa_mangas_verso: "#4B4B4B",
+  estampa_camisa_verso: "#4B4B4B",
+  estampa_short_verso: "#4B4B4B",
 };
 
-export const TAB_TO_PART: Partial<Record<TabId, PartId>> = {
-  body: "body",
-  sleeves: "sleeves",
-  collar: "collar",
-  shorts: "shorts",
-  estampaFrente: "estampaFrente",
-  estampaCostas: "estampaCostas",
-  estampaCalcao: "estampaCalcao",
+export const TEXT_IDS: TextId[] = [
+  "numero_camisa_frente",
+  "numero_camisa_verso",
+  "numero_short_frente",
+  "nome_camisa_verso",
+];
+
+export const BADGE_IDS: BadgeId[] = ["escudo_camisa_frente", "escudo_short_frente"];
+
+export const PART_LABELS: Record<PartId, string> = {
+  camisa_frente: "Camisa Frente",
+  camisa_verso: "Camisa Verso",
+  mangas_frente: "Mangas Frente",
+  mangas_verso: "Mangas Verso",
+  gola_frente: "Gola Frente",
+  gola_verso: "Gola Verso",
+  short_frente: "Short Frente",
+  short_verso: "Short Verso",
+  estampa_camisa_frente: "Estampa Camisa Frente",
+  estampa_camisa_verso: "Estampa Camisa Verso",
+  estampa_mangas_frente: "Estampa Mangas Frente",
+  estampa_mangas_verso: "Estampa Mangas Verso",
+  estampa_short_frente: "Estampa Short Frente",
+  estampa_short_verso: "Estampa Short Verso",
+  costuras_frente: "Costuras Frente",
+  costuras_verso: "Costuras Verso",
+  escudo_camisa_frente: "Escudo Camisa",
+  escudo_short_frente: "Escudo Short",
+};
+
+export const TEXT_LABELS: Record<TextId, string> = {
+  numero_camisa_frente: "Número Frente",
+  numero_camisa_verso: "Número Verso",
+  numero_short_frente: "Número Short",
+  nome_camisa_verso: "Nome Jogador",
 };
 
 // Inline SVG badge presets (data URIs so we don't need asset files)
@@ -103,13 +149,17 @@ export const BADGE_PRESETS: { id: string; src: string; name: string }[] = [
 
 export const INITIAL_STATE: KitState = {
   view: "front",
-  activeTab: "body",
-  selectedColor: "#1A3DB5",
-  selectedPart: "body",
+  activeTab: "camisa_frente",
+  selectedPart: "camisa_frente",
   partColors: { ...DEFAULT_COLORS },
-  playerName: { value: "JOGADOR", font: "Bebas Neue", size: 70, color: "#FFFFFF", offsetY: 0 },
-  playerNumberBack: { value: "10", font: "Bebas Neue", size: 250, color: "#FFFFFF", offsetY: 0 },
-  playerNumberFront: { value: "10", font: "Bebas Neue", size: 70, color: "#FFFFFF", offsetY: 0 },
-  badgeChest: { src: null, x: 655, y: 258, size: 75 },
-  badgeShorts: { src: null, x: 360, y: 950, size: 70 },
+  texts: {
+    numero_camisa_frente: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
+    numero_camisa_verso: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
+    numero_short_frente: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
+    nome_camisa_verso: { value: "JOGADOR", font: "Bebas Neue", color: "#FFFFFF" },
+  },
+  badges: {
+    escudo_camisa_frente: { src: null, size: 1 },
+    escudo_short_frente: { src: null, size: 1 },
+  },
 };
