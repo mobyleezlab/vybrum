@@ -1,184 +1,154 @@
-import { forwardRef } from "react";
-import type { KitState, PartId } from "@/lib/kit-state";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import frontRaw from "@/assets/kit-front.svg?raw";
+import backRaw from "@/assets/kit-back.svg?raw";
+import type { KitState, PartId, TextId, BadgeId } from "@/lib/kit-state";
+import { BADGE_IDS, TEXT_IDS } from "@/lib/kit-state";
 
 interface Props {
   state: KitState;
-  onPartClick?: (p: PartId) => void;
-  interactive?: boolean;
 }
 
-const stroke = { stroke: "#818281", strokeWidth: 2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-const stitchStyle: React.CSSProperties = { fill: "none", stroke: "#818281", strokeLinecap: "round", strokeLinejoin: "round" };
+// IDs que existem em cada view
+const FRONT_PARTS: PartId[] = [
+  "costuras_frente", "gola_frente", "mangas_frente", "camisa_frente", "short_frente",
+  "estampa_mangas_frente", "estampa_camisa_frente", "estampa_short_frente",
+  "escudo_camisa_frente", "escudo_short_frente",
+];
+const BACK_PARTS: PartId[] = [
+  "costuras_verso", "gola_verso", "mangas_verso", "camisa_verso", "short_verso",
+  "estampa_mangas_verso", "estampa_camisa_verso", "estampa_short_verso",
+];
 
-const FRONT = {
-  body: "M711.2,323.4c1.5-12.3,29.1-98,7.7-139.4-21.4-41.4-100.3-78.9-100.3-78.9l-78.6,31.3-78.6-31.3s-78.8,37.5-100.3,78.9c-21.4,41.4,6.1,127.1,7.7,139.4,1.5,12.3,33.4,178.3-15.8,373.5,0,0,62.1,27.6,187,22.5,124.9,5.1,187-22.5,187-22.5-49.2-195.2-17.3-361.3-15.8-373.5Z",
-  sleeves: "M818.6,239.4c-.4-31.6-1.8-48.8-22.1-83.7-17.5-30.1-90.7-51.3-90.7-51.3l-77.6-36.1h-176.2l-77.6,36.1s-73.2,21.3-90.7,51.3c-20.3,34.8-21.7,52.1-22.1,83.7-.5,33.7-20.1,93.6-21.8,100.4,0,0,42.6,31.3,105.9,26.2l22.8-88.5h343.3l22.8,88.5c63.3,5.1,105.9-26.2,105.9-26.2-1.7-6.8-21.3-66.7-21.8-100.4Z",
-  collar: [
-    "M619.3,51.3s-60.3,9.6-79.3,8.6c-19.1,1-79.3-8.6-79.3-8.6-3.4,8.1-2,22.2-2,22.2,20.1,11.9,81.4,10.6,81.4,10.6,0,0,61.3,1.4,81.4-10.6,0,0,1.4-14.1-2-22.2Z",
-    "M460.7,51.3s-7.5,52.8,79.3,75.6v19.4s-84.9-16.7-95.7-74.4c0,0,8.2-16.1,16.3-20.5Z",
-    "M619.3,51.3s7.5,52.8-79.3,75.6v19.4s84.9-16.7,95.7-74.4c0,0-8.2-16.1-16.3-20.5Z",
-  ],
-};
+function applyFill(root: SVGElement, id: string, color: string) {
+  const g = root.querySelector(`#${id}`) as SVGGElement | null;
+  if (!g) return;
+  // Pinta o próprio grupo e todos os shapes pintáveis dentro dele
+  const shapes = g.querySelectorAll<SVGElement>("path, rect, circle, polygon, ellipse");
+  shapes.forEach((s) => {
+    // só pinta se já tinha fill (ignora fill="none" dos clipPath wrappers)
+    const cur = s.getAttribute("fill");
+    if (cur === "none") return;
+    s.setAttribute("fill", color);
+  });
+}
 
-const BACK = {
-  body: "M711.2,323.5c1.5-12.3,29.1-98,7.7-139.4-21.4-41.4-120.3-111.4-120.3-111.4h-117.2s-98.8,70-120.3,111.4c-21.4,41.4,6.1,127.1,7.7,139.4,1.5,12.3,33.4,178.3-15.8,373.5,0,0,62.1,27.6,187,22.5,124.9,5.1,187-22.5,187-22.5-49.2-195.2-17.3-361.3-15.8-373.5Z",
-  sleeves: FRONT.sleeves,
-  collar: ["M623.8,51.2s-66.9,8.2-83.8,7.7c-16.8.5-83.8-7.7-83.8-7.7-9.4,7.4-18.3,23.6-18.3,23.6,17.1,11.7,102.1,11.1,102.1,11.1,0,0,85,.6,102.1-11.1,0,0-8.9-16.2-18.3-23.6Z"],
-};
+function replaceText(root: SVGElement, id: TextId, layer: { value: string; color: string; font: string }) {
+  const g = root.querySelector(`#${id}`) as SVGGElement | null;
+  if (!g) return;
+  // medir bbox dos glifos originais (apenas na 1ª aplicação por mount)
+  const cached = g.getAttribute("data-bbox");
+  let bbox: { x: number; y: number; w: number; h: number };
+  if (cached) {
+    const [x, y, w, h] = cached.split(",").map(Number);
+    bbox = { x, y, w, h };
+  } else {
+    try {
+      const b = g.getBBox();
+      bbox = { x: b.x, y: b.y, w: b.width, h: b.height };
+      g.setAttribute("data-bbox", `${bbox.x},${bbox.y},${bbox.w},${bbox.h}`);
+    } catch {
+      return;
+    }
+  }
+  // substitui filhos por um <text> centralizado no bbox original
+  while (g.firstChild) g.removeChild(g.firstChild);
+  const ns = "http://www.w3.org/2000/svg";
+  const t = document.createElementNS(ns, "text");
+  const cx = bbox.x + bbox.w / 2;
+  const cy = bbox.y + bbox.h / 2;
+  t.setAttribute("x", String(cx));
+  t.setAttribute("y", String(cy));
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("dominant-baseline", "central");
+  t.setAttribute("font-family", `${layer.font}, sans-serif`);
+  t.setAttribute("font-size", String(bbox.h));
+  t.setAttribute("fill", layer.color);
+  t.style.pointerEvents = "none";
+  t.textContent =
+    id === "nome_camisa_verso" ? (layer.value || "").toUpperCase() : layer.value;
+  g.appendChild(t);
+}
 
-const SHORTS_D = "M759.7,875.6c-8.7-91.9-33.6-182.7-33.6-182.7l-186,19.3-186-19.3s-25,90.8-33.6,182.7c-8.7,91.9-12.3,125.1-12.3,125.1,0,0,76.1,50,200.2,16.3,0,0,14-143,31.7-151.7,17.8,8.7,31.7,151.7,31.7,151.7,124.1,33.7,200.2-16.3,200.2-16.3,0,0-3.6-33.2-12.3-125.1Z";
+function applyBadge(root: SVGElement, id: BadgeId, src: string | null, sizeMul: number) {
+  const g = root.querySelector(`#${id}`) as SVGGElement | null;
+  if (!g) return;
+  const cached = g.getAttribute("data-bbox");
+  let bbox: { x: number; y: number; w: number; h: number };
+  if (cached) {
+    const [x, y, w, h] = cached.split(",").map(Number);
+    bbox = { x, y, w, h };
+  } else {
+    try {
+      const b = g.getBBox();
+      bbox = { x: b.x, y: b.y, w: b.width, h: b.height };
+      g.setAttribute("data-bbox", `${bbox.x},${bbox.y},${bbox.w},${bbox.h}`);
+    } catch {
+      return;
+    }
+  }
+  // mantém o placeholder; se houver src, sobrescreve com <image>
+  // Remove qualquer <image> previamente adicionado
+  g.querySelectorAll("image").forEach((n) => n.remove());
+  // Mostra/oculta os shapes originais
+  const shapes = g.querySelectorAll<SVGElement>("path, rect, circle, polygon");
+  shapes.forEach((s) => {
+    s.style.display = src ? "none" : "";
+  });
+  if (src) {
+    const ns = "http://www.w3.org/2000/svg";
+    const img = document.createElementNS(ns, "image");
+    const w = bbox.w * sizeMul;
+    const h = bbox.h * sizeMul;
+    const x = bbox.x + bbox.w / 2 - w / 2;
+    const y = bbox.y + bbox.h / 2 - h / 2;
+    img.setAttribute("x", String(x));
+    img.setAttribute("y", String(y));
+    img.setAttribute("width", String(w));
+    img.setAttribute("height", String(h));
+    img.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    img.setAttributeNS("http://www.w3.org/1999/xlink", "href", src);
+    img.setAttribute("href", src);
+    g.appendChild(img);
+  }
+}
 
 export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state }, ref) => {
-  const { partColors, view } = state;
-  const G = view === "front" ? FRONT : BACK;
+  const hostRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
 
-  return (
-    <svg
-      ref={ref}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="180 0 720 1080"
-      className="h-full w-full"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      {/* Shorts */}
-      <path d={SHORTS_D} fill={partColors.shorts} {...stroke} />
+  useImperativeHandle(ref, () => svgRef.current as SVGSVGElement, []);
 
-      {/* Shorts side stripes (estampa calção) */}
-      <rect x="693.2" y="710.6" width="42.9" height="163.1" transform="translate(-150.2 167.4) rotate(-12.1)" fill={partColors.estampaCalcao} {...stroke} />
-      <rect x="283.6" y="770.6" width="163.1" height="42.9" transform="translate(-485.8 983.1) rotate(-77.9)" fill={partColors.estampaCalcao} {...stroke} />
+  // Re-inject SVG sempre que a view muda
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    host.innerHTML = state.view === "front" ? frontRaw : backRaw;
+    const svg = host.querySelector("svg") as SVGSVGElement | null;
+    if (!svg) return;
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    svg.style.display = "block";
+    svgRef.current = svg;
+  }, [state.view]);
 
-      {/* Sleeves */}
-      <path d={G.sleeves} fill={partColors.sleeves} {...stroke} />
+  // Aplica cores / textos / escudos a cada alteração
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const parts = state.view === "front" ? FRONT_PARTS : BACK_PARTS;
+    parts.forEach((p) => applyFill(svg, p, state.partColors[p]));
+    TEXT_IDS.forEach((id) => {
+      if ((state.view === "front" && id !== "nome_camisa_verso" && id !== "numero_camisa_verso") ||
+          (state.view === "back" && (id === "nome_camisa_verso" || id === "numero_camisa_verso"))) {
+        replaceText(svg, id, state.texts[id]);
+      }
+    });
+    BADGE_IDS.forEach((id) => {
+      if (state.view === "front") applyBadge(svg, id, state.badges[id].src, state.badges[id].size);
+    });
+  });
 
-      {/* Body */}
-      <path d={G.body} fill={partColors.body} {...stroke} />
-
-      {/* Body stripes (estampa frente / costas) */}
-      {view === "front" ? (
-        <>
-          <rect x="518.6" y="201.1" width="42.9" height="461.1" fill={partColors.estampaFrente} {...stroke} />
-          <rect x="610.2" y="323.7" width="42.9" height="338.6" fill={partColors.estampaFrente} {...stroke} />
-          <rect x="426.9" y="323.7" width="42.9" height="338.6" fill={partColors.estampaFrente} {...stroke} />
-        </>
-      ) : (
-        <>
-          <rect x="518.6" y="201.1" width="42.9" height="461.1" fill={partColors.estampaCostas} {...stroke} />
-          <rect x="610.2" y="323.7" width="42.9" height="338.6" fill={partColors.estampaCostas} {...stroke} />
-          <rect x="426.9" y="323.7" width="42.9" height="338.6" fill={partColors.estampaCostas} {...stroke} />
-        </>
-      )}
-
-      {/* Sleeve cuffs (front only) */}
-      {view === "front" && (
-        <>
-          <rect x="693.2" y="710.5" width="42.9" height="163.1" transform="translate(-150.2 167.5) rotate(-12.1)" fill={partColors.details} {...stroke} />
-          <rect x="343.9" y="710.5" width="42.9" height="163.1" transform="translate(556.4 1643.1) rotate(-167.9)" fill={partColors.details} {...stroke} />
-          <rect x="274" y="214" width="42.9" height="112.4" transform="translate(63.2 -55.9) rotate(12.1)" fill={partColors.details} {...stroke} />
-          <rect x="763.1" y="214" width="42.9" height="112.4" transform="translate(1608.4 369.7) rotate(167.9)" fill={partColors.details} {...stroke} />
-        </>
-      )}
-
-      {/* Collar */}
-      {G.collar.map((d, i) => (
-        <path key={i} d={d} fill={partColors.collar} {...stroke} />
-      ))}
-
-      {/* Stitching overlay */}
-      <g pointerEvents="none">
-        <path style={stitchStyle} d="M245,322s35.1,29.3,104.8,27.8" />
-        <path style={stitchStyle} d="M243.2,326.6s35.1,29.3,104.8,27.8" />
-        <path style={stitchStyle} d="M835,322s-35.1,29.3-104.8,27.8" />
-        <path style={stitchStyle} d="M836.8,326.6s-35.1,29.3-104.8,27.8" />
-        <path style={stitchStyle} d="M357.4,679.1s178.9,46.7,365.5,0" />
-        <path style={stitchStyle} d="M310.1,982.6s76.6,48.6,199.9,19.2" />
-        <path style={stitchStyle} d="M770,982.6s-76.6,48.6-199.9,19.2" />
-      </g>
-
-      {/* FRONT: chest number (left chest) + shorts number (right leg) */}
-      {view === "front" && state.playerNumberFront.value && (
-        <>
-          <text
-            x={440}
-            y={281 + state.playerNumberFront.offsetY}
-            fontFamily={state.playerNumberFront.font}
-            fontSize={state.playerNumberFront.size}
-            fill={state.playerNumberFront.color}
-            textAnchor="middle"
-            pointerEvents="none"
-          >
-            {state.playerNumberFront.value}
-          </text>
-          <text
-            x={710}
-            y={973}
-            fontFamily={state.playerNumberFront.font}
-            fontSize={60}
-            fill={state.playerNumberFront.color}
-            textAnchor="middle"
-            pointerEvents="none"
-          >
-            {state.playerNumberFront.value}
-          </text>
-        </>
-      )}
-
-      {/* BACK: name + big number */}
-      {view === "back" && (
-        <>
-          {state.playerName.value && (
-            <text
-              x={540}
-              y={280 + state.playerName.offsetY}
-              fontFamily={state.playerName.font}
-              fontSize={state.playerName.size}
-              fill={state.playerName.color}
-              textAnchor="middle"
-              pointerEvents="none"
-              style={{ textTransform: "uppercase" }}
-            >
-              {state.playerName.value.toUpperCase()}
-            </text>
-          )}
-          {state.playerNumberBack.value && (
-            <text
-              x={540}
-              y={535 + state.playerNumberBack.offsetY}
-              fontFamily={state.playerNumberBack.font}
-              fontSize={state.playerNumberBack.size}
-              fill={state.playerNumberBack.color}
-              textAnchor="middle"
-              pointerEvents="none"
-            >
-              {state.playerNumberBack.value}
-            </text>
-          )}
-        </>
-      )}
-
-      {/* Chest badge (right chest, front only) */}
-      {view === "front" && state.badgeChest.src && (
-        <image
-          href={state.badgeChest.src}
-          x={state.badgeChest.x - state.badgeChest.size / 2}
-          y={state.badgeChest.y - state.badgeChest.size / 2}
-          width={state.badgeChest.size}
-          height={state.badgeChest.size}
-          pointerEvents="none"
-        />
-      )}
-
-      {/* Shorts badge (front only) */}
-      {view === "front" && state.badgeShorts.src && (
-        <image
-          href={state.badgeShorts.src}
-          x={state.badgeShorts.x - state.badgeShorts.size / 2}
-          y={state.badgeShorts.y - state.badgeShorts.size / 2}
-          width={state.badgeShorts.size}
-          height={state.badgeShorts.size}
-          pointerEvents="none"
-        />
-      )}
-    </svg>
-  );
+  return <div ref={hostRef} className="h-full w-full" />;
 });
 KitSvg.displayName = "KitSvg";

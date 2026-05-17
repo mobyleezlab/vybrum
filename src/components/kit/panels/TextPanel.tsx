@@ -1,15 +1,13 @@
-import { Slider } from "@/components/ui/slider";
 import { SPORT_FONTS, type TextLayer } from "@/lib/kit-state";
 import { ColorPanel } from "./ColorPanel";
 
 export function TextPanel({
-  label, layer, onChange, numeric, sizeRange = [40, 300],
+  label, layer, onChange, numeric,
 }: {
   label: string;
   layer: TextLayer;
   onChange: (l: TextLayer) => void;
   numeric?: boolean;
-  sizeRange?: [number, number];
 }) {
   return (
     <div className="space-y-4">
@@ -20,7 +18,12 @@ export function TextPanel({
         <input
           value={layer.value}
           onChange={(e) =>
-            onChange({ ...layer, value: numeric ? e.target.value.replace(/\D/g, "").slice(0, 3) : e.target.value.slice(0, 16) })
+            onChange({
+              ...layer,
+              value: numeric
+                ? e.target.value.replace(/\D/g, "").slice(0, 3)
+                : e.target.value.slice(0, 16),
+            })
           }
           inputMode={numeric ? "numeric" : "text"}
           className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm outline-none focus:border-[#2196F3]"
@@ -46,24 +49,6 @@ export function TextPanel({
             );
           })}
         </div>
-      </div>
-      <div>
-        <div className="mb-1 flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-neutral-400">
-          <span>Tamanho</span><span className="tabular-nums">{layer.size}</span>
-        </div>
-        <Slider
-          value={[layer.size]} min={sizeRange[0]} max={sizeRange[1]} step={2}
-          onValueChange={(v) => onChange({ ...layer, size: v[0] })}
-        />
-      </div>
-      <div>
-        <div className="mb-1 flex items-center justify-between text-[11px] font-medium uppercase tracking-widest text-neutral-400">
-          <span>Posição vertical</span><span className="tabular-nums">{layer.offsetY}</span>
-        </div>
-        <Slider
-          value={[layer.offsetY]} min={-120} max={120} step={2}
-          onValueChange={(v) => onChange({ ...layer, offsetY: v[0] })}
-        />
       </div>
       <ColorPanel value={layer.color} onChange={(c) => onChange({ ...layer, color: c })} label="Cor do texto" />
     </div>
