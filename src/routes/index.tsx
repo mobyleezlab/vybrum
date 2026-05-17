@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Sparkles,
+  Shirt, Type as TypeIcon, Shield, Sparkles, Hash, Minus,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -10,7 +10,8 @@ import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import {
-  INITIAL_STATE, TAB_TO_PART, type KitState, type TabId,
+  INITIAL_STATE, PART_LABELS, TEXT_LABELS,
+  type KitState, type TabId, type PartId, type TextId, type BadgeId,
 } from "@/lib/kit-state";
 import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
@@ -18,31 +19,43 @@ import { saveDesign } from "@/lib/kit-storage";
 
 export const Route = createFileRoute("/")({ component: Index });
 
-const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  { id: "body", label: "Camisa", icon: <Shirt className="h-5 w-5" /> },
-  { id: "sleeves", label: "Mangas", icon: <ShirtSleeves /> },
-  { id: "collar", label: "Gola", icon: <CollarIcon /> },
-  { id: "shorts", label: "Calção", icon: <ShortsIcon /> },
-  { id: "estampaFrente", label: "Estampa Frente", icon: <Sparkles className="h-5 w-5" /> },
-  { id: "estampaCostas", label: "Estampa Costas", icon: <Sparkles className="h-5 w-5" /> },
-  { id: "estampaCalcao", label: "Estampa Calção", icon: <Sparkles className="h-5 w-5" /> },
-  { id: "name", label: "Nome", icon: <TypeIcon className="h-5 w-5" /> },
-  { id: "number", label: "Número", icon: <NumberIcon /> },
-  { id: "badge", label: "Escudo", icon: <Shield className="h-5 w-5" /> },
+type Tab = { id: TabId; label: string; icon: React.ReactNode; view: "front" | "back" };
+
+const TABS: Tab[] = [
+  // FRENTE — peças
+  { id: "camisa_frente",   label: "Camisa Frente",  icon: <Shirt className="h-5 w-5" />,    view: "front" },
+  { id: "mangas_frente",   label: "Mangas Frente",  icon: <Shirt className="h-5 w-5" />,    view: "front" },
+  { id: "gola_frente",     label: "Gola Frente",    icon: <Minus className="h-5 w-5" />,    view: "front" },
+  { id: "short_frente",    label: "Short Frente",   icon: <Shirt className="h-5 w-5" />,    view: "front" },
+  // FRENTE — estampas
+  { id: "estampa_camisa_frente", label: "Estampa Camisa F", icon: <Sparkles className="h-5 w-5" />, view: "front" },
+  { id: "estampa_mangas_frente", label: "Estampa Mangas F", icon: <Sparkles className="h-5 w-5" />, view: "front" },
+  { id: "estampa_short_frente",  label: "Estampa Short F",  icon: <Sparkles className="h-5 w-5" />, view: "front" },
+  // FRENTE — números / escudos
+  { id: "numero_camisa_frente", label: "Número Frente",   icon: <Hash className="h-5 w-5" />,   view: "front" },
+  { id: "numero_short_frente",  label: "Número Short",    icon: <Hash className="h-5 w-5" />,   view: "front" },
+  { id: "escudo_camisa_frente", label: "Escudo Camisa",   icon: <Shield className="h-5 w-5" />, view: "front" },
+  { id: "escudo_short_frente",  label: "Escudo Short",    icon: <Shield className="h-5 w-5" />, view: "front" },
+  { id: "costuras_frente",      label: "Costuras Frente", icon: <Minus className="h-5 w-5" />,  view: "front" },
+  // VERSO — peças
+  { id: "camisa_verso",   label: "Camisa Verso",  icon: <Shirt className="h-5 w-5" />, view: "back" },
+  { id: "mangas_verso",   label: "Mangas Verso",  icon: <Shirt className="h-5 w-5" />, view: "back" },
+  { id: "gola_verso",     label: "Gola Verso",    icon: <Minus className="h-5 w-5" />, view: "back" },
+  { id: "short_verso",    label: "Short Verso",   icon: <Shirt className="h-5 w-5" />, view: "back" },
+  // VERSO — estampas
+  { id: "estampa_camisa_verso", label: "Estampa Camisa V", icon: <Sparkles className="h-5 w-5" />, view: "back" },
+  { id: "estampa_mangas_verso", label: "Estampa Mangas V", icon: <Sparkles className="h-5 w-5" />, view: "back" },
+  { id: "estampa_short_verso",  label: "Estampa Short V",  icon: <Sparkles className="h-5 w-5" />, view: "back" },
+  // VERSO — texto
+  { id: "nome_camisa_verso",    label: "Nome Jogador",     icon: <TypeIcon className="h-5 w-5" />, view: "back" },
+  { id: "numero_camisa_verso",  label: "Número Verso",     icon: <Hash className="h-5 w-5" />,    view: "back" },
+  { id: "costuras_verso",       label: "Costuras Verso",   icon: <Minus className="h-5 w-5" />,   view: "back" },
 ];
 
-function ShirtSleeves() {
-  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M4 6l4-2 1 3h6l1-3 4 2-2 4-2-1v9H8v-9l-2 1z"/></svg>);
-}
-function CollarIcon() {
-  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M6 4l6 5 6-5M9 7l3 4 3-4"/></svg>);
-}
-function ShortsIcon() {
-  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M4 4h16l-1 13h-6l-1-7-1 7H5z"/></svg>);
-}
-function NumberIcon() {
-  return (<svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><text x="12" y="18" textAnchor="middle" fontFamily="Bebas Neue, sans-serif" fontSize="16" fill="currentColor" stroke="none">10</text></svg>);
-}
+const TEXT_ID_SET = new Set<TabId>([
+  "numero_camisa_frente", "numero_camisa_verso", "numero_short_frente", "nome_camisa_verso",
+]);
+const BADGE_ID_SET = new Set<TabId>(["escudo_camisa_frente", "escudo_short_frente"]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
@@ -55,18 +68,28 @@ function Index() {
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  const visibleTabs = useMemo(() => TABS.filter((t) => t.view === state.view), [state.view]);
+
   const handleTab = (id: TabId) => {
-    set((s) => ({ ...s, activeTab: id, selectedPart: TAB_TO_PART[id] ?? s.selectedPart }), false);
+    set((s) => {
+      const isPart = !TEXT_ID_SET.has(id) && !BADGE_ID_SET.has(id);
+      return { ...s, activeTab: id, selectedPart: isPart ? (id as PartId) : s.selectedPart };
+    }, false);
   };
+
+  const handleFlip = () =>
+    set((s) => {
+      const next = s.view === "front" ? "back" : "front";
+      // garante uma aba válida para a nova view
+      const firstTab = TABS.find((t) => t.view === next)!;
+      return { ...s, view: next, activeTab: firstTab.id, selectedPart: firstTab.id as PartId };
+    }, false);
 
   const applyColor = (color: string) => {
-    set((s) => ({
-      ...s, selectedColor: color,
-      partColors: { ...s.partColors, [s.selectedPart]: color },
-    }));
+    if (TEXT_ID_SET.has(state.activeTab) || BADGE_ID_SET.has(state.activeTab)) return;
+    const id = state.activeTab as PartId;
+    set((s) => ({ ...s, partColors: { ...s.partColors, [id]: color } }));
   };
-
-  const handleFlip = () => set((s) => ({ ...s, view: s.view === "front" ? "back" : "front" }), false);
 
   const toast = (msg: string) => { setSavedToast(msg); setTimeout(() => setSavedToast(null), 1800); };
 
@@ -88,37 +111,51 @@ function Index() {
   };
 
   const renderPanel = () => {
-    switch (state.activeTab) {
-      case "body":
-      case "sleeves":
-      case "collar":
-      case "shorts":
-      case "estampaFrente":
-      case "estampaCostas":
-      case "estampaCalcao":
-        return <ColorPanel value={state.partColors[state.selectedPart]} onChange={applyColor} />;
-      case "name":
-        return <TextPanel label="Nome do jogador" layer={state.playerName} sizeRange={[40, 140]}
-          onChange={(l) => set((s) => ({ ...s, playerName: l }))} />;
-      case "number":
-        return <TextPanel label="Número" numeric layer={state.playerNumberBack} sizeRange={[80, 320]}
-          onChange={(l) => set((s) => ({ ...s, playerNumberBack: l, playerNumberFront: { ...s.playerNumberFront, value: l.value, font: l.font, color: l.color } }))} />;
-      case "badge":
-        return (
-          <BadgePanel
-            chest={state.badgeChest}
-            shorts={state.badgeShorts}
-            onChangeChest={(l) => set((s) => ({ ...s, badgeChest: l }))}
-            onChangeShorts={(l) => set((s) => ({ ...s, badgeShorts: l }))}
-          />
-        );
+    const id = state.activeTab;
+    if (TEXT_ID_SET.has(id)) {
+      const tid = id as TextId;
+      const isNumber = tid !== "nome_camisa_verso";
+      return (
+        <TextPanel
+          label={TEXT_LABELS[tid]}
+          layer={state.texts[tid]}
+          numeric={isNumber}
+          onChange={(l) => set((s) => ({ ...s, texts: { ...s.texts, [tid]: l } }))}
+        />
+      );
     }
+    if (BADGE_ID_SET.has(id)) {
+      const bid = id as BadgeId;
+      return (
+        <>
+          <BadgePanel
+            label={PART_LABELS[bid]}
+            layer={state.badges[bid]}
+            onChange={(l) => set((s) => ({ ...s, badges: { ...s.badges, [bid]: l } }))}
+          />
+          <div className="mt-4">
+            <ColorPanel
+              value={state.partColors[bid]}
+              onChange={applyColor}
+              label="Cor do escudo (placeholder)"
+            />
+          </div>
+        </>
+      );
+    }
+    const pid = id as PartId;
+    return (
+      <ColorPanel
+        value={state.partColors[pid]}
+        onChange={applyColor}
+        label={`Cor — ${PART_LABELS[pid]}`}
+      />
+    );
   };
 
   return (
     <div className="min-h-screen bg-neutral-100 md:py-6">
-      <div className="mx-auto flex min-h-screen max-w-[420px] flex-col bg-white px-4 pb-6 pt-3 md:min-h-0 md:rounded-3xl md:shadow-xl md:ring-1 md:ring-neutral-200">
-        {/* Header */}
+      <div className="mx-auto flex min-h-screen max-w-[460px] flex-col bg-white px-4 pb-6 pt-3 md:min-h-0 md:rounded-3xl md:shadow-xl md:ring-1 md:ring-neutral-200">
         <header className="flex h-12 items-center justify-between">
           <button aria-label="Voltar" className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
             <ChevronLeft className="h-6 w-6" />
@@ -150,15 +187,13 @@ function Index() {
           exportRef={exportRef} svgRef={svgRef}
         />
 
-        <KitTabs tabs={TABS} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
+        <KitTabs tabs={visibleTabs} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
 
-        {/* Panel */}
         <div key={state.activeTab} className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
           {renderPanel()}
         </div>
       </div>
 
-      {/* Save dialog */}
       {saveOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-6">
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
@@ -174,7 +209,6 @@ function Index() {
         </div>
       )}
 
-      {/* Download dialog */}
       {downloadOpen && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-6" onClick={() => setDownloadOpen(false)}>
           <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
@@ -183,7 +217,7 @@ function Index() {
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button onClick={downloadPng} className="rounded-xl border border-neutral-200 p-4 text-left transition hover:border-[#2196F3] hover:bg-[#2196F3]/5">
                 <div className="text-sm font-semibold">PNG</div>
-                <div className="mt-1 text-xs text-neutral-500">Alta resolução, fundo transparente</div>
+                <div className="mt-1 text-xs text-neutral-500">Alta resolução</div>
               </button>
               <button onClick={downloadSvg} className="rounded-xl border border-neutral-200 p-4 text-left transition hover:border-[#2196F3] hover:bg-[#2196F3]/5">
                 <div className="text-sm font-semibold">SVG</div>
