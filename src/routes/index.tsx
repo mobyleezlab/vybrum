@@ -10,8 +10,9 @@ import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import {
-  INITIAL_STATE, PART_LABELS, TEXT_LABELS,
-  type KitState, type TabId, type PartId, type TextId, type BadgeId,
+  INITIAL_STATE, COLOR_LABELS, TEXT_LABELS, COLOR_GROUP_IDS, TEXT_GROUP_IDS,
+  FRONT_TABS, BACK_TABS,
+  type KitState, type TabId, type ColorGroup, type TextGroup,
 } from "@/lib/kit-state";
 import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
@@ -19,43 +20,25 @@ import { saveDesign } from "@/lib/kit-storage";
 
 export const Route = createFileRoute("/")({ component: Index });
 
-type Tab = { id: TabId; label: string; icon: React.ReactNode; view: "front" | "back" };
+type Tab = { id: TabId; label: string; icon: React.ReactNode };
 
-const TABS: Tab[] = [
-  // FRENTE — peças
-  { id: "camisa_frente",   label: "Camisa Frente",  icon: <Shirt className="h-5 w-5" />,    view: "front" },
-  { id: "mangas_frente",   label: "Mangas Frente",  icon: <Shirt className="h-5 w-5" />,    view: "front" },
-  { id: "gola_frente",     label: "Gola Frente",    icon: <Minus className="h-5 w-5" />,    view: "front" },
-  { id: "short_frente",    label: "Short Frente",   icon: <Shirt className="h-5 w-5" />,    view: "front" },
-  // FRENTE — estampas
-  { id: "estampa_camisa_frente", label: "Estampa Camisa F", icon: <Sparkles className="h-5 w-5" />, view: "front" },
-  { id: "estampa_mangas_frente", label: "Estampa Mangas F", icon: <Sparkles className="h-5 w-5" />, view: "front" },
-  { id: "estampa_short_frente",  label: "Estampa Short F",  icon: <Sparkles className="h-5 w-5" />, view: "front" },
-  // FRENTE — números / escudos
-  { id: "numero_camisa_frente", label: "Número Frente",   icon: <Hash className="h-5 w-5" />,   view: "front" },
-  { id: "numero_short_frente",  label: "Número Short",    icon: <Hash className="h-5 w-5" />,   view: "front" },
-  { id: "escudo_camisa_frente", label: "Escudo Camisa",   icon: <Shield className="h-5 w-5" />, view: "front" },
-  { id: "escudo_short_frente",  label: "Escudo Short",    icon: <Shield className="h-5 w-5" />, view: "front" },
-  { id: "costuras_frente",      label: "Costuras Frente", icon: <Minus className="h-5 w-5" />,  view: "front" },
-  // VERSO — peças
-  { id: "camisa_verso",   label: "Camisa Verso",  icon: <Shirt className="h-5 w-5" />, view: "back" },
-  { id: "mangas_verso",   label: "Mangas Verso",  icon: <Shirt className="h-5 w-5" />, view: "back" },
-  { id: "gola_verso",     label: "Gola Verso",    icon: <Minus className="h-5 w-5" />, view: "back" },
-  { id: "short_verso",    label: "Short Verso",   icon: <Shirt className="h-5 w-5" />, view: "back" },
-  // VERSO — estampas
-  { id: "estampa_camisa_verso", label: "Estampa Camisa V", icon: <Sparkles className="h-5 w-5" />, view: "back" },
-  { id: "estampa_mangas_verso", label: "Estampa Mangas V", icon: <Sparkles className="h-5 w-5" />, view: "back" },
-  { id: "estampa_short_verso",  label: "Estampa Short V",  icon: <Sparkles className="h-5 w-5" />, view: "back" },
-  // VERSO — texto
-  { id: "nome_camisa_verso",    label: "Nome Jogador",     icon: <TypeIcon className="h-5 w-5" />, view: "back" },
-  { id: "numero_camisa_verso",  label: "Número Verso",     icon: <Hash className="h-5 w-5" />,    view: "back" },
-  { id: "costuras_verso",       label: "Costuras Verso",   icon: <Minus className="h-5 w-5" />,   view: "back" },
-];
+const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
+  camisa:        { label: "Camisa",         icon: <Shirt className="h-5 w-5" /> },
+  mangas:        { label: "Mangas",         icon: <Shirt className="h-5 w-5" /> },
+  gola:          { label: "Gola",           icon: <Minus className="h-5 w-5" /> },
+  short:         { label: "Short",          icon: <Shirt className="h-5 w-5" /> },
+  estampaCamisa: { label: "Estampa Camisa", icon: <Sparkles className="h-5 w-5" /> },
+  estampaMangas: { label: "Estampa Mangas", icon: <Sparkles className="h-5 w-5" /> },
+  estampaShort:  { label: "Estampa Short",  icon: <Sparkles className="h-5 w-5" /> },
+  costuras:      { label: "Costuras",       icon: <Minus className="h-5 w-5" /> },
+  numeroCamisa:  { label: "Número Camisa",  icon: <Hash className="h-5 w-5" /> },
+  numeroShort:   { label: "Número Short",   icon: <Hash className="h-5 w-5" /> },
+  nome:          { label: "Nome",           icon: <TypeIcon className="h-5 w-5" /> },
+  escudo:        { label: "Escudo",         icon: <Shield className="h-5 w-5" /> },
+};
 
-const TEXT_ID_SET = new Set<TabId>([
-  "numero_camisa_frente", "numero_camisa_verso", "numero_short_frente", "nome_camisa_verso",
-]);
-const BADGE_ID_SET = new Set<TabId>(["escudo_camisa_frente", "escudo_short_frente"]);
+const COLOR_GROUP_SET = new Set<TabId>(Object.keys(COLOR_GROUP_IDS) as TabId[]);
+const TEXT_GROUP_SET = new Set<TabId>(Object.keys(TEXT_GROUP_IDS) as TabId[]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
@@ -68,28 +51,20 @@ function Index() {
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const visibleTabs = useMemo(() => TABS.filter((t) => t.view === state.view), [state.view]);
+  const visibleTabs: Tab[] = useMemo(() => {
+    const ids = state.view === "front" ? FRONT_TABS : BACK_TABS;
+    return ids.map((id) => ({ id, ...TAB_META[id] }));
+  }, [state.view]);
 
-  const handleTab = (id: TabId) => {
-    set((s) => {
-      const isPart = !TEXT_ID_SET.has(id) && !BADGE_ID_SET.has(id);
-      return { ...s, activeTab: id, selectedPart: isPart ? (id as PartId) : s.selectedPart };
-    }, false);
-  };
+  const handleTab = (id: TabId) => set((s) => ({ ...s, activeTab: id }), false);
 
   const handleFlip = () =>
     set((s) => {
       const next = s.view === "front" ? "back" : "front";
-      // garante uma aba válida para a nova view
-      const firstTab = TABS.find((t) => t.view === next)!;
-      return { ...s, view: next, activeTab: firstTab.id, selectedPart: firstTab.id as PartId };
+      const allowed = next === "front" ? FRONT_TABS : BACK_TABS;
+      const activeTab = allowed.includes(s.activeTab) ? s.activeTab : allowed[0];
+      return { ...s, view: next, activeTab };
     }, false);
-
-  const applyColor = (color: string) => {
-    if (TEXT_ID_SET.has(state.activeTab) || BADGE_ID_SET.has(state.activeTab)) return;
-    const id = state.activeTab as PartId;
-    set((s) => ({ ...s, partColors: { ...s.partColors, [id]: color } }));
-  };
 
   const toast = (msg: string) => { setSavedToast(msg); setTimeout(() => setSavedToast(null), 1800); };
 
@@ -112,43 +87,33 @@ function Index() {
 
   const renderPanel = () => {
     const id = state.activeTab;
-    if (TEXT_ID_SET.has(id)) {
-      const tid = id as TextId;
-      const isNumber = tid !== "nome_camisa_verso";
+    if (COLOR_GROUP_SET.has(id)) {
+      const g = id as ColorGroup;
       return (
-        <TextPanel
-          label={TEXT_LABELS[tid]}
-          layer={state.texts[tid]}
-          numeric={isNumber}
-          onChange={(l) => set((s) => ({ ...s, texts: { ...s.texts, [tid]: l } }))}
+        <ColorPanel
+          value={state.colors[g]}
+          onChange={(c) => set((s) => ({ ...s, colors: { ...s.colors, [g]: c } }))}
+          label={COLOR_LABELS[g]}
         />
       );
     }
-    if (BADGE_ID_SET.has(id)) {
-      const bid = id as BadgeId;
+    if (TEXT_GROUP_SET.has(id)) {
+      const g = id as TextGroup;
       return (
-        <>
-          <BadgePanel
-            label={PART_LABELS[bid]}
-            layer={state.badges[bid]}
-            onChange={(l) => set((s) => ({ ...s, badges: { ...s.badges, [bid]: l } }))}
-          />
-          <div className="mt-4">
-            <ColorPanel
-              value={state.partColors[bid]}
-              onChange={applyColor}
-              label="Cor do escudo (placeholder)"
-            />
-          </div>
-        </>
+        <TextPanel
+          label={TEXT_LABELS[g]}
+          layer={state.texts[g]}
+          numeric={g !== "nome"}
+          onChange={(l) => set((s) => ({ ...s, texts: { ...s.texts, [g]: l } }))}
+        />
       );
     }
-    const pid = id as PartId;
+    // escudo
     return (
-      <ColorPanel
-        value={state.partColors[pid]}
-        onChange={applyColor}
-        label={`Cor — ${PART_LABELS[pid]}`}
+      <BadgePanel
+        label="Escudo (peito + calção)"
+        layer={state.escudo}
+        onChange={(l) => set((s) => ({ ...s, escudo: l }))}
       />
     );
   };
