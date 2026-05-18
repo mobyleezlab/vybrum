@@ -1,39 +1,44 @@
 /**
- * Cada PartId corresponde EXATAMENTE a um id de <g> dentro dos SVGs
- * de uniforme (kit-front.svg / kit-back.svg). Trocar a cor de um
- * PartId pinta apenas aquele grupo.
+ * Estado consolidado: cada "grupo visual" tem UM controle no painel
+ * e é mapeado para todos os IDs correspondentes na frente e verso do SVG.
  */
-export type PartId =
-  // Frente
-  | "costuras_frente"
-  | "gola_frente"
-  | "mangas_frente"
-  | "camisa_frente"
-  | "short_frente"
-  | "estampa_mangas_frente"
-  | "estampa_camisa_frente"
-  | "estampa_short_frente"
-  | "escudo_camisa_frente"
-  | "escudo_short_frente"
-  // Verso
-  | "costuras_verso"
-  | "gola_verso"
-  | "mangas_verso"
-  | "camisa_verso"
-  | "short_verso"
-  | "estampa_mangas_verso"
-  | "estampa_camisa_verso"
-  | "estampa_short_verso";
 
-export type TextId =
-  | "numero_camisa_frente"
-  | "numero_camisa_verso"
-  | "numero_short_frente"
-  | "nome_camisa_verso";
+export type ColorGroup =
+  | "camisa"
+  | "mangas"
+  | "gola"
+  | "short"
+  | "estampaCamisa"
+  | "estampaMangas"
+  | "estampaShort"
+  | "costuras";
 
-export type BadgeId = "escudo_camisa_frente" | "escudo_short_frente";
+export type TextGroup = "numeroCamisa" | "numeroShort" | "nome";
 
-export type TabId = PartId | TextId;
+export type BadgeGroup = "escudo";
+
+export type TabId = ColorGroup | TextGroup | BadgeGroup;
+
+/** IDs reais dentro dos SVGs (kit-front.svg / kit-back.svg). */
+export const COLOR_GROUP_IDS: Record<ColorGroup, string[]> = {
+  camisa: ["camisa_frente", "camisa_verso"],
+  mangas: ["mangas_frente", "mangas_verso"],
+  gola: ["gola_frente", "gola_verso"],
+  short: ["short_frente", "short_verso"],
+  estampaCamisa: ["estampa_camisa_frente", "estampa_camisa_verso"],
+  estampaMangas: ["estampa_mangas_frente", "estampa_mangas_verso"],
+  estampaShort: ["estampa_short_frente", "estampa_short_verso"],
+  costuras: ["costuras_frente", "costuras_verso"],
+};
+
+export const TEXT_GROUP_IDS: Record<TextGroup, string[]> = {
+  numeroCamisa: ["numero_camisa_frente", "numero_camisa_verso"],
+  numeroShort: ["numero_short_frente"],
+  nome: ["nome_camisa_verso"],
+};
+
+/** O escudo é aplicado nos dois locais (peito e calção) simultaneamente. */
+export const ESCUDO_IDS = ["escudo_camisa_frente", "escudo_short_frente"];
 
 export interface TextLayer {
   value: string;
@@ -43,95 +48,68 @@ export interface TextLayer {
 
 export interface BadgeLayer {
   src: string | null;
-  size: number; // multiplicador relativo ao bbox (1 = igual ao placeholder)
+  size: number;
 }
 
 export interface KitState {
   view: "front" | "back";
   activeTab: TabId;
-  selectedPart: PartId | null;
-  partColors: Record<PartId, string>;
-  texts: Record<TextId, TextLayer>;
-  badges: Record<BadgeId, BadgeLayer>;
+  colors: Record<ColorGroup, string>;
+  texts: Record<TextGroup, TextLayer>;
+  escudo: BadgeLayer;
 }
 
 export const SPORT_FONTS = [
-  "Bebas Neue",
-  "Anton",
-  "Teko",
-  "Oswald",
-  "Russo One",
-  "Rajdhani",
-  "Orbitron",
+  "Bebas Neue", "Anton", "Teko", "Oswald", "Russo One", "Rajdhani", "Orbitron",
 ] as const;
 
 export const PALETTE: string[] = [
-  "#F5E52A", "#F5A623", "#F07D1A", "#E85D00", "#E52222",
-  "#D61FA0", "#8B00E8", "#3B22E8", "#2196F3", "#00BFA5",
-  "#1ACC2A", "#8BC34A", "#FFFFFF", "#9E9E9E", "#111111",
+  "#F5E52A","#F5A623","#F07D1A","#E85D00","#E52222",
+  "#D61FA0","#8B00E8","#3B22E8","#2196F3","#00BFA5",
+  "#1ACC2A","#8BC34A","#FFFFFF","#9E9E9E","#111111",
 ];
 
-export const DEFAULT_COLORS: Record<PartId, string> = {
-  // Frente
-  costuras_frente: "#4b4b4b",
-  gola_frente: "#FFB600",
-  mangas_frente: "#0669F7",
-  camisa_frente: "#5D08BF",
-  short_frente: "#18ED87",
-  estampa_mangas_frente: "#4B4B4B",
-  estampa_camisa_frente: "#4B4B4B",
-  estampa_short_frente: "#4B4B4B",
-  escudo_camisa_frente: "#FFFFFF",
-  escudo_short_frente: "#FFFFFF",
-  // Verso
-  costuras_verso: "#4b4b4b",
-  gola_verso: "#FFB600",
-  mangas_verso: "#0669F7",
-  camisa_verso: "#5D08BF",
-  short_verso: "#18ED87",
-  estampa_mangas_verso: "#4B4B4B",
-  estampa_camisa_verso: "#4B4B4B",
-  estampa_short_verso: "#4B4B4B",
+export const DEFAULT_COLORS: Record<ColorGroup, string> = {
+  camisa: "#5D08BF",
+  mangas: "#0669F7",
+  gola: "#FFB600",
+  short: "#18ED87",
+  estampaCamisa: "#4B4B4B",
+  estampaMangas: "#4B4B4B",
+  estampaShort: "#4B4B4B",
+  costuras: "#4B4B4B",
 };
 
-export const TEXT_IDS: TextId[] = [
-  "numero_camisa_frente",
-  "numero_camisa_verso",
-  "numero_short_frente",
-  "nome_camisa_verso",
+export const COLOR_LABELS: Record<ColorGroup, string> = {
+  camisa: "Cor da Camisa",
+  mangas: "Cor das Mangas",
+  gola: "Cor da Gola",
+  short: "Cor do Short",
+  estampaCamisa: "Estampa da Camisa",
+  estampaMangas: "Estampa das Mangas",
+  estampaShort: "Estampa do Short",
+  costuras: "Cor das Costuras",
+};
+
+export const TEXT_LABELS: Record<TextGroup, string> = {
+  numeroCamisa: "Número da Camisa",
+  numeroShort: "Número do Short",
+  nome: "Nome do Jogador",
+};
+
+/** Tabs visíveis por view (front/back). Ambas mostram os grupos
+ * compartilhados — o controle único atualiza os dois lados. */
+export const FRONT_TABS: TabId[] = [
+  "camisa","mangas","gola","short",
+  "estampaCamisa","estampaMangas","estampaShort",
+  "numeroCamisa","numeroShort","escudo","costuras",
+];
+export const BACK_TABS: TabId[] = [
+  "camisa","mangas","gola","short",
+  "estampaCamisa","estampaMangas","estampaShort",
+  "nome","numeroCamisa","escudo","costuras",
 ];
 
-export const BADGE_IDS: BadgeId[] = ["escudo_camisa_frente", "escudo_short_frente"];
-
-export const PART_LABELS: Record<PartId, string> = {
-  camisa_frente: "Camisa Frente",
-  camisa_verso: "Camisa Verso",
-  mangas_frente: "Mangas Frente",
-  mangas_verso: "Mangas Verso",
-  gola_frente: "Gola Frente",
-  gola_verso: "Gola Verso",
-  short_frente: "Short Frente",
-  short_verso: "Short Verso",
-  estampa_camisa_frente: "Estampa Camisa Frente",
-  estampa_camisa_verso: "Estampa Camisa Verso",
-  estampa_mangas_frente: "Estampa Mangas Frente",
-  estampa_mangas_verso: "Estampa Mangas Verso",
-  estampa_short_frente: "Estampa Short Frente",
-  estampa_short_verso: "Estampa Short Verso",
-  costuras_frente: "Costuras Frente",
-  costuras_verso: "Costuras Verso",
-  escudo_camisa_frente: "Escudo Camisa",
-  escudo_short_frente: "Escudo Short",
-};
-
-export const TEXT_LABELS: Record<TextId, string> = {
-  numero_camisa_frente: "Número Frente",
-  numero_camisa_verso: "Número Verso",
-  numero_short_frente: "Número Short",
-  nome_camisa_verso: "Nome Jogador",
-};
-
-// Inline SVG badge presets (data URIs so we don't need asset files)
 const badge = (label: string, bg: string, fg: string) =>
   `data:image/svg+xml;utf8,` +
   encodeURIComponent(
@@ -149,17 +127,12 @@ export const BADGE_PRESETS: { id: string; src: string; name: string }[] = [
 
 export const INITIAL_STATE: KitState = {
   view: "front",
-  activeTab: "camisa_frente",
-  selectedPart: "camisa_frente",
-  partColors: { ...DEFAULT_COLORS },
+  activeTab: "camisa",
+  colors: { ...DEFAULT_COLORS },
   texts: {
-    numero_camisa_frente: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
-    numero_camisa_verso: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
-    numero_short_frente: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
-    nome_camisa_verso: { value: "JOGADOR", font: "Bebas Neue", color: "#FFFFFF" },
+    numeroCamisa: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
+    numeroShort: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
+    nome: { value: "JOGADOR", font: "Bebas Neue", color: "#FFFFFF" },
   },
-  badges: {
-    escudo_camisa_frente: { src: null, size: 1 },
-    escudo_short_frente: { src: null, size: 1 },
-  },
+  escudo: { src: null, size: 1 },
 };
