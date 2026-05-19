@@ -1,40 +1,46 @@
-## 1. Estampas (listras vermelhas do SVG) como peças coloríveis
+## Objetivo
 
-No SVG enviado os retângulos em vermelho são **listras de estampa**:
+Tornar o app instalável no smartphone (Adicionar à tela inicial no iOS e Android), abrindo em tela cheia sem barra do navegador — comportamento de app nativo.
 
-- **Camisa frente** — 3 listras verticais no corpo: centro `x=518.6 y=201.1 w=42.9 h=461.1`, esquerda `x=426.9 y=323.7 w=42.9 h=338.6`, direita `x=610.2 y=323.7 w=42.9 h=338.6`.
-- **Camisa costas** — mesmas 3 listras verticais.
-- **Calção** — 2 listras laterais rotacionadas: direita `x=693.2 y=710.6 w=42.9 h=163.1 rotate(-12.1)`, esquerda `x=283.6 y=770.6 w=163.1 h=42.9 rotate(-77.9)`.
+## Abordagem
 
-Os retângulos rotacionados das mangas que estão hoje em `partColors.details` continuam existindo — são detalhes da manga, não estampa.
+**Manifest-only, sem service worker.** Para instalar e abrir em tela cheia, basta um Web App Manifest + meta tags. Service workers (vite-plugin-pwa) só fazem sentido se você quiser uso offline, e na Lovable eles causam cache obsoleto no preview e travam atualizações. Como você não pediu offline, vou pelo caminho seguro.
 
-**Mudanças:**
-- `src/lib/kit-state.ts`: adicionar 3 novos `PartId`: `estampaFrente`, `estampaCostas`, `estampaCalcao`. Cor padrão `#E52222` (vermelho). Adicionar 3 novas `TabId` correspondentes com labels "Estampa Frente", "Estampa Costas", "Estampa Calção" e mapeamento em `TAB_TO_PART`.
-- `src/components/kit/KitSvg.tsx`: renderizar as listras com os paths/rects acima, usando `fill={partColors.estampa*}`. Frente mostra `estampaFrente` + `estampaCalcao`; costas mostra `estampaCostas` + `estampaCalcao`.
-- `src/routes/index.tsx`: adicionar 3 botões ao array `TABS` (ícone simples de listras).
+Limitação importante: a instalação só aparece quando o app está aberto na URL publicada (`.lovable.app` ou domínio próprio), não dentro do preview do editor. iOS exige adicionar manualmente pelo Safari → Compartilhar → "Adicionar à Tela de Início".
 
-## 2. Escudo no calção (lado direito)
+## Passos
 
-- `kit-state.ts`: adicionar de volta `badgeShorts: BadgeLayer` em `KitState` e `INITIAL_STATE` com `x=360, y=950, size=70, src=null`.
-- `KitSvg.tsx` (view front): renderizar `<image>` para `state.badgeShorts` quando `src` definido.
-- `routes/index.tsx`: adicionar aba `badgeShorts` com label "Escudo Calção" OU reutilizar o painel do escudo com um seletor interno. **Proposta:** manter UMA aba "Escudo" (como o usuário pediu antes) e adicionar dentro do `BadgePanel` um toggle "Peito / Calção" para escolher qual editar. Assim o usuário não recria 2 abas.
+1. **Ícones do app** — gerar dois PNGs em `public/`:
+   - `icon-192.png` (192×192) — ícone padrão
+   - `icon-512.png` (512×512) — splash/tela inicial Android
+   - `apple-touch-icon.png` (180×180) — iOS home screen
+   Usar o tema atual do app (fundo escuro + camisa/escudo) para a arte.
 
-## 3. Painel sai da "moldura"
+2. **`public/manifest.webmanifest`** — novo arquivo com:
+   - `name`, `short_name`, `description` em português
+   - `start_url: "/"`, `scope: "/"`, `id: "/"`
+   - `display: "standalone"` (tela cheia, sem barra)
+   - `orientation: "portrait"`
+   - `background_color` e `theme_color` baseados nos tokens do `styles.css`
+   - `icons` apontando para os 3 PNGs com `purpose: "any maskable"`
 
-Em `src/routes/index.tsx` o container do painel tem `max-h-[40vh] overflow-y-auto`, que cria a sensação de frame interno apertado ao abrir Nome/Número/Escudo. Remover `max-h-[40vh] overflow-y-auto pr-1` e deixar o painel fluir naturalmente abaixo das tabs (o body já rola).
+3. **`src/routes/__root.tsx`** — adicionar ao `head().links/meta`:
+   - `<link rel="manifest" href="/manifest.webmanifest">`
+   - `<meta name="theme-color" content="...">`
+   - `<meta name="apple-mobile-web-app-capable" content="yes">`
+   - `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`
+   - `<meta name="apple-mobile-web-app-title" content="...">`
+   - `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`
+   - Ajustar viewport para incluir `viewport-fit=cover` (suporte ao notch)
 
-## 4. Clicar no uniforme NÃO deve trocar cor
+4. **CSS — safe-area no iPhone (notch/Dynamic Island)** — em `src/styles.css`:
+   - Padding utilitário usando `env(safe-area-inset-*)` para topo/baixo, já que `display: standalone` esconde a barra do Safari.
 
-Em `routes/index.tsx`, `handlePartClick` hoje faz `partColors: { ...s.partColors, [part]: s.selectedColor }`. Remover essa atribuição — manter apenas `selectedPart: part` (ou remover a função por completo e passar `onPartClick={undefined}` ao `KitCanvas`, deixando os `<g onClick>` no SVG sem efeito visual). Vou remover a prop `onPartClick` do `KitCanvas` e os handlers de clique nos `<g>` do `KitSvg`, deixando o SVG puramente visual. Cores são alteradas apenas pelas abas + paleta.
+5. **Sem service worker, sem `vite-plugin-pwa`** — nada de cache que quebre o preview ou trave atualizações.
 
-## 5. Escudo sem X/Y
+## Notas para o usuário
 
-Em `src/components/kit/panels/BadgePanel.tsx`, remover o bloco com os sliders "Posição X" e "Posição Y". Mantém apenas: presets, upload, remover, e slider de tamanho. Posições ficam fixas no `INITIAL_STATE` (peito: 655/258, calção: 360/950).
-
-## Arquivos alterados
-
-- `src/lib/kit-state.ts` — novos PartId/TabId/cores padrão, `badgeShorts` de volta
-- `src/components/kit/KitSvg.tsx` — render das listras, escudo do calção, sem onClick nas partes
-- `src/components/kit/KitCanvas.tsx` — remover prop `onPartClick` da assinatura/uso
-- `src/components/kit/panels/BadgePanel.tsx` — remover sliders X/Y; adicionar toggle Peito/Calção
-- `src/routes/index.tsx` — 3 novas tabs de estampa, remover `handlePartClick` (ou neutralizar), remover `max-h-[40vh] overflow-y-auto` do painel, passar ambos `badgeChest` e `badgeShorts` ao `BadgePanel`
+- A instalação só funciona no app **publicado** (botão Publish). No preview do editor não aparece.
+- Android/Chrome: aparece o prompt "Instalar app" automaticamente após visitar.
+- iOS/Safari: o usuário precisa abrir o menu Compartilhar e tocar em "Adicionar à Tela de Início".
+- Se mais tarde quiser **modo offline**, é outro passo (service worker com cuidados especiais) — me avisa.
