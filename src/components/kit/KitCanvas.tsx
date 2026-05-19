@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RefreshCw, Minus, Plus } from "lucide-react";
+import { RefreshCw, ZoomIn, Maximize2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { KitSvg } from "./KitSvg";
 import type { KitState } from "@/lib/kit-state";
@@ -22,6 +22,7 @@ export function KitCanvas({
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
   const pinch = useRef<{ d: number; z: number } | null>(null);
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -104,35 +105,43 @@ export function KitCanvas({
         </div>
       </div>
 
-      {/* Zoom slider inline */}
-      <div className="absolute bottom-3 left-1/2 z-10 flex w-[78%] -translate-x-1/2 items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 shadow-sm backdrop-blur">
-        <button
-          onClick={() => setZoom(Math.max(0.5, +(zoom - 0.1).toFixed(2)))}
-          className="grid h-6 w-6 place-items-center rounded-full text-neutral-700 hover:bg-neutral-100"
-          aria-label="Diminuir"
-        >
-          <Minus className="h-3.5 w-3.5" />
-        </button>
-        <div className="flex-1">
-          <Slider
-            value={[zoom * 100]}
-            min={50}
-            max={250}
-            step={5}
-            onValueChange={(v) => setZoom(v[0] / 100)}
-          />
+      {/* Zoom toggle button (bottom-right, mirrors the flip button) */}
+      <button
+        onClick={() => setZoomOpen((v) => !v)}
+        aria-label="Zoom"
+        aria-pressed={zoomOpen}
+        className="absolute right-3 bottom-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white aria-pressed:bg-white"
+      >
+        <ZoomIn className="h-4 w-4" />
+      </button>
+
+      {/* Vertical zoom slider + reset, anchored above the zoom button */}
+      {zoomOpen && (
+        <div className="absolute right-3 bottom-14 z-10 flex flex-col items-center gap-2 rounded-full bg-white/85 px-1.5 py-3 shadow-sm backdrop-blur">
+          <span className="text-[10px] font-medium tabular-nums text-neutral-600">
+            {Math.round(zoom * 100)}%
+          </span>
+          <div className="h-40 py-1">
+            <Slider
+              orientation="vertical"
+              value={[zoom * 100]}
+              min={50}
+              max={250}
+              step={5}
+              onValueChange={(v) => setZoom(v[0] / 100)}
+              className="h-full"
+            />
+          </div>
+          <button
+            onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
+            className="grid h-7 w-7 place-items-center rounded-full text-neutral-700 hover:bg-neutral-100"
+            aria-label="Tamanho padrão"
+            title="Tamanho padrão"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </button>
         </div>
-        <button
-          onClick={() => setZoom(Math.min(2.5, +(zoom + 0.1).toFixed(2)))}
-          className="grid h-6 w-6 place-items-center rounded-full text-neutral-700 hover:bg-neutral-100"
-          aria-label="Aumentar"
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
-        <span className="w-10 text-right text-[10px] font-medium tabular-nums text-neutral-600">
-          {Math.round(zoom * 100)}%
-        </span>
-      </div>
+      )}
     </div>
   );
 }
