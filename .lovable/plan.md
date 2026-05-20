@@ -1,46 +1,60 @@
-## Objetivo
 
-Tornar o app instalável no smartphone (Adicionar à tela inicial no iOS e Android), abrindo em tela cheia sem barra do navegador — comportamento de app nativo.
+# Plano de Implementação — Kit Designer x Supabase
 
-## Abordagem
+Escopo grande. Vou dividir em fases entregáveis e validáveis, na ordem sugerida pelo usuário. Cada fase é um marco utilizável; não vou mesclar tudo em um único PR gigante.
 
-**Manifest-only, sem service worker.** Para instalar e abrir em tela cheia, basta um Web App Manifest + meta tags. Service workers (vite-plugin-pwa) só fazem sentido se você quiser uso offline, e na Lovable eles causam cache obsoleto no preview e travam atualizações. Como você não pediu offline, vou pelo caminho seguro.
+## Fase 1 — Autenticação (base de tudo)
+- Criar `src/lib/auth-context.tsx` com `AuthProvider` (Supabase `onAuthStateChange` + `getSession`).
+- Plugar provider em `__root.tsx`.
+- Rotas novas: `/login`, `/cadastro`, `/esqueci-senha`, `/reset-password`.
+- Login email/senha + botão Google (via `supabase.auth.signInWithOAuth`). *Obs: Google requer configurar provider no dashboard Supabase — vou avisar.*
+- App segue acessível como visitante.
+- Header: avatar/iniciais quando logado, botão "Entrar" quando não.
+- Hook `useRequireAuth()` para gates (salvar/exportar/desbloquear).
 
-Limitação importante: a instalação só aparece quando o app está aberto na URL publicada (`.lovable.app` ou domínio próprio), não dentro do preview do editor. iOS exige adicionar manualmente pelo Safari → Compartilhar → "Adicionar à Tela de Início".
+## Fase 2 — Templates dinâmicos
+- `useModels()` lê de `models_with_status` (view já existe).
+- Componente `ModelSelector` (scroll horizontal, badges por categoria, cadeado, expiração).
+- `KitSvg` passa a receber `svgFrenteUrl`/`svgCostasUrl`; fetch + parse + cache via `useQuery`.
+- Manter compat: se URL ausente, usa SVG local atual (fallback).
+- Mapear IDs reais da view (`zona-corpo`, `zona-manga-esq` etc.) — vou inspecionar 1 modelo do banco para confirmar antes de codar.
 
-## Passos
+## Fase 3 — Créditos
+- Hook `useCreditBalance()` (realtime via channel).
+- Header mostra saldo quando logado.
+- Rota `/creditos`: lista `credit_packages`, destaca "Melhor custo-benefício", botão mock "Em breve".
 
-1. **Ícones do app** — gerar dois PNGs em `public/`:
-   - `icon-192.png` (192×192) — ícone padrão
-   - `icon-512.png` (512×512) — splash/tela inicial Android
-   - `apple-touch-icon.png` (180×180) — iOS home screen
-   Usar o tema atual do app (fundo escuro + camisa/escudo) para a arte.
+## Fase 4 — Gating de features
+- Helper `canUseFeature(feature, featuresLevel)`.
+- Cadeado nas abas SVG/PDF/Fontes Premium/Patrocinador/Goleiro/Time.
+- Componente `UnlockSheet` (bottom sheet) reaproveitável.
 
-2. **`public/manifest.webmanifest`** — novo arquivo com:
-   - `name`, `short_name`, `description` em português
-   - `start_url: "/"`, `scope: "/"`, `id: "/"`
-   - `display: "standalone"` (tela cheia, sem barra)
-   - `orientation: "portrait"`
-   - `background_color` e `theme_color` baseados nos tokens do `styles.css`
-   - `icons` apontando para os 3 PNGs com `purpose: "any maskable"`
+## Fase 5 — Salvar kits
+- Substituir `kit-storage.ts` (localStorage) por server fns: `saveKit`, `listKits`, `deleteKit`, `loadKit`.
+- Rota `/meus-kits` (grid).
+- Fluxo: clicar Salvar sem login → abre `/login` com redirect.
 
-3. **`src/routes/__root.tsx`** — adicionar ao `head().links/meta`:
-   - `<link rel="manifest" href="/manifest.webmanifest">`
-   - `<meta name="theme-color" content="...">`
-   - `<meta name="apple-mobile-web-app-capable" content="yes">`
-   - `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`
-   - `<meta name="apple-mobile-web-app-title" content="...">`
-   - `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`
-   - Ajustar viewport para incluir `viewport-fit=cover` (suporte ao notch)
+## Fase 6 — Packs
+- Seção dentro de `/creditos` listando `packs` + `pack_items`.
 
-4. **CSS — safe-area no iPhone (notch/Dynamic Island)** — em `src/styles.css`:
-   - Padding utilitário usando `env(safe-area-inset-*)` para topo/baixo, já que `display: standalone` esconde a barra do Safari.
+## Fase 7 — Admin
+- Constraint `plan` aceitar `admin` (migration).
+- Rota `/admin` protegida (checa `profile.plan === 'admin'`).
+- Abas Templates/Packs/Créditos com CRUD básico + upload para Storage.
+- **Requer bucket Storage** (`models`) com policies — incluído na migration.
 
-5. **Sem service worker, sem `vite-plugin-pwa`** — nada de cache que quebre o preview ou trave atualizações.
+---
 
-## Notas para o usuário
+## Detalhes técnicos
 
-- A instalação só funciona no app **publicado** (botão Publish). No preview do editor não aparece.
-- Android/Chrome: aparece o prompt "Instalar app" automaticamente após visitar.
-- iOS/Safari: o usuário precisa abrir o menu Compartilhar e tocar em "Adicionar à Tela de Início".
-- Se mais tarde quiser **modo offline**, é outro passo (service worker com cuidados especiais) — me avisa.
+- **Server fns**: kits e admin via `createServerFn` + `requireSupabaseAuth`. Leituras públicas (models, packages, packs) via cliente browser (RLS já permite a authenticated; visitante anônimo vê via server fn com `supabaseAdmin` somente leitura de colunas seguras).
+- **Visitante explora templates**: como RLS atual exige `authenticated`, vou criar um server fn público `listModelsPublic` usando `supabaseAdmin` para o modo visitante; quando logado, usa cliente do browser.
+- **Realtime créditos**: subscribe em `credit_balances` filtrado por `user_id`.
+- **Google OAuth**: configurar no painel Supabase (vou instruir o usuário; o código já chama corretamente).
+- **PWA já feito**, não mexo.
+
+## Pergunta antes de começar
+
+Confirmação: posso começar pela **Fase 1 (Auth)** agora? As fases 2–7 entram em mensagens seguintes para manter cada entrega testável. Sem isso, viraria um único drop gigante difícil de revisar/corrigir.
+
+Se preferir tudo de uma vez assumindo riscos de regressão, me diga "vai tudo" e eu emendo as fases.
