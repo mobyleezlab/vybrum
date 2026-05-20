@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
@@ -17,6 +17,7 @@ import {
 import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
 import { saveDesign } from "@/lib/kit-storage";
+import { useAuth, getInitials } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -42,6 +43,9 @@ const TEXT_GROUP_SET = new Set<TabId>(Object.keys(TEXT_GROUP_IDS) as TabId[]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [savedToast, setSavedToast] = useState<string | null>(null);
@@ -67,6 +71,14 @@ function Index() {
     }, false);
 
   const toast = (msg: string) => { setSavedToast(msg); setTimeout(() => setSavedToast(null), 1800); };
+
+  const requireAuth = () => {
+    if (!user) {
+      navigate({ to: "/login", search: { redirect: "/" } });
+      return false;
+    }
+    return true;
+  };
 
   const handleSave = () => {
     saveDesign(saveName.trim() || "Sem nome", state);
@@ -135,7 +147,7 @@ function Index() {
               className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100 disabled:opacity-30">
               <Redo2 className="h-4 w-4" />
             </button>
-            <button aria-label="Salvar" onClick={() => setSaveOpen(true)}
+            <button aria-label="Salvar" onClick={() => { if (requireAuth()) setSaveOpen(true); }}
               className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
               <Save className="h-4 w-4" />
             </button>
@@ -143,6 +155,28 @@ function Index() {
               className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
               <Download className="h-4 w-4" />
             </button>
+            {user ? (
+              <div className="relative">
+                <button aria-label="Conta" onClick={() => setUserMenuOpen((v) => !v)}
+                  className="ml-1 grid h-9 w-9 place-items-center rounded-full bg-[#2196F3] text-[11px] font-semibold text-white">
+                  {getInitials(user)}
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-11 z-40 w-44 rounded-xl border border-neutral-200 bg-white p-1 shadow-lg">
+                    <div className="px-3 py-2 text-[11px] text-neutral-500 truncate">{user.email}</div>
+                    <button onClick={async () => { setUserMenuOpen(false); await signOut(); }}
+                      className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-neutral-100">
+                      Sair
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link to="/login" search={{ redirect: "/" }}
+                className="ml-1 rounded-full bg-[#2196F3] px-3 py-1.5 text-xs font-semibold text-white">
+                Entrar
+              </Link>
+            )}
           </div>
         </header>
 
