@@ -6,6 +6,9 @@ import {
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
+import { ModelSelector } from "@/components/kit/ModelSelector";
+import { useQuery } from "@tanstack/react-query";
+import type { ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
@@ -52,8 +55,33 @@ function Index() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [saveName, setSaveName] = useState("Modelo BR041");
+  const [selectedModel, setSelectedModel] = useState<ModelRow | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+
+  const frontUrl = selectedModel?.svg_frente_url ?? null;
+  const backUrl = selectedModel?.svg_costas_url ?? null;
+
+  const { data: frontRaw } = useQuery({
+    queryKey: ["svg", frontUrl],
+    enabled: !!frontUrl,
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const r = await fetch(frontUrl!);
+      if (!r.ok) throw new Error("Falha ao carregar SVG");
+      return r.text();
+    },
+  });
+  const { data: backRaw } = useQuery({
+    queryKey: ["svg", backUrl],
+    enabled: !!backUrl,
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const r = await fetch(backUrl!);
+      if (!r.ok) throw new Error("Falha ao carregar SVG");
+      return r.text();
+    },
+  });
 
   const visibleTabs: Tab[] = useMemo(() => {
     const ids = state.view === "front" ? FRONT_TABS : BACK_TABS;
@@ -184,6 +212,13 @@ function Index() {
           state={state} onFlip={handleFlip}
           zoom={zoom} setZoom={setZoom} pan={pan} setPan={setPan}
           exportRef={exportRef} svgRef={svgRef}
+          frontRaw={frontRaw}
+          backRaw={backRaw}
+        />
+
+        <ModelSelector
+          selectedCode={selectedModel?.code ?? null}
+          onSelect={(m) => setSelectedModel(m)}
         />
 
         <KitTabs tabs={visibleTabs} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
