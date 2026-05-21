@@ -13,10 +13,12 @@ interface Props {
   setPan: (p: { x: number; y: number }) => void;
   exportRef: React.RefObject<HTMLDivElement | null>;
   svgRef: React.RefObject<SVGSVGElement | null>;
+  frontRaw?: string;
+  backRaw?: string;
 }
 
 export function KitCanvas({
-  state, onFlip, zoom, setZoom, pan, setPan, exportRef, svgRef,
+  state, onFlip, zoom, setZoom, pan, setPan, exportRef, svgRef, frontRaw, backRaw,
 }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
@@ -101,7 +103,7 @@ export function KitCanvas({
             willChange: "transform",
           }}
         >
-          <KitSvg ref={svgRef} state={state} />
+          <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} />
         </div>
       </div>
 
