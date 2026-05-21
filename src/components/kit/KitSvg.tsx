@@ -1,12 +1,16 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import frontRaw from "@/assets/kit-front.svg?raw";
-import backRaw from "@/assets/kit-back.svg?raw";
+import frontRawDefault from "@/assets/kit-front.svg?raw";
+import backRawDefault from "@/assets/kit-back.svg?raw";
 import {
   COLOR_GROUP_IDS, TEXT_GROUP_IDS, ESCUDO_IDS,
   type KitState, type ColorGroup, type TextGroup,
 } from "@/lib/kit-state";
 
-interface Props { state: KitState }
+interface Props {
+  state: KitState;
+  frontRaw?: string;
+  backRaw?: string;
+}
 
 function applyFill(root: SVGElement, id: string, color: string) {
   const g = root.querySelector(`#${id}`) as SVGGElement | null;
@@ -86,7 +90,7 @@ function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: n
   }
 }
 
-export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state }, ref) => {
+export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backRaw }, ref) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -95,7 +99,11 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state }, ref) => {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-    host.innerHTML = state.view === "front" ? frontRaw : backRaw;
+    const raw =
+      state.view === "front"
+        ? (frontRaw ?? frontRawDefault)
+        : (backRaw ?? backRawDefault);
+    host.innerHTML = raw;
     const svg = host.querySelector("svg") as SVGSVGElement | null;
     if (!svg) return;
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
@@ -103,7 +111,7 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state }, ref) => {
     svg.style.height = "100%";
     svg.style.display = "block";
     svgRef.current = svg;
-  }, [state.view]);
+  }, [state.view, frontRaw, backRaw]);
 
   useEffect(() => {
     const svg = svgRef.current;
