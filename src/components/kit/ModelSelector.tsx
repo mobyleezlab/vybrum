@@ -40,7 +40,6 @@ export function ModelSelector({ selectedCode, onSelect }: Props) {
             >
               <div className="relative grid h-14 w-full place-items-center overflow-hidden rounded-lg bg-neutral-100">
                 {m.thumbnail_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={m.thumbnail_url} alt={m.name} className="h-full w-full object-contain" />
                 ) : (
                   <Sparkles className="h-5 w-5 text-neutral-400" />
