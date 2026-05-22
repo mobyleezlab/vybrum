@@ -21,6 +21,7 @@ import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
 import { saveDesign } from "@/lib/kit-storage";
 import { useAuth, getInitials } from "@/lib/auth-context";
+import { CreditBadge } from "@/components/CreditBadge";
 
 export const Route = createFileRoute("/")({ component: Index });
 
@@ -183,6 +184,7 @@ function Index() {
               className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
               <Download className="h-4 w-4" />
             </button>
+            <CreditBadge />
             {user ? (
               <div className="relative">
                 <button aria-label="Conta" onClick={() => setUserMenuOpen((v) => !v)}
