@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/esqueci-senha")({ component: ForgotPage });
 
@@ -15,7 +16,7 @@ function ForgotPage() {
     e.preventDefault();
     setMsg(null); setErr(null); setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/reset-password",
+      redirectTo: SITE_URL + "/reset-password",
     });
     setLoading(false);
     if (error) setErr(error.message);
