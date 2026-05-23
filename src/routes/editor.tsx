@@ -1,14 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
   Shirt, Type as TypeIcon, Shield, Sparkles, Hash, Minus,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
-import { ModelSelector } from "@/components/kit/ModelSelector";
 import { useQuery } from "@tanstack/react-query";
-import type { ModelRow } from "@/lib/models";
+import { useModels, type ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
@@ -23,7 +22,12 @@ import { saveDesign } from "@/lib/kit-storage";
 import { useAuth, getInitials } from "@/lib/auth-context";
 import { CreditBadge } from "@/components/CreditBadge";
 
-export const Route = createFileRoute("/editor")({ component: Index });
+export const Route = createFileRoute("/editor")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    model: typeof s.model === "string" ? s.model : undefined,
+  }),
+  component: Index,
+});
 
 type Tab = { id: TabId; label: string; icon: React.ReactNode };
 
@@ -49,6 +53,8 @@ function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { model: modelCode } = Route.useSearch();
+  const { data: models } = useModels();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -59,6 +65,12 @@ function Index() {
   const [selectedModel, setSelectedModel] = useState<ModelRow | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    if (!models || !modelCode) return;
+    const m = models.find((x) => x.code === modelCode);
+    if (m && m.code !== selectedModel?.code) setSelectedModel(m);
+  }, [models, modelCode, selectedModel?.code]);
 
   const frontUrl = selectedModel?.svg_frente_url ?? null;
   const backUrl = selectedModel?.svg_costas_url ?? null;
@@ -103,7 +115,7 @@ function Index() {
 
   const requireAuth = () => {
     if (!user) {
-      navigate({ to: "/login", search: { redirect: "/" } });
+      navigate({ to: "/login", search: { redirect: "/editor" } });
       return false;
     }
     return true;
@@ -163,10 +175,12 @@ function Index() {
     <div className="min-h-screen bg-neutral-100 md:py-6">
       <div className="mx-auto flex min-h-screen max-w-[460px] flex-col bg-white px-4 pb-6 pt-3 md:min-h-0 md:rounded-3xl md:shadow-xl md:ring-1 md:ring-neutral-200">
         <header className="flex h-12 items-center justify-between">
-          <button aria-label="Voltar" className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
+          <Link to="/" aria-label="Voltar ao catálogo" className="grid h-10 w-10 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100">
             <ChevronLeft className="h-6 w-6" />
-          </button>
-          <h1 className="text-[13px] font-medium tracking-[0.18em] text-neutral-500">MODELO #BR041</h1>
+          </Link>
+          <h1 className="text-[13px] font-medium tracking-[0.18em] text-neutral-500">
+            {selectedModel ? `MODELO #${selectedModel.code}` : "EDITOR"}
+          </h1>
           <div className="flex items-center gap-1">
             <button aria-label="Desfazer" onClick={undo} disabled={!canUndo}
               className="grid h-9 w-9 place-items-center rounded-full text-neutral-700 transition hover:bg-neutral-100 disabled:opacity-30">
@@ -202,7 +216,7 @@ function Index() {
                 )}
               </div>
             ) : (
-              <Link to="/login" search={{ redirect: "/" }}
+              <Link to="/login" search={{ redirect: "/editor" }}
                 className="ml-1 rounded-full bg-[#2196F3] px-3 py-1.5 text-xs font-semibold text-white">
                 Entrar
               </Link>
@@ -216,11 +230,6 @@ function Index() {
           exportRef={exportRef} svgRef={svgRef}
           frontRaw={frontRaw}
           backRaw={backRaw}
-        />
-
-        <ModelSelector
-          selectedCode={selectedModel?.code ?? null}
-          onSelect={(m) => setSelectedModel(m)}
         />
 
         <KitTabs tabs={visibleTabs} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
