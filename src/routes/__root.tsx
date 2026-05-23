@@ -84,6 +84,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Onzee Lab" },
       { property: "og:description", content: "Crie e personalize uniformes esportivos direto do celular." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://app.onzeelab.com" },
+      { property: "og:site_name", content: "Onzee Lab" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
     ],
