@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { SITE_URL } from "@/lib/site";
 
 export const Route = createFileRoute("/cadastro")({ component: SignupPage });
 
@@ -24,7 +25,7 @@ function SignupPage() {
     const { data, error } = await supabase.auth.signUp({
       email, password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: SITE_URL,
         data: { full_name: fullName },
       },
     });
