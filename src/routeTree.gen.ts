@@ -14,6 +14,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
+import { Route as EditorRouteImport } from './routes/editor'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as IndexRouteImport } from './routes/index'
@@ -43,6 +44,11 @@ const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
   path: '/esqueci-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditorRoute = EditorRouteImport.update({
+  id: '/editor',
+  path: '/editor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CreditosRoute = CreditosRouteImport.update({
   id: '/creditos',
   path: '/creditos',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/creditos': typeof CreditosRoute
+  '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/creditos': typeof CreditosRoute
+  '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/creditos': typeof CreditosRoute
+  '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cadastro'
     | '/creditos'
+    | '/editor'
     | '/esqueci-senha'
     | '/login'
     | '/privacidade'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cadastro'
     | '/creditos'
+    | '/editor'
     | '/esqueci-senha'
     | '/login'
     | '/privacidade'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/cadastro'
     | '/creditos'
+    | '/editor'
     | '/esqueci-senha'
     | '/login'
     | '/privacidade'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CadastroRoute: typeof CadastroRoute
   CreditosRoute: typeof CreditosRoute
+  EditorRoute: typeof EditorRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EsqueciSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/editor': {
+      id: '/editor'
+      path: '/editor'
+      fullPath: '/editor'
+      preLoaderRoute: typeof EditorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/creditos': {
       id: '/creditos'
       path: '/creditos'
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CadastroRoute: CadastroRoute,
   CreditosRoute: CreditosRoute,
+  EditorRoute: EditorRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,

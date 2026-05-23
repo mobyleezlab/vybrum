@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Coins, Flame, Star, Package, Lock } from "lucide-react";
-import { useCreditBalance, useCreditPackages, usePacks, formatBRL } from "@/lib/credits";
+import { ChevronLeft, Coins, Flame, Star, Lock, Shirt } from "lucide-react";
+import { useCreditBalance, useCreditPackages, formatBRL } from "@/lib/credits";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/creditos")({
@@ -60,7 +60,6 @@ function CreditosPage() {
   const { user, loading } = useAuth();
   const { data: balance } = useCreditBalance();
   const { data: packages, isLoading: loadingPackages } = useCreditPackages();
-  const { data: packs, isLoading: loadingPacks } = usePacks();
 
   if (!loading && !user) {
     return (
@@ -121,64 +120,12 @@ function CreditosPage() {
           )}
         </section>
 
-        <section className="mt-8">
-          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-neutral-500">
-            <Package className="h-4 w-4" /> Packs de templates
-          </h2>
-          {loadingPacks ? (
-            <div className="mt-3 grid gap-3">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="h-32 animate-pulse rounded-2xl bg-neutral-200" />
-              ))}
-            </div>
-          ) : (packs ?? []).length === 0 ? (
-            <p className="mt-3 text-sm text-neutral-500">Nenhum pack disponível no momento.</p>
-          ) : (
-            <div className="mt-3 grid gap-4">
-              {(packs ?? []).map((p) => (
-                <div key={p.id} className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-semibold text-neutral-900">{p.name}</h3>
-                      {p.description && <p className="mt-0.5 text-xs text-neutral-500">{p.description}</p>}
-                    </div>
-                    {p.discount_pct ? (
-                      <span className="rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                        {p.discount_pct}% OFF
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
-                    {p.pack_items.slice(0, 6).map((it) => (
-                      <div key={it.id} className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-neutral-100 text-[9px] font-semibold text-neutral-500">
-                        {it.model_code}
-                      </div>
-                    ))}
-                    {p.pack_items.length > 6 && (
-                      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-neutral-100 text-[10px] font-semibold text-neutral-500">
-                        +{p.pack_items.length - 6}
-                      </div>
-                    )}
-                  </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-neutral-400 line-through">{p.original_value} cr</div>
-                      <div className="flex items-center gap-1 text-lg font-bold text-neutral-900">
-                        <Coins className="h-4 w-4 text-amber-500" /> {p.cost_credits}
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => alert("Compra em breve!")}
-                      className="rounded-xl bg-neutral-900 px-4 py-2 text-xs font-semibold text-white hover:opacity-90"
-                    >
-                      Desbloquear
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
+        <Link
+          to="/"
+          className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white py-3 text-sm font-semibold text-neutral-700 hover:border-[#2196F3] hover:text-[#2196F3]"
+        >
+          <Shirt className="h-4 w-4" /> Ver catálogo
+        </Link>
       </div>
     </div>
   );
