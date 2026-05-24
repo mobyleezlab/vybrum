@@ -6,14 +6,22 @@ import { usePacks } from "@/lib/credits";
 import { useAuth, getInitials } from "@/lib/auth-context";
 import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
+import { SITE_URL } from "@/lib/site";
+
+const HOME_DESCRIPTION =
+  "Onzee Lab é um aplicativo para criar, personalizar e exportar uniformes esportivos direto do celular.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Onzee Lab" },
       { name: "application-name", content: "Onzee Lab" },
-      { name: "description", content: "Onzee Lab — crie e personalize uniformes esportivos direto do celular." },
+      { name: "description", content: HOME_DESCRIPTION },
+      { property: "og:title", content: "Onzee Lab" },
+      { property: "og:description", content: HOME_DESCRIPTION },
+      { property: "og:url", content: `${SITE_URL}/` },
     ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
   }),
   component: CatalogPage,
 });
