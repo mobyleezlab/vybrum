@@ -11,6 +11,9 @@ import { SITE_URL } from "@/lib/site";
 const HOME_DESCRIPTION =
   "Onzee Lab é um aplicativo para criar, personalizar e exportar uniformes esportivos direto do celular.";
 
+const PRIVACY_URL = "https://onzeelab.com.br/privacidade";
+const TERMS_URL = "https://onzeelab.com.br/termos";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -21,7 +24,27 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: HOME_DESCRIPTION },
       { property: "og:url", content: `${SITE_URL}/` },
     ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
+    links: [
+      { rel: "canonical", href: `${SITE_URL}/` },
+      { rel: "privacy-policy", href: PRIVACY_URL },
+      { rel: "terms-of-service", href: TERMS_URL },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "Onzee Lab",
+          alternateName: "Onzee Lab - Criador de Uniformes Esportivos",
+          url: `${SITE_URL}/`,
+          description: HOME_DESCRIPTION,
+          applicationCategory: "DesignApplication",
+          operatingSystem: "Web, iOS, Android",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "BRL" },
+        }),
+      },
+    ],
   }),
   component: CatalogPage,
 });
