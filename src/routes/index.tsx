@@ -6,14 +6,22 @@ import { usePacks } from "@/lib/credits";
 import { useAuth, getInitials } from "@/lib/auth-context";
 import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
+import { SITE_URL } from "@/lib/site";
+
+const HOME_DESCRIPTION =
+  "Onzee Lab é um aplicativo para criar, personalizar e exportar uniformes esportivos direto do celular.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Onzee Lab" },
       { name: "application-name", content: "Onzee Lab" },
-      { name: "description", content: "Onzee Lab — crie e personalize uniformes esportivos direto do celular." },
+      { name: "description", content: HOME_DESCRIPTION },
+      { property: "og:title", content: "Onzee Lab" },
+      { property: "og:description", content: HOME_DESCRIPTION },
+      { property: "og:url", content: `${SITE_URL}/` },
     ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
   }),
   component: CatalogPage,
 });
@@ -254,6 +262,21 @@ function CatalogPage() {
           </div>
         </div>
 
+        <section className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+          <h1 className="text-xl font-extrabold tracking-tight text-neutral-950">Onzee Lab</h1>
+          <p className="mt-1 text-sm leading-5 text-neutral-700">
+            Aplicativo para criar, personalizar e exportar uniformes esportivos. Escolha um modelo,
+            ajuste cores, nome, número e escudos, depois salve ou baixe seu kit pelo celular.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-neutral-600">
+            <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Criador de uniformes</span>
+            <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Catálogo de modelos</span>
+            <a href={`${SITE_URL}/privacidade`} className="rounded-full bg-white px-2.5 py-1 underline ring-1 ring-neutral-200 hover:text-neutral-950">
+              Política de Privacidade
+            </a>
+          </div>
+        </section>
+
         {!user && (
           <div className="mt-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-4 text-center">
             <p className="text-sm text-neutral-600">Entre para ver e personalizar os modelos.</p>
@@ -286,13 +309,15 @@ function CatalogPage() {
         </div>
 
         <footer className="mt-8 flex flex-col items-center gap-2 border-t border-neutral-100 pt-4 text-[11px] text-neutral-500">
-          <div className="font-semibold text-neutral-700">Onzee Lab</div>
+          <div className="text-center font-semibold text-neutral-700">
+            Onzee Lab — aplicativo para criar uniformes esportivos personalizados.
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <a href="/privacidade" className="underline hover:text-neutral-900">
+            <a href={`${SITE_URL}/privacidade`} className="underline hover:text-neutral-900">
               Política de Privacidade
             </a>
             <span className="text-neutral-300">·</span>
-            <a href="/termos" className="underline hover:text-neutral-900">
+            <a href={`${SITE_URL}/termos`} className="underline hover:text-neutral-900">
               Termos de Uso
             </a>
           </div>
