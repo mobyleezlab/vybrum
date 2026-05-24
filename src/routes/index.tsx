@@ -8,7 +8,13 @@ import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Catálogo · Onzee Lab" }] }),
+  head: () => ({
+    meta: [
+      { title: "Onzee Lab" },
+      { name: "application-name", content: "Onzee Lab" },
+      { name: "description", content: "Onzee Lab — crie e personalize uniformes esportivos direto do celular." },
+    ],
+  }),
   component: CatalogPage,
 });
 
@@ -279,14 +285,17 @@ function CatalogPage() {
           )}
         </div>
 
-        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-neutral-100 pt-4 text-[11px] text-neutral-500">
-          <a href="https://onzeelab.com.br/privacidade" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900">
-            Política de Privacidade
-          </a>
-          <span className="text-neutral-300">·</span>
-          <a href="https://onzeelab.com.br/termos" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-900">
-            Termos de Uso
-          </a>
+        <footer className="mt-8 flex flex-col items-center gap-2 border-t border-neutral-100 pt-4 text-[11px] text-neutral-500">
+          <div className="font-semibold text-neutral-700">Onzee Lab</div>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <a href="/privacidade" className="underline hover:text-neutral-900">
+              Política de Privacidade
+            </a>
+            <span className="text-neutral-300">·</span>
+            <a href="/termos" className="underline hover:text-neutral-900">
+              Termos de Uso
+            </a>
+          </div>
         </footer>
       </div>
 
