@@ -11,6 +11,9 @@ import { SITE_URL } from "@/lib/site";
 const HOME_DESCRIPTION =
   "Onzee Lab é um aplicativo para criar, personalizar e exportar uniformes esportivos direto do celular.";
 
+const PRIVACY_URL = "https://onzeelab.com.br/privacidade";
+const TERMS_URL = "https://onzeelab.com.br/termos";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -21,7 +24,27 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: HOME_DESCRIPTION },
       { property: "og:url", content: `${SITE_URL}/` },
     ],
-    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
+    links: [
+      { rel: "canonical", href: `${SITE_URL}/` },
+      { rel: "privacy-policy", href: PRIVACY_URL },
+      { rel: "terms-of-service", href: TERMS_URL },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "Onzee Lab",
+          alternateName: "Onzee Lab - Criador de Uniformes Esportivos",
+          url: `${SITE_URL}/`,
+          description: HOME_DESCRIPTION,
+          applicationCategory: "DesignApplication",
+          operatingSystem: "Web, iOS, Android",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "BRL" },
+        }),
+      },
+    ],
   }),
   component: CatalogPage,
 });
@@ -271,7 +294,7 @@ function CatalogPage() {
           <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-neutral-600">
             <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Criador de uniformes</span>
             <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Catálogo de modelos</span>
-            <a href={`${SITE_URL}/privacidade`} className="rounded-full bg-white px-2.5 py-1 underline ring-1 ring-neutral-200 hover:text-neutral-950">
+            <a href={PRIVACY_URL} className="rounded-full bg-white px-2.5 py-1 underline ring-1 ring-neutral-200 hover:text-neutral-950">
               Política de Privacidade
             </a>
           </div>
@@ -313,11 +336,11 @@ function CatalogPage() {
             Onzee Lab — aplicativo para criar uniformes esportivos personalizados.
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <a href={`${SITE_URL}/privacidade`} className="underline hover:text-neutral-900">
+            <a href={PRIVACY_URL} className="underline hover:text-neutral-900">
               Política de Privacidade
             </a>
             <span className="text-neutral-300">·</span>
-            <a href={`${SITE_URL}/termos`} className="underline hover:text-neutral-900">
+            <a href={TERMS_URL} className="underline hover:text-neutral-900">
               Termos de Uso
             </a>
           </div>

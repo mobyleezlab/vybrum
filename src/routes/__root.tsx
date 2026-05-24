@@ -10,6 +10,10 @@ import {
 
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth-context";
+import { SITE_URL } from "@/lib/site";
+
+const APP_DESCRIPTION =
+  "Onzee Lab é um aplicativo para criar, personalizar e exportar uniformes esportivos direto do celular.";
 
 function NotFoundComponent() {
   return (
@@ -74,7 +78,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Onzee Lab" },
-      { name: "description", content: "Crie e personalize uniformes esportivos direto do celular." },
+      { name: "application-name", content: "Onzee Lab" },
+      { name: "description", content: APP_DESCRIPTION },
       { name: "author", content: "Onzee Lab" },
       { name: "theme-color", content: "#0b1220" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -82,12 +87,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "Onzee Lab" },
       { property: "og:title", content: "Onzee Lab" },
-      { property: "og:description", content: "Crie e personalize uniformes esportivos direto do celular." },
+      { property: "og:description", content: APP_DESCRIPTION },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://app.onzeelab.com" },
+      { property: "og:url", content: `${SITE_URL}/` },
       { property: "og:site_name", content: "Onzee Lab" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
     links: [
       {
