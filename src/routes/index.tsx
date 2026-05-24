@@ -309,13 +309,15 @@ function CatalogPage() {
         </div>
 
         <footer className="mt-8 flex flex-col items-center gap-2 border-t border-neutral-100 pt-4 text-[11px] text-neutral-500">
-          <div className="font-semibold text-neutral-700">Onzee Lab</div>
+          <div className="text-center font-semibold text-neutral-700">
+            Onzee Lab — aplicativo para criar uniformes esportivos personalizados.
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <a href="/privacidade" className="underline hover:text-neutral-900">
+            <a href={`${SITE_URL}/privacidade`} className="underline hover:text-neutral-900">
               Política de Privacidade
             </a>
             <span className="text-neutral-300">·</span>
-            <a href="/termos" className="underline hover:text-neutral-900">
+            <a href={`${SITE_URL}/termos`} className="underline hover:text-neutral-900">
               Termos de Uso
             </a>
           </div>
