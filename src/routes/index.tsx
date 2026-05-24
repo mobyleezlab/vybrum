@@ -271,7 +271,7 @@ function CatalogPage() {
           <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-neutral-600">
             <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Criador de uniformes</span>
             <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Catálogo de modelos</span>
-            <a href="/privacidade" className="rounded-full bg-white px-2.5 py-1 underline ring-1 ring-neutral-200 hover:text-neutral-950">
+            <a href={`${SITE_URL}/privacidade`} className="rounded-full bg-white px-2.5 py-1 underline ring-1 ring-neutral-200 hover:text-neutral-950">
               Política de Privacidade
             </a>
           </div>
