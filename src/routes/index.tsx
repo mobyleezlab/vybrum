@@ -262,6 +262,21 @@ function CatalogPage() {
           </div>
         </div>
 
+        <section className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+          <h1 className="text-xl font-extrabold tracking-tight text-neutral-950">Onzee Lab</h1>
+          <p className="mt-1 text-sm leading-5 text-neutral-700">
+            Aplicativo para criar, personalizar e exportar uniformes esportivos. Escolha um modelo,
+            ajuste cores, nome, número e escudos, depois salve ou baixe seu kit pelo celular.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-neutral-600">
+            <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Criador de uniformes</span>
+            <span className="rounded-full bg-white px-2.5 py-1 ring-1 ring-neutral-200">Catálogo de modelos</span>
+            <a href="/privacidade" className="rounded-full bg-white px-2.5 py-1 underline ring-1 ring-neutral-200 hover:text-neutral-950">
+              Política de Privacidade
+            </a>
+          </div>
+        </section>
+
         {!user && (
           <div className="mt-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-4 text-center">
             <p className="text-sm text-neutral-600">Entre para ver e personalizar os modelos.</p>
