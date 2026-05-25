@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Upload, Trash2, Lock, X, Loader2 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
 import { Slider } from "@/components/ui/slider";
 import { BADGE_PRESETS, type BadgeLayer } from "@/lib/kit-state";
-import { useAuth } from "@/lib/auth-context";
 import { useEntitlements } from "@/lib/entitlements";
 import {
   useUserShields, useUploadShield, useDeleteShield,
@@ -19,8 +17,6 @@ export function BadgePanel({
   onChange: (l: BadgeLayer) => void;
   label: string;
 }) {
-  const { user } = useAuth();
-  const navigate = useNavigate();
   const { data: ent } = useEntitlements();
   const { data: shields } = useUserShields();
   const upload = useUploadShield();
@@ -35,21 +31,9 @@ export function BadgePanel({
   const limit = unlocked ? 10 : FREE_SHIELD_LIMIT;
   const atLimit = shieldCount >= limit;
 
-  useEffect(() => {
-    if (!user) return;
-    const key = `onb-shield-${user.id}`;
-    if (typeof window !== "undefined" && !localStorage.getItem(key)) {
-      setShowTip(true);
-      localStorage.setItem(key, "1");
-      const t = setTimeout(() => setShowTip(false), 6000);
-      return () => clearTimeout(t);
-    }
-  }, [user]);
-
   const onFile = (f: File | null) => {
     if (!f) return;
     setError(null);
-    if (!user) { navigate({ to: "/login", search: { redirect: "/" } }); return; }
     if (!ACCEPTED_SHIELD_MIME.includes(f.type)) { setError("Use PNG, JPG ou SVG."); return; }
     if (f.size > MAX_SHIELD_BYTES) { setError("Máximo 2MB."); return; }
     if (atLimit && !unlocked) { setUnlockOpen(true); return; }
