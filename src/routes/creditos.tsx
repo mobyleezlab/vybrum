@@ -57,24 +57,8 @@ function PackageCard({
 }
 
 function CreditosPage() {
-  const { user, loading } = useAuth();
   const { data: balance } = useCreditBalance();
   const { data: packages, isLoading: loadingPackages } = useCreditPackages();
-
-  if (!loading && !user) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-neutral-100 px-6 text-center">
-        <div>
-          <Lock className="mx-auto h-8 w-8 text-neutral-400" />
-          <h1 className="mt-3 text-lg font-semibold">Entre para ver seus créditos</h1>
-          <Link to="/login" search={{ redirect: "/creditos" }}
-            className="mt-4 inline-block rounded-xl bg-[#2196F3] px-5 py-2.5 text-sm font-semibold text-white">
-            Fazer login
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const bestId = packages?.[Math.floor((packages.length - 1) / 2) + 1]?.id;
   const popularId = packages?.[1]?.id;
