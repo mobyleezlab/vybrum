@@ -35,7 +35,7 @@ export function useModels() {
     staleTime: 60_000,
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("models_with_status")
         .select(COLUMNS)
         .order("sort_order", { ascending: true });

@@ -58,7 +58,7 @@ export function useCreditBalance() {
     enabled: !loading && !!user,
     staleTime: 30_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("credit_balances")
         .select("balance,total_earned,total_spent")
         .maybeSingle();
@@ -75,7 +75,7 @@ export function useCreditPackages() {
     enabled: !loading && !!user,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("credit_packages")
         .select("id,name,credits,bonus_credits,total_credits,price_brl,sort_order,is_active")
         .eq("is_active", true)
@@ -93,7 +93,7 @@ export function usePacks() {
     enabled: !loading && !!user,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("packs")
         .select("*, pack_items(id,model_code,sort_order)")
         .eq("is_active", true)

@@ -21,7 +21,7 @@ export function useUserShields() {
     enabled: !loading && !!user,
     staleTime: 30_000,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("user_shields")
         .select("*")
         .order("created_at", { ascending: false });
@@ -51,7 +51,7 @@ export function useUploadShield() {
         .upload(path, file, { upsert: false, contentType: file.type });
       if (upErr) throw new Error(upErr.message);
       const { data: pub } = supabase.storage.from("user-shields").getPublicUrl(path);
-      const { data: row, error: dbErr } = await supabase
+      const { data: row, error: dbErr } = await (supabase as any)
         .from("user_shields")
         .insert({ user_id: user.id, name: file.name.replace(/\.[^.]+$/, "") || "Meu Escudo", image_url: pub.publicUrl })
         .select()
@@ -71,7 +71,7 @@ export function useDeleteShield() {
       const parts = url.pathname.split("/user-shields/");
       const path = parts[1];
       if (path) await supabase.storage.from("user-shields").remove([path]);
-      const { error } = await supabase.from("user_shields").delete().eq("id", s.id);
+      const { error } = await (supabase as any).from("user_shields").delete().eq("id", s.id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user-shields"] }),
