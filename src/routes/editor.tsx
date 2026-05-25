@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
@@ -19,7 +19,6 @@ import {
 import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
 import { saveDesign } from "@/lib/kit-storage";
-import { useAuth, getInitials } from "@/lib/auth-context";
 import { CreditBadge } from "@/components/CreditBadge";
 
 export const Route = createFileRoute("/editor")({
@@ -51,11 +50,8 @@ const TEXT_GROUP_SET = new Set<TabId>(Object.keys(TEXT_GROUP_IDS) as TabId[]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
   const { model: modelCode } = Route.useSearch();
   const { data: models } = useModels();
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [savedToast, setSavedToast] = useState<string | null>(null);
