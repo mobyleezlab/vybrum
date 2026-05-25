@@ -220,43 +220,12 @@ function CatalogPage() {
           </Link>
           <div className="flex items-center gap-1">
             <CreditBadge />
-            {user ? (
-              <div className="relative">
-                <button
-                  aria-label="Conta"
-                  onClick={() => setUserMenuOpen((v) => !v)}
-                  className="ml-1 grid h-9 w-9 place-items-center rounded-full bg-[#2196F3] text-[11px] font-semibold text-white"
-                >
-                  {getInitials(user)}
-                </button>
-                {userMenuOpen && (
-                  <div className="absolute right-0 top-11 z-40 w-44 rounded-xl border border-neutral-200 bg-white p-1 shadow-lg">
-                    <div className="px-3 py-2 text-[11px] text-neutral-500 truncate">{user.email}</div>
-                    <Link
-                      to="/creditos"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="block rounded-lg px-3 py-2 text-sm hover:bg-neutral-100"
-                    >
-                      Meus créditos
-                    </Link>
-                    <button
-                      onClick={async () => { setUserMenuOpen(false); await signOut(); }}
-                      className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-neutral-100"
-                    >
-                      Sair
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                search={{ redirect: "/" }}
-                className="ml-1 rounded-full bg-[#2196F3] px-3 py-1.5 text-xs font-semibold text-white"
-              >
-                Entrar
-              </Link>
-            )}
+            <Link
+              to="/creditos"
+              className="ml-1 rounded-full bg-[#2196F3] px-3 py-1.5 text-xs font-semibold text-white"
+            >
+              Créditos
+            </Link>
           </div>
         </header>
 
@@ -296,19 +265,6 @@ function CatalogPage() {
             </a>
           </div>
         </section>
-
-        {!user && (
-          <div className="mt-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-4 text-center">
-            <p className="text-sm text-neutral-600">Entre para ver e personalizar os modelos.</p>
-            <Link
-              to="/login"
-              search={{ redirect: "/" }}
-              className="mt-2 inline-block rounded-full bg-[#2196F3] px-4 py-1.5 text-xs font-semibold text-white"
-            >
-              Fazer login
-            </Link>
-          </div>
-        )}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
           {showPacks && !loadingPacks && (packs ?? []).map((p) => (
