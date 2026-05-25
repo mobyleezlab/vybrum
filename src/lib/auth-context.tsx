@@ -1,51 +1,22 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import type { ReactNode } from "react";
 
-interface AuthCtx {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
-}
-
-const Ctx = createContext<AuthCtx>({
-  user: null, session: null, loading: true, signOut: async () => {},
-});
+// Auth is disabled. These stubs keep the existing API surface so the rest
+// of the app compiles and renders as an anonymous/guest experience.
+export type AuthUser = { id: string; email?: string } | null;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      setLoading(false);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  return (
-    <Ctx.Provider value={{
-      user: session?.user ?? null,
-      session,
-      loading,
-      signOut: async () => { await supabase.auth.signOut(); },
-    }}>
-      {children}
-    </Ctx.Provider>
-  );
+  return <>{children}</>;
 }
 
-export const useAuth = () => useContext(Ctx);
+export function useAuth() {
+  return {
+    user: null as AuthUser,
+    session: null,
+    loading: false,
+    signOut: async () => {},
+  };
+}
 
-export function getInitials(user: User | null): string {
-  if (!user) return "?";
-  const name = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? "";
-  const parts = name.split(/[\s@]+/).filter(Boolean);
-  return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "U";
+export function getInitials(_user: AuthUser): string {
+  return "?";
 }
