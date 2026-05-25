@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 // Auth is disabled. These stubs keep the existing API surface so the rest
 // of the app compiles and renders as an anonymous/guest experience.
-export type AuthUser = null;
+export type AuthUser = { id: string; email?: string } | null;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   return <>{children}</>;
