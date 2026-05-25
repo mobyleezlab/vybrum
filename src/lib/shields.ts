@@ -71,7 +71,7 @@ export function useDeleteShield() {
       const parts = url.pathname.split("/user-shields/");
       const path = parts[1];
       if (path) await supabase.storage.from("user-shields").remove([path]);
-      const { error } = await supabase.from("user_shields").delete().eq("id", s.id);
+      const { error } = await (supabase as any).from("user_shields").delete().eq("id", s.id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user-shields"] }),

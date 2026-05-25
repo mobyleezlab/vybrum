@@ -18,8 +18,8 @@ export function useEntitlements() {
     queryFn: async () => {
       if (!user) return { plan: "guest", isAdmin: false, hasAnyUnlock: false, unlockedTemplates: [] };
       const [{ data: prof }, { data: unlocks }] = await Promise.all([
-        supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle(),
-        supabase.from("unlocked_templates").select("model_code"),
+        (supabase as any).from("profiles").select("plan").eq("id", user.id).maybeSingle(),
+        (supabase as any).from("unlocked_templates").select("model_code"),
       ]);
       const plan = prof?.plan ?? "free";
       const codes = (unlocks ?? []).map((u: { model_code: string }) => u.model_code);
