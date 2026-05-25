@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { Coins, Lock, Flame, Sparkles, Package } from "lucide-react";
 import { useModels, categoryBadge, canUseModel, type ModelRow } from "@/lib/models";
 import { usePacks } from "@/lib/credits";
-import { useAuth, getInitials } from "@/lib/auth-context";
 import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
 import { SITE_URL } from "@/lib/site";
