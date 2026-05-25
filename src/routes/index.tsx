@@ -185,8 +185,6 @@ function PackCard({
 }
 
 function CatalogPage() {
-  const { user, signOut } = useAuth();
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [filter, setFilter] = useState<FilterId>("todos");
   const [unlockOpen, setUnlockOpen] = useState(false);
   const { data: models, isLoading: loadingModels } = useModels();
