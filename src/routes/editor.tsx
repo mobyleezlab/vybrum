@@ -113,13 +113,7 @@ function Index() {
 
   const toast = (msg: string) => { setSavedToast(msg); setTimeout(() => setSavedToast(null), 1800); };
 
-  const requireAuth = () => {
-    if (!user) {
-      navigate({ to: "/login", search: { redirect: "/editor" } });
-      return false;
-    }
-    return true;
-  };
+  const requireAuth = () => true;
 
   const handleSave = () => {
     saveDesign(saveName.trim() || "Sem nome", state);
