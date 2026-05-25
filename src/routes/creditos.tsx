@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Coins, Flame, Star, Lock, Shirt } from "lucide-react";
+import { ChevronLeft, Coins, Flame, Star, Shirt } from "lucide-react";
 import { useCreditBalance, useCreditPackages, formatBRL } from "@/lib/credits";
-import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/creditos")({
   head: () => ({ meta: [{ title: "Créditos · Onzee Lab" }] }),
