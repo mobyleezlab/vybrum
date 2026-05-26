@@ -1,14 +1,14 @@
 {
-  "name": "Onzee Lab",
-  "short_name": "Onzee Lab",
+  "name": "Vybrum",
+  "short_name": "Vybrum",
   "description": "Crie e personalize uniformes esportivos direto do celular.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "lang": "pt-BR",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },

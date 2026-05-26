@@ -9,20 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermosRouteImport } from './routes/termos'
-import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as KitsRouteImport } from './routes/kits'
+import { Route as ExplorarRouteImport } from './routes/explorar'
+import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as CreditosRouteImport } from './routes/creditos'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as IndexRouteImport } from './routes/index'
 
-const TermosRoute = TermosRouteImport.update({
-  id: '/termos',
-  path: '/termos',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PrivacidadeRoute = PrivacidadeRouteImport.update({
-  id: '/privacidade',
-  path: '/privacidade',
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KitsRoute = KitsRouteImport.update({
+  id: '/kits',
+  path: '/kits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorarRoute = ExplorarRouteImport.update({
+  id: '/explorar',
+  path: '/explorar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
+  id: '/esqueci-senha',
+  path: '/esqueci-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditorRoute = EditorRouteImport.update({
@@ -35,6 +60,11 @@ const CreditosRoute = CreditosRouteImport.update({
   path: '/creditos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,56 +73,135 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/creditos': typeof CreditosRoute
   '/editor': typeof EditorRoute
-  '/privacidade': typeof PrivacidadeRoute
-  '/termos': typeof TermosRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/explorar': typeof ExplorarRoute
+  '/kits': typeof KitsRoute
+  '/login': typeof LoginRoute
+  '/perfil': typeof PerfilRoute
+  '/reset-password': typeof ResetPasswordRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/creditos': typeof CreditosRoute
   '/editor': typeof EditorRoute
-  '/privacidade': typeof PrivacidadeRoute
-  '/termos': typeof TermosRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/explorar': typeof ExplorarRoute
+  '/kits': typeof KitsRoute
+  '/login': typeof LoginRoute
+  '/perfil': typeof PerfilRoute
+  '/reset-password': typeof ResetPasswordRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/creditos': typeof CreditosRoute
   '/editor': typeof EditorRoute
-  '/privacidade': typeof PrivacidadeRoute
-  '/termos': typeof TermosRoute
+  '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/explorar': typeof ExplorarRoute
+  '/kits': typeof KitsRoute
+  '/login': typeof LoginRoute
+  '/perfil': typeof PerfilRoute
+  '/reset-password': typeof ResetPasswordRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/creditos' | '/editor' | '/privacidade' | '/termos'
+  fullPaths:
+    | '/'
+    | '/cadastro'
+    | '/creditos'
+    | '/editor'
+    | '/esqueci-senha'
+    | '/explorar'
+    | '/kits'
+    | '/login'
+    | '/perfil'
+    | '/reset-password'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/creditos' | '/editor' | '/privacidade' | '/termos'
-  id: '__root__' | '/' | '/creditos' | '/editor' | '/privacidade' | '/termos'
+  to:
+    | '/'
+    | '/cadastro'
+    | '/creditos'
+    | '/editor'
+    | '/esqueci-senha'
+    | '/explorar'
+    | '/kits'
+    | '/login'
+    | '/perfil'
+    | '/reset-password'
+  id:
+    | '__root__'
+    | '/'
+    | '/cadastro'
+    | '/creditos'
+    | '/editor'
+    | '/esqueci-senha'
+    | '/explorar'
+    | '/kits'
+    | '/login'
+    | '/perfil'
+    | '/reset-password'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CadastroRoute: typeof CadastroRoute
   CreditosRoute: typeof CreditosRoute
   EditorRoute: typeof EditorRoute
-  PrivacidadeRoute: typeof PrivacidadeRoute
-  TermosRoute: typeof TermosRoute
+  EsqueciSenhaRoute: typeof EsqueciSenhaRoute
+  ExplorarRoute: typeof ExplorarRoute
+  KitsRoute: typeof KitsRoute
+  LoginRoute: typeof LoginRoute
+  PerfilRoute: typeof PerfilRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/termos': {
-      id: '/termos'
-      path: '/termos'
-      fullPath: '/termos'
-      preLoaderRoute: typeof TermosRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/privacidade': {
-      id: '/privacidade'
-      path: '/privacidade'
-      fullPath: '/privacidade'
-      preLoaderRoute: typeof PrivacidadeRouteImport
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kits': {
+      id: '/kits'
+      path: '/kits'
+      fullPath: '/kits'
+      preLoaderRoute: typeof KitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorar': {
+      id: '/explorar'
+      path: '/explorar'
+      fullPath: '/explorar'
+      preLoaderRoute: typeof ExplorarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/esqueci-senha': {
+      id: '/esqueci-senha'
+      path: '/esqueci-senha'
+      fullPath: '/esqueci-senha'
+      preLoaderRoute: typeof EsqueciSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/editor': {
@@ -109,6 +218,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreditosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -121,10 +237,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CadastroRoute: CadastroRoute,
   CreditosRoute: CreditosRoute,
   EditorRoute: EditorRoute,
-  PrivacidadeRoute: PrivacidadeRoute,
-  TermosRoute: TermosRoute,
+  EsqueciSenhaRoute: EsqueciSenhaRoute,
+  ExplorarRoute: ExplorarRoute,
+  KitsRoute: KitsRoute,
+  LoginRoute: LoginRoute,
+  PerfilRoute: PerfilRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

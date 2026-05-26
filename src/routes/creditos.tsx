@@ -3,7 +3,7 @@ import { ChevronLeft, Coins, Flame, Star, Shirt } from "lucide-react";
 import { useCreditBalance, useCreditPackages, formatBRL } from "@/lib/credits";
 
 export const Route = createFileRoute("/creditos")({
-  head: () => ({ meta: [{ title: "Créditos · Onzee Lab" }] }),
+  head: () => ({ meta: [{ title: "Créditos · Vybrum" }] }),
   component: CreditosPage,
 });
 
