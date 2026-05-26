@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as KitsRouteImport } from './routes/kits'
+import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as EditorRouteImport } from './routes/editor'
 import { Route as CreditosRouteImport } from './routes/creditos'
@@ -31,6 +33,16 @@ const PerfilRoute = PerfilRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KitsRoute = KitsRouteImport.update({
+  id: '/kits',
+  path: '/kits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorarRoute = ExplorarRouteImport.update({
+  id: '/explorar',
+  path: '/explorar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
@@ -65,6 +77,8 @@ export interface FileRoutesByFullPath {
   '/creditos': typeof CreditosRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/explorar': typeof ExplorarRoute
+  '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -75,6 +89,8 @@ export interface FileRoutesByTo {
   '/creditos': typeof CreditosRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/explorar': typeof ExplorarRoute
+  '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -86,6 +102,8 @@ export interface FileRoutesById {
   '/creditos': typeof CreditosRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
+  '/explorar': typeof ExplorarRoute
+  '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -98,6 +116,8 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/editor'
     | '/esqueci-senha'
+    | '/explorar'
+    | '/kits'
     | '/login'
     | '/perfil'
     | '/reset-password'
@@ -108,6 +128,8 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/editor'
     | '/esqueci-senha'
+    | '/explorar'
+    | '/kits'
     | '/login'
     | '/perfil'
     | '/reset-password'
@@ -118,6 +140,8 @@ export interface FileRouteTypes {
     | '/creditos'
     | '/editor'
     | '/esqueci-senha'
+    | '/explorar'
+    | '/kits'
     | '/login'
     | '/perfil'
     | '/reset-password'
@@ -129,6 +153,8 @@ export interface RootRouteChildren {
   CreditosRoute: typeof CreditosRoute
   EditorRoute: typeof EditorRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
+  ExplorarRoute: typeof ExplorarRoute
+  KitsRoute: typeof KitsRoute
   LoginRoute: typeof LoginRoute
   PerfilRoute: typeof PerfilRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -155,6 +181,20 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kits': {
+      id: '/kits'
+      path: '/kits'
+      fullPath: '/kits'
+      preLoaderRoute: typeof KitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorar': {
+      id: '/explorar'
+      path: '/explorar'
+      fullPath: '/explorar'
+      preLoaderRoute: typeof ExplorarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/esqueci-senha': {
@@ -201,6 +241,8 @@ const rootRouteChildren: RootRouteChildren = {
   CreditosRoute: CreditosRoute,
   EditorRoute: EditorRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
+  ExplorarRoute: ExplorarRoute,
+  KitsRoute: KitsRoute,
   LoginRoute: LoginRoute,
   PerfilRoute: PerfilRoute,
   ResetPasswordRoute: ResetPasswordRoute,

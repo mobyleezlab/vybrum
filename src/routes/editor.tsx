@@ -57,7 +57,7 @@ function Index() {
   const [savedToast, setSavedToast] = useState<string | null>(null);
   const [saveOpen, setSaveOpen] = useState(false);
   const [downloadOpen, setDownloadOpen] = useState(false);
-  const [saveName, setSaveName] = useState("Modelo BR041");
+  const [saveName, setSaveName] = useState("Modelo VY001");
   const [selectedModel, setSelectedModel] = useState<ModelRow | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
