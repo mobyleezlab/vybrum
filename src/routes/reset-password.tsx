@@ -1,0 +1,45 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, type FormEvent } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/reset-password")({ component: ResetPage });
+
+function ResetPage() {
+  const navigate = useNavigate();
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setErr(null); setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setLoading(false);
+    if (error) return setErr(error.message);
+    navigate({ to: "/perfil" });
+  };
+
+  return (
+    <div className="min-h-screen bg-black pt-safe">
+      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col px-5 pb-8 pt-12">
+        <h1 className="text-3xl font-extrabold tracking-tight text-white">Nova senha</h1>
+        <p className="mt-2 text-sm text-[#888]">Defina uma nova senha para sua conta.</p>
+
+        <form onSubmit={onSubmit} className="mt-8 space-y-3">
+          <input
+            type="password" required minLength={6} placeholder="Nova senha" value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#cffc0b]"
+          />
+          {err && <p className="text-xs text-red-400">{err}</p>}
+          <button
+            type="submit" disabled={loading}
+            className="press h-[52px] w-full rounded-2xl bg-[#cffc0b] text-sm font-bold text-black disabled:opacity-60"
+          >
+            {loading ? "Salvando..." : "Salvar nova senha"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
