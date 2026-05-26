@@ -49,16 +49,16 @@ export function useModels() {
 export function categoryBadge(category: string | null | undefined) {
   switch ((category ?? "free").toLowerCase()) {
     case "premium":
-      return { label: "PREMIUM", className: "bg-purple-600 text-white" };
+      return { label: "PREMIUM", className: "bg-violet-500/15 text-violet-300 border border-violet-500/30" };
     case "elite":
-      return { label: "ELITE", className: "bg-amber-500 text-black" };
+      return { label: "ELITE", className: "bg-[#cffc0b]/15 text-[#cffc0b] border border-[#cffc0b]/30" };
     case "rare":
     case "limited":
-      return { label: "RARE", className: "bg-red-600 text-white" };
+      return { label: "RARE", className: "bg-red-500/15 text-red-300 border border-red-500/30" };
     case "pro":
-      return { label: "PRO", className: "bg-blue-600 text-white" };
+      return { label: "PRO", className: "bg-sky-500/15 text-sky-300 border border-sky-500/30" };
     default:
-      return { label: "FREE", className: "bg-neutral-300 text-neutral-800" };
+      return { label: "FREE", className: "bg-[#1a1a1a] text-[#888] border border-[#2a2a2a]" };
   }
 }
 
