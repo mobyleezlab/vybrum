@@ -11,25 +11,24 @@ import {
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth-context";
 import { SITE_URL } from "@/lib/site";
+import { TabBar } from "@/components/TabBar";
 
 const APP_DESCRIPTION =
-  "Onzee Lab é um aplicativo para criar, personalizar e exportar uniformes esportivos direto do celular.";
+  "Vybrum é o app para criar, personalizar e exportar uniformes esportivos direto do celular.";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
+        <h1 className="text-7xl font-extrabold tracking-tight text-white">404</h1>
+        <h2 className="mt-4 text-lg font-semibold text-white">Página não encontrada</h2>
+        <p className="mt-2 text-sm text-[#888]">A tela que você procura não existe ou foi movida.</p>
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="press inline-flex h-12 items-center justify-center rounded-2xl bg-[#cffc0b] px-6 text-sm font-bold text-black"
           >
-            Go home
+            Voltar ao início
           </Link>
         </div>
       </div>
@@ -40,31 +39,23 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
+        <h1 className="text-xl font-bold text-white">Algo deu errado</h1>
+        <p className="mt-2 text-sm text-[#888]">Tente novamente ou volte para o início.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            onClick={() => { router.invalidate(); reset(); }}
+            className="press h-12 rounded-2xl bg-[#cffc0b] px-5 text-sm font-bold text-black"
           >
-            Try again
+            Tentar de novo
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="press h-12 rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] px-5 text-sm font-semibold text-white inline-flex items-center"
           >
-            Go home
+            Início
           </a>
         </div>
       </div>
@@ -76,28 +67,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Onzee Lab" },
-      { name: "application-name", content: "Onzee Lab" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" },
+      { title: "Vybrum" },
+      { name: "application-name", content: "Vybrum" },
       { name: "description", content: APP_DESCRIPTION },
-      { name: "author", content: "Onzee Lab" },
-      { name: "theme-color", content: "#0b1220" },
+      { name: "author", content: "Vybrum" },
+      { name: "theme-color", content: "#000000" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
-      { name: "apple-mobile-web-app-title", content: "Onzee Lab" },
-      { property: "og:title", content: "Onzee Lab" },
+      { name: "apple-mobile-web-app-title", content: "Vybrum" },
+      { property: "og:title", content: "Vybrum" },
       { property: "og:description", content: APP_DESCRIPTION },
       { property: "og:type", content: "website" },
       { property: "og:url", content: `${SITE_URL}/` },
-      { property: "og:site_name", content: "Onzee Lab" },
+      { property: "og:site_name", content: "Vybrum" },
       { name: "twitter:card", content: "summary" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
@@ -112,7 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
@@ -126,11 +114,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Outlet />
+        <div className="min-h-screen bg-black text-white">
+          <Outlet />
+        </div>
+        <TabBar />
       </AuthProvider>
     </QueryClientProvider>
   );
