@@ -2,12 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Sparkles, Hash, Minus,
+  Shirt, Type as TypeIcon, Shield, Sparkles, Hash, Minus, Lock,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
 import { useQuery } from "@tanstack/react-query";
-import { useModels, type ModelRow } from "@/lib/models";
+import { useModels, canUseModel, type ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
