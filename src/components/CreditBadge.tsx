@@ -1,4 +1,4 @@
-import { Coins } from "lucide-react";
+import { Diamond } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useCreditBalance } from "@/lib/credits";
 import { useAuth } from "@/lib/auth-context";
@@ -11,10 +11,10 @@ export function CreditBadge() {
   return (
     <Link
       to="/creditos"
-      className="flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200 hover:bg-amber-200"
+      className="press flex items-center gap-1 rounded-full border border-[#2a2a2a] bg-[#1a1a1a] px-2.5 py-1 text-xs font-semibold text-white"
       aria-label={`${balance} créditos`}
     >
-      <Coins className="h-3.5 w-3.5" />
+      <Diamond className="h-3.5 w-3.5 text-[#cffc0b]" />
       <span className="tabular-nums">{balance}</span>
     </Link>
   );
