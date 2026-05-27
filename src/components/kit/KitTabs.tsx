@@ -80,8 +80,10 @@ export function KitTabs({
               title={t.label}
               onClick={(e) => { if (drag.current?.moved) { e.preventDefault(); return; } onChange(t.id); }}
               className={[
-                "relative flex h-12 w-14 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[10px] text-[9px] font-medium transition",
-                active ? "bg-[#1a1a1a] text-white ring-2 ring-[#2196F3] ring-offset-1" : "bg-[#4A4A4A] text-white hover:bg-[#3a3a3a]",
+                "press relative flex h-14 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl text-[9px] font-semibold transition",
+                active
+                  ? "bg-[#cffc0b] text-black"
+                  : "bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] hover:text-white",
               ].join(" ")}
             >
               {t.icon}
@@ -94,7 +96,7 @@ export function KitTabs({
         <button
           aria-label="Anterior"
           onClick={() => scrollBy(-140)}
-          className="absolute left-0 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-white text-neutral-700 shadow-md ring-1 ring-neutral-200 hover:bg-neutral-50"
+          className="absolute left-0 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-md ring-1 ring-[#2a2a2a] hover:bg-[#262626]"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -103,7 +105,7 @@ export function KitTabs({
         <button
           aria-label="Próximo"
           onClick={() => scrollBy(140)}
-          className="absolute right-0 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-white text-neutral-700 shadow-md ring-1 ring-neutral-200 hover:bg-neutral-50"
+          className="absolute right-0 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-md ring-1 ring-[#2a2a2a] hover:bg-[#262626]"
         >
           <ChevronRight className="h-4 w-4" />
         </button>

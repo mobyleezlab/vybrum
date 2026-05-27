@@ -74,13 +74,18 @@ export function KitCanvas({
 
   return (
     <div
-      className="relative mt-2 rounded-2xl bg-[#ECECEC] p-2"
-      style={{ height: "clamp(420px, 62vh, 620px)" }}
+      className="relative mt-2 overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#111111] p-2"
+      style={{
+        height: "clamp(420px, 62vh, 620px)",
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+        backgroundSize: "24px 24px",
+      }}
     >
       <button
         onClick={onFlip}
         aria-label="Frente / Costas"
-        className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white"
+        className="press absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626]"
       >
         <RefreshCw className="h-4 w-4" />
       </button>
@@ -112,15 +117,14 @@ export function KitCanvas({
         onClick={() => setZoomOpen((v) => !v)}
         aria-label="Zoom"
         aria-pressed={zoomOpen}
-        className="absolute right-3 bottom-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-white/80 text-neutral-700 shadow-sm backdrop-blur transition hover:bg-white aria-pressed:bg-white"
+        className="press absolute right-3 bottom-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626]"
       >
         <ZoomIn className="h-4 w-4" />
       </button>
 
-      {/* Vertical zoom slider + reset, anchored above the zoom button */}
       {zoomOpen && (
-        <div className="absolute right-3 bottom-14 z-10 flex flex-col items-center gap-2 rounded-full bg-white/85 px-1.5 py-3 shadow-sm backdrop-blur">
-          <span className="text-[10px] font-medium tabular-nums text-neutral-600">
+        <div className="absolute right-3 bottom-14 z-10 flex flex-col items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#1a1a1a] px-1.5 py-3 shadow-sm">
+          <span className="text-[10px] font-medium tabular-nums text-[#888]">
             {Math.round(zoom * 100)}%
           </span>
           <div className="h-40 py-1">
@@ -136,7 +140,7 @@ export function KitCanvas({
           </div>
           <button
             onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
-            className="grid h-7 w-7 place-items-center rounded-full text-neutral-700 hover:bg-neutral-100"
+            className="grid h-7 w-7 place-items-center rounded-full text-white hover:bg-[#262626]"
             aria-label="Tamanho padrão"
             title="Tamanho padrão"
           >

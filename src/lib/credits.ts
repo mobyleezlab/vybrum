@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { listPacksPublic } from "@/lib/catalog.functions";
 
 export interface CreditPackage {
   id: string;
@@ -87,20 +89,11 @@ export function useCreditPackages() {
 }
 
 export function usePacks() {
-  const { user, loading } = useAuth();
+  const fetchPacks = useServerFn(listPacksPublic);
   return useQuery<Pack[]>({
-    queryKey: ["packs", user?.id ?? "anon"],
-    enabled: !loading && !!user,
+    queryKey: ["packs", "public"],
     staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("packs")
-        .select("*, pack_items(id,model_code,sort_order)")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as unknown as Pack[];
-    },
+    queryFn: () => fetchPacks(),
   });
 }
 

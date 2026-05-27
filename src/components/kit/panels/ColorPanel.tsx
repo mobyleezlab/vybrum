@@ -7,8 +7,8 @@ export function ColorPanel({
   label,
 }: { value: string; onChange: (c: string) => void; label?: string }) {
   return (
-    <div>
-      <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-neutral-400">
+    <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-[#888]">
         {label ?? "Selecione a cor"}
       </p>
       <div className="grid grid-cols-8 gap-3">
@@ -20,14 +20,14 @@ export function ColorPanel({
               onClick={() => onChange(c)}
               aria-label={c}
               className={[
-                "h-9 w-9 rounded-full border border-neutral-200 transition",
-                sel ? "ring-2 ring-[#2196F3] ring-offset-2" : "hover:scale-105",
+                "h-9 w-9 rounded-full border border-[#2a2a2a] transition",
+                sel ? "ring-2 ring-[#cffc0b] ring-offset-2 ring-offset-[#0f0f0f]" : "hover:scale-105",
               ].join(" ")}
               style={{ backgroundColor: c }}
             />
           );
         })}
-        <label className="relative grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-neutral-200 text-neutral-500 transition hover:bg-neutral-50">
+        <label className="relative grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-[#888] transition hover:text-white">
           <Pipette className="h-4 w-4" />
           <input
             type="color"
