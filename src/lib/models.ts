@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
+import { useServerFn } from "@tanstack/react-start";
+import { listModelsPublic } from "@/lib/catalog.functions";
 
 export interface ModelRow {
   code: string;
@@ -23,25 +23,12 @@ export interface ModelRow {
   sport: string | null;
 }
 
-const COLUMNS =
-  "code,name,category,rarity_level,is_limited,is_unlocked,features_level,unlock_cost,buy_cost,svg_frente_url,svg_costas_url,thumbnail_url,available_until,days_remaining,is_expired,drop_name,sort_order,sport";
-
 export function useModels() {
-  const { user, loading } = useAuth();
-
+  const fetchModels = useServerFn(listModelsPublic);
   return useQuery<ModelRow[]>({
-    queryKey: ["models", user?.id ?? "anon"],
-    enabled: !loading,
+    queryKey: ["models", "public"],
     staleTime: 60_000,
-    queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await (supabase as any)
-        .from("models_with_status")
-        .select(COLUMNS)
-        .order("sort_order", { ascending: true });
-      if (error) throw new Error(error.message);
-      return (data ?? []) as ModelRow[];
-    },
+    queryFn: () => fetchModels(),
   });
 }
 
