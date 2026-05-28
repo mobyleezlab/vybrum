@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { Bell, Diamond, Flame, Package } from "lucide-react";
+import { Bell, Diamond, Flame, Package, Sparkles, ArrowRight, Shirt } from "lucide-react";
 import { useModels, categoryBadge, type ModelRow } from "@/lib/models";
 import { usePacks, type Pack } from "@/lib/credits";
 import { SITE_URL } from "@/lib/site";
@@ -189,6 +189,54 @@ function PacksRow({ packs, loading }: { packs: Pack[]; loading: boolean }) {
 }
 
 function HomePage() {
+  return <HomeContent />;
+}
+
+function FeaturedHero() {
+  return (
+    <section className="px-4 pt-1">
+      <Link
+        to="/editor"
+        className="press relative block overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#cffc0b] via-[#a8d109] to-[#0f0f0f]"
+      >
+        <div className="absolute inset-0 opacity-20" style={{
+          backgroundImage:
+            "radial-gradient(circle at 20% 20%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 60%, #000 1px, transparent 1px)",
+          backgroundSize: "24px 24px, 32px 32px",
+        }} />
+        <div className="relative grid gap-3 p-5">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#cffc0b]">
+              <Sparkles className="h-3 w-3" /> Em destaque
+            </span>
+            <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold tracking-wider text-black">
+              MODELO VY001
+            </span>
+          </div>
+
+          <div className="grid grid-cols-[1fr_auto] items-end gap-3">
+            <div>
+              <h2 className="text-[26px] font-black leading-[1.05] tracking-tight text-black">
+                Crie seu uniforme<br />em segundos
+              </h2>
+              <p className="mt-2 max-w-[200px] text-[12px] font-semibold text-black/70">
+                Personalize cores, escudo, nomes e número direto no app.
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[12px] font-bold text-[#cffc0b]">
+                Abrir editor <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </div>
+            <div className="grid h-24 w-24 place-items-center rounded-2xl bg-black/85 text-[#cffc0b] shadow-lg">
+              <Shirt className="h-12 w-12" />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </section>
+  );
+}
+
+function HomeContent() {
   const { data: models, isLoading: loadingModels } = useModels();
   const { data: packs, isLoading: loadingPacks } = usePacks();
 
@@ -225,6 +273,8 @@ function HomePage() {
           </button>
         </div>
       </header>
+
+      <FeaturedHero />
 
       {SECTIONS.map((s) => (
         <SectionRow
