@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Coins, Flame, Star, Shirt } from "lucide-react";
-import { useCreditBalance, useCreditPackages, formatBRL } from "@/lib/credits";
+import { ChevronLeft, Diamond, Flame, Star, Shirt, Package, Check, Sparkles } from "lucide-react";
+import { useCreditBalance, useCreditPackages, usePacks, formatBRL, type Pack } from "@/lib/credits";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/creditos")({
   head: () => ({ meta: [{ title: "Créditos · Vybrum" }] }),
@@ -16,38 +17,42 @@ function PackageCard({
   const total = pkg.total_credits ?? pkg.credits + pkg.bonus_credits;
   const perCredit = pkg.price_brl / Math.max(1, total);
   return (
-    <div className={[
-      "relative rounded-2xl border bg-white p-4 shadow-sm transition",
-      highlight === "best" ? "border-[#2196F3] ring-2 ring-[#2196F3]/30" :
-      highlight === "popular" ? "border-amber-400 ring-2 ring-amber-300/40" :
-      "border-neutral-200",
-    ].join(" ")}>
+    <div
+      className={[
+        "relative rounded-2xl border bg-[#0f0f0f] p-4 transition",
+        highlight === "best"
+          ? "border-[#cffc0b] ring-2 ring-[#cffc0b]/30"
+          : highlight === "popular"
+          ? "border-[#cffc0b]/60"
+          : "border-[#2a2a2a]",
+      ].join(" ")}
+    >
       {highlight === "best" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#2196F3] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow">
-          <Star className="mr-1 inline h-3 w-3" />Melhor custo-benefício
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#cffc0b] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
+          <Star className="mr-1 inline h-3 w-3" />
+          Melhor custo-benefício
         </div>
       )}
       {highlight === "popular" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow">
-          <Flame className="mr-1 inline h-3 w-3" />Popular
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#cffc0b] border border-[#cffc0b]/40">
+          <Flame className="mr-1 inline h-3 w-3" />
+          Popular
         </div>
       )}
-      <h3 className="text-sm font-semibold text-neutral-900">{pkg.name}</h3>
-      <div className="mt-2 flex items-baseline gap-1">
-        <Coins className="h-5 w-5 text-amber-500" />
-        <span className="text-2xl font-bold text-neutral-900 tabular-nums">{total}</span>
-        <span className="text-xs text-neutral-500">créditos</span>
+      <h3 className="text-sm font-semibold text-white">{pkg.name}</h3>
+      <div className="mt-2 flex items-baseline gap-1.5">
+        <Diamond className="h-5 w-5 text-[#cffc0b]" />
+        <span className="text-2xl font-extrabold text-white tabular-nums">{total}</span>
+        <span className="text-xs text-[#888]">créditos</span>
       </div>
       {pkg.bonus_credits > 0 && (
-        <div className="text-[11px] font-medium text-emerald-600">+{pkg.bonus_credits} bônus</div>
+        <div className="text-[11px] font-semibold text-[#cffc0b]">+{pkg.bonus_credits} bônus</div>
       )}
-      <div className="mt-3 text-lg font-bold text-neutral-900">{formatBRL(Number(pkg.price_brl))}</div>
-      <div className="text-[11px] text-neutral-500">
-        {formatBRL(perCredit)} / crédito
-      </div>
+      <div className="mt-3 text-lg font-extrabold text-white">{formatBRL(Number(pkg.price_brl))}</div>
+      <div className="text-[11px] text-[#666]">{formatBRL(perCredit)} / crédito</div>
       <button
         onClick={() => alert("Compra em breve!")}
-        className="mt-4 w-full rounded-xl bg-[#2196F3] py-2.5 text-sm font-semibold text-white hover:opacity-90"
+        className="press mt-4 w-full rounded-xl bg-[#cffc0b] py-2.5 text-sm font-bold text-black hover:opacity-90"
       >
         Comprar
       </button>
@@ -55,57 +60,195 @@ function PackageCard({
   );
 }
 
+function PackCard({ pack }: { pack: Pack }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]">
+      <div className="relative" style={{ aspectRatio: "16 / 9" }}>
+        {pack.thumbnail_url ? (
+          <img src={pack.thumbnail_url} alt={pack.name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] text-[#333]">
+            <Package className="h-10 w-10" />
+          </div>
+        )}
+        {pack.discount_pct ? (
+          <span className="absolute right-2 top-2 rounded-full bg-[#cffc0b] px-2 py-0.5 text-[10px] font-bold text-black">
+            {pack.discount_pct}% OFF
+          </span>
+        ) : null}
+      </div>
+      <div className="border-t border-[#2a2a2a] p-3">
+        <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#888]">
+          <Package className="h-3 w-3" /> Pack
+        </div>
+        <div className="mt-0.5 truncate text-[13px] font-semibold text-white">{pack.name}</div>
+        {pack.description && (
+          <p className="mt-1 line-clamp-2 text-[11px] text-[#888]">{pack.description}</p>
+        )}
+        <div className="mt-2 flex items-center justify-between">
+          <div className="flex items-center gap-1 text-[12px] font-bold text-[#cffc0b]">
+            <Diamond className="h-3.5 w-3.5" /> {pack.cost_credits}
+          </div>
+          <button
+            onClick={() => alert("Desbloqueio em breve!")}
+            className="press rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-1.5 text-[11px] font-bold text-white"
+          >
+            Desbloquear
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CreditosPage() {
+  const { user } = useAuth();
   const { data: balance } = useCreditBalance();
   const { data: packages, isLoading: loadingPackages } = useCreditPackages();
+  const { data: packs, isLoading: loadingPacks } = usePacks();
 
   const bestId = packages?.[Math.floor((packages.length - 1) / 2) + 1]?.id;
   const popularId = packages?.[1]?.id;
 
   return (
-    <div className="min-h-screen bg-neutral-100 pb-12 md:py-6">
-      <div className="mx-auto max-w-[460px] bg-white px-4 pb-10 pt-3 md:rounded-3xl md:shadow-xl md:ring-1 md:ring-neutral-200">
-        <header className="flex h-12 items-center justify-between">
-          <Link to="/" aria-label="Voltar" className="grid h-10 w-10 place-items-center rounded-full hover:bg-neutral-100">
-            <ChevronLeft className="h-6 w-6" />
-          </Link>
-          <h1 className="text-[13px] font-medium tracking-[0.18em] text-neutral-500">CRÉDITOS</h1>
-          <span className="w-10" />
-        </header>
-
-        <div className="mt-2 rounded-2xl bg-gradient-to-br from-[#2196F3] to-[#8B00E8] p-5 text-white shadow-lg">
-          <div className="text-xs uppercase tracking-widest opacity-80">Seu saldo</div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <Coins className="h-7 w-7" />
-            <span className="text-4xl font-bold tabular-nums">{balance?.balance ?? 0}</span>
-            <span className="text-sm opacity-80">créditos</span>
-          </div>
-        </div>
-
-        <section className="mt-6">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-neutral-500">Pacotes</h2>
-          {loadingPackages ? (
-            <div className="mt-3 grid gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-44 animate-pulse rounded-2xl bg-neutral-200" />
-              ))}
-            </div>
-          ) : (
-            <div className="mt-3 grid gap-4">
-              {(packages ?? []).map((p) => {
-                const highlight =
-                  Number(p.price_brl) === 19.9 || p.id === bestId ? "best" as const :
-                  Number(p.price_brl) === 9.9 || p.id === popularId ? "popular" as const :
-                  undefined;
-                return <PackageCard key={p.id} pkg={p} highlight={highlight} />;
-              })}
-            </div>
-          )}
-        </section>
-
+    <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+12px)]">
+      <header className="flex h-14 items-center justify-between px-2 pt-1">
         <Link
           to="/"
-          className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white py-3 text-sm font-semibold text-neutral-700 hover:border-[#2196F3] hover:text-[#2196F3]"
+          aria-label="Voltar"
+          className="press grid h-10 w-10 place-items-center rounded-full text-white hover:bg-[#1a1a1a]"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </Link>
+        <h1 className="text-[12px] font-bold tracking-[0.22em] text-[#888]">CRÉDITOS</h1>
+        <span className="w-10" />
+      </header>
+
+      {/* Balance card */}
+      <section className="px-4">
+        <div className="relative overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#cffc0b] via-[#a8d109] to-[#0f0f0f] p-5">
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 20% 20%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 60%, #000 1px, transparent 1px)",
+              backgroundSize: "24px 24px, 32px 32px",
+            }}
+          />
+          <div className="relative">
+            <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">
+              Seu saldo
+            </div>
+            <div className="mt-1 flex items-baseline gap-2">
+              <Diamond className="h-7 w-7 text-black" />
+              <span className="text-4xl font-black tabular-nums text-black">
+                {user ? balance?.balance ?? 0 : 0}
+              </span>
+              <span className="text-sm font-semibold text-black/70">créditos</span>
+            </div>
+            {!user && (
+              <Link
+                to="/login"
+                className="press mt-3 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[12px] font-bold text-[#cffc0b]"
+              >
+                Entrar para ver saldo
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits */}
+      <section className="mt-5 px-4">
+        <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#cffc0b]">
+            <Sparkles className="h-3.5 w-3.5" /> O que você desbloqueia
+          </div>
+          <ul className="mt-3 grid gap-2 text-[13px] text-white">
+            {[
+              "Modelos Pro, Premium, Elite e Rare",
+              "Exportar SVG / PDF / PNG HD",
+              "Patrocinadores e fontes premium",
+              "Goleiro separado e kit de time",
+            ].map((t) => (
+              <li key={t} className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-[#cffc0b]" /> {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Packages */}
+      <section className="mt-6 px-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-extrabold tracking-tight text-white">Pacotes</h2>
+          <span className="text-[11px] font-semibold text-[#666]">Pague uma vez, use sempre</span>
+        </div>
+        {loadingPackages ? (
+          <div className="mt-3 grid gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-44 animate-pulse rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]"
+              />
+            ))}
+          </div>
+        ) : (packages?.length ?? 0) === 0 ? (
+          <div className="mt-3 rounded-2xl border border-dashed border-[#2a2a2a] bg-[#0f0f0f] p-6 text-center">
+            <p className="text-sm font-semibold text-white">Pacotes em breve</p>
+            <p className="mt-1 text-xs text-[#888]">Em breve novos pacotes estarão disponíveis.</p>
+          </div>
+        ) : (
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            {(packages ?? []).map((p) => {
+              const highlight =
+                Number(p.price_brl) === 19.9 || p.id === bestId
+                  ? ("best" as const)
+                  : Number(p.price_brl) === 9.9 || p.id === popularId
+                  ? ("popular" as const)
+                  : undefined;
+              return <PackageCard key={p.id} pkg={p} highlight={highlight} />;
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Packs */}
+      <section className="mt-8 px-4">
+        <div className="flex items-center justify-between">
+          <h2 className="flex items-center gap-2 text-base font-extrabold tracking-tight text-white">
+            <Flame className="h-4 w-4 text-[#cffc0b]" /> Packs
+          </h2>
+          <span className="text-[11px] font-semibold text-[#666]">Combos com desconto</span>
+        </div>
+        {loadingPacks ? (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-48 animate-pulse rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]"
+              />
+            ))}
+          </div>
+        ) : (packs?.length ?? 0) === 0 ? (
+          <div className="mt-3 rounded-2xl border border-dashed border-[#2a2a2a] bg-[#0f0f0f] p-6 text-center">
+            <p className="text-sm font-semibold text-white">Nenhum pack disponível</p>
+            <p className="mt-1 text-xs text-[#888]">Volte em breve para conferir novidades.</p>
+          </div>
+        ) : (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {(packs ?? []).map((p) => (
+              <PackCard key={p.id} pack={p} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <div className="mt-8 px-4">
+        <Link
+          to="/"
+          className="press flex w-full items-center justify-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#0f0f0f] py-3 text-sm font-semibold text-white hover:border-[#cffc0b] hover:text-[#cffc0b]"
         >
           <Shirt className="h-4 w-4" /> Ver catálogo
         </Link>
