@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { Bell, Diamond, Flame, Package } from "lucide-react";
+import { Bell, Diamond, Flame, Package, Sparkles, ArrowRight, Shirt } from "lucide-react";
 import { useModels, categoryBadge, type ModelRow } from "@/lib/models";
 import { usePacks, type Pack } from "@/lib/credits";
 import { SITE_URL } from "@/lib/site";
@@ -225,6 +225,8 @@ function HomePage() {
           </button>
         </div>
       </header>
+
+      <FeaturedHero />
 
       {SECTIONS.map((s) => (
         <SectionRow
