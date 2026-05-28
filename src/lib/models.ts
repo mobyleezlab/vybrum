@@ -23,12 +23,62 @@ export interface ModelRow {
   sport: string | null;
 }
 
+// Mockup catalog — used as fallback while the admin panel isn't ready.
+// Todos os modelos apontam para o editor já pronto.
+function mock(
+  code: string,
+  name: string,
+  category: ModelRow["category"],
+  extras: Partial<ModelRow> = {},
+): ModelRow {
+  return {
+    code,
+    name,
+    category,
+    rarity_level: null,
+    is_limited: category === "rare",
+    is_unlocked: category === "free",
+    features_level: null,
+    unlock_cost: category === "pro" ? 30 : category === "premium" ? 60 : category === "elite" ? 120 : category === "rare" ? 200 : 0,
+    buy_cost: null,
+    svg_frente_url: null,
+    svg_costas_url: null,
+    thumbnail_url: null,
+    available_until: null,
+    days_remaining: category === "rare" ? 7 : null,
+    is_expired: false,
+    drop_name: null,
+    sort_order: 0,
+    sport: "futebol",
+    ...extras,
+  };
+}
+
+export const MOCK_MODELS: ModelRow[] = [
+  mock("VY001", "Trovão", "free"),
+  mock("VY002", "Pulso", "free"),
+  mock("VY003", "Vértice", "pro"),
+  mock("VY004", "Eclipse", "pro"),
+  mock("VY005", "Aurora", "premium"),
+  mock("VY006", "Nébula", "elite"),
+  mock("VY007", "Cometa", "rare", { days_remaining: 5 }),
+];
+
 export function useModels() {
   const fetchModels = useServerFn(listModelsPublic);
   return useQuery<ModelRow[]>({
     queryKey: ["models", "public"],
     staleTime: 60_000,
-    queryFn: () => fetchModels(),
+    queryFn: async () => {
+      try {
+        const rows = await fetchModels();
+        if (Array.isArray(rows) && rows.length > 0) return rows;
+      } catch {
+        // fall through to mocks
+      }
+      return MOCK_MODELS;
+    },
+    placeholderData: MOCK_MODELS,
   });
 }
 
