@@ -112,7 +112,7 @@ function CreditosPage() {
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+12px)]">
-      <header className="flex h-14 items-center justify-between px-2 pt-1">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-black/90 px-2 pt-1 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <Link
           to="/"
           aria-label="Voltar"
