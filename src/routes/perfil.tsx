@@ -24,7 +24,7 @@ function PerfilPage() {
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
-      <header className="px-4 pt-3 pb-2">
+      <header className="sticky top-0 z-30 bg-black/90 px-4 pt-3 pb-2 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <h1 className="text-[22px] font-extrabold tracking-tight text-white">Perfil</h1>
       </header>
 
