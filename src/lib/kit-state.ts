@@ -102,12 +102,12 @@ export const TEXT_LABELS: Record<TextGroup, string> = {
 export const FRONT_TABS: TabId[] = [
   "camisa","mangas","gola","short",
   "estampaCamisa","estampaMangas","estampaShort",
-  "numeroCamisa","numeroShort","escudo","costuras",
+  "numeroCamisa","nome","escudo","costuras",
 ];
 export const BACK_TABS: TabId[] = [
   "camisa","mangas","gola","short",
   "estampaCamisa","estampaMangas","estampaShort",
-  "nome","numeroCamisa","escudo","costuras",
+  "numeroCamisa","nome","escudo","costuras",
 ];
 
 const badge = (label: string, bg: string, fg: string) =>
