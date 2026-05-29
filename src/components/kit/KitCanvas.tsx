@@ -25,35 +25,38 @@ export function KitCanvas({
   const pinch = useRef<{ d: number; z: number } | null>(null);
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
   const [zoomOpen, setZoomOpen] = useState(false);
-  const [flipPhase, setFlipPhase] = useState<"idle" | "out" | "in">("idle");
+  const [flipPhase, setFlipPhase] = useState<"idle" | "out" | "prep" | "in">("idle");
 
   const handleFlip = () => {
     if (flipPhase !== "idle") return;
     setFlipPhase("out");
     window.setTimeout(() => {
       onFlip();
-      setFlipPhase("in");
-      window.setTimeout(() => setFlipPhase("idle"), 260);
-    }, 260);
+      setFlipPhase("prep");
+      // double rAF: ensure the "prep" frame paints before transitioning to "in"
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setFlipPhase("in");
+          window.setTimeout(() => setFlipPhase("idle"), 320);
+        });
+      });
+    }, 300);
   };
 
   const flipStyle: React.CSSProperties = (() => {
-    const base = "perspective(1100px)";
-    if (flipPhase === "out") {
-      return {
-        transform: `${base} rotateY(-90deg)`,
-        opacity: 0,
-        transition: "transform 260ms cubic-bezier(.4,0,.2,1), opacity 260ms ease",
-      };
+    const base = "perspective(1200px)";
+    const t = "transform 300ms cubic-bezier(.4,0,.2,1), opacity 220ms ease";
+    switch (flipPhase) {
+      case "out":
+        return { transform: `${base} rotateY(-90deg) scale(.92)`, opacity: 0, transition: t };
+      case "prep":
+        // instant snap to the mirrored start position — no transition
+        return { transform: `${base} rotateY(90deg) scale(.92)`, opacity: 0, transition: "none" };
+      case "in":
+        return { transform: `${base} rotateY(0deg) scale(1)`, opacity: 1, transition: t };
+      default:
+        return { transform: `${base} rotateY(0deg) scale(1)`, opacity: 1 };
     }
-    if (flipPhase === "in") {
-      return {
-        transform: `${base} rotateY(0deg)`,
-        opacity: 1,
-        transition: "transform 260ms cubic-bezier(.4,0,.2,1), opacity 260ms ease",
-      };
-    }
-    return { transform: `${base} rotateY(0deg)`, opacity: 1 };
   })();
 
   useEffect(() => {
