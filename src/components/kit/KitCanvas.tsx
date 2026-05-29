@@ -101,7 +101,8 @@ export function KitCanvas({
       >
         <div
           ref={exportRef}
-          className="flex h-full w-full items-center justify-center"
+          key={state.view}
+          className="vy-flip flex h-full w-full items-center justify-center"
           style={{
             transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
             transition: drag || pinch.current ? "none" : "transform 200ms ease-out",
