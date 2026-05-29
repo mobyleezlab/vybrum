@@ -28,13 +28,13 @@ function PackageCard({
       ].join(" ")}
     >
       {highlight === "best" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#68ed00] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#68ed00] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
           <Star className="mr-1 inline h-3 w-3" />
           Melhor custo-benefício
         </div>
       )}
       {highlight === "popular" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#68ed00] border border-[#68ed00]/40">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#68ed00] border border-[#68ed00]/40">
           <Flame className="mr-1 inline h-3 w-3" />
           Popular
         </div>
