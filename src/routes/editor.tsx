@@ -39,7 +39,7 @@ const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
   estampaMangas: { label: "Estampa Mangas", icon: <Sparkles className="h-5 w-5" /> },
   estampaShort:  { label: "Estampa Short",  icon: <Sparkles className="h-5 w-5" /> },
   costuras:      { label: "Costuras",       icon: <Minus className="h-5 w-5" /> },
-  numeroCamisa:  { label: "Número Camisa",  icon: <Hash className="h-5 w-5" /> },
+  numeroCamisa:  { label: "Número",         icon: <Hash className="h-5 w-5" /> },
   numeroShort:   { label: "Número Short",   icon: <Hash className="h-5 w-5" /> },
   nome:          { label: "Nome",           icon: <TypeIcon className="h-5 w-5" /> },
   escudo:        { label: "Escudo",         icon: <Shield className="h-5 w-5" /> },
@@ -97,7 +97,14 @@ function Index() {
     return ids.map((id) => ({ id, ...TAB_META[id] }));
   }, [state.view]);
 
-  const handleTab = (id: TabId) => set((s) => ({ ...s, activeTab: id }), false);
+  const handleTab = (id: TabId) =>
+    set((s) => {
+      // "Nome" só existe no verso — vira automaticamente.
+      if (id === "nome" && s.view === "front") {
+        return { ...s, view: "back", activeTab: id };
+      }
+      return { ...s, activeTab: id };
+    }, false);
 
   const handleFlip = () =>
     set((s) => {
@@ -142,6 +149,22 @@ function Index() {
     }
     if (TEXT_GROUP_SET.has(id)) {
       const g = id as TextGroup;
+      // Número é compartilhado: editar camisa também atualiza o short.
+      if (g === "numeroCamisa") {
+        return (
+          <TextPanel
+            label="Número"
+            layer={state.texts.numeroCamisa}
+            numeric
+            onChange={(l) =>
+              set((s) => ({
+                ...s,
+                texts: { ...s.texts, numeroCamisa: l, numeroShort: l },
+              }))
+            }
+          />
+        );
+      }
       return (
         <TextPanel
           label={TEXT_LABELS[g]}
@@ -167,11 +190,11 @@ function Index() {
   return (
     <div className="min-h-screen bg-black pt-safe">
       <div className="mx-auto flex min-h-screen max-w-[460px] flex-col bg-black px-4 pb-[calc(72px+env(safe-area-inset-bottom))] pt-3">
-        <header className="flex h-12 items-center justify-between">
+        <header className="sticky top-0 z-30 -mx-4 flex h-12 items-center justify-between gap-2 border-b border-[#1a1a1a] bg-black/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-black/70">
           <Link to="/" aria-label="Voltar ao catálogo" className="press grid h-10 w-10 place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-white">
             <ChevronLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-[12px] font-bold tracking-[0.22em] text-[#888]">
+          <h1 className="min-w-0 flex-1 truncate text-center text-[11px] font-bold tracking-[0.18em] text-[#888]">
             {selectedModel ? `MODELO ${selectedModel.code}` : "EDITOR"}
           </h1>
           <div className="flex items-center gap-1">
