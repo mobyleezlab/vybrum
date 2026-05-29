@@ -26,7 +26,7 @@ function NotFoundComponent() {
         <div className="mt-6">
           <Link
             to="/"
-            className="press inline-flex h-12 items-center justify-center rounded-2xl bg-[#cffc0b] px-6 text-sm font-bold text-black"
+            className="press inline-flex h-12 items-center justify-center rounded-2xl bg-[#68ed00] px-6 text-sm font-bold text-black"
           >
             Voltar ao início
           </Link>
@@ -47,7 +47,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => { router.invalidate(); reset(); }}
-            className="press h-12 rounded-2xl bg-[#cffc0b] px-5 text-sm font-bold text-black"
+            className="press h-12 rounded-2xl bg-[#68ed00] px-5 text-sm font-bold text-black"
           >
             Tentar de novo
           </button>

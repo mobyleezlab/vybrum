@@ -222,7 +222,7 @@ function Index() {
         >
           <div className="mx-auto flex max-w-[460px] items-center gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#1a1a1a] text-[#cffc0b]">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#1a1a1a] text-[#68ed00]">
                 <Lock className="h-4 w-4" />
               </span>
               <span className="truncate text-[13px] font-semibold text-white">
@@ -237,7 +237,7 @@ function Index() {
             </Link>
             <Link
               to="/creditos"
-              className="press shrink-0 rounded-full bg-[#cffc0b] px-4 py-2 text-[12px] font-bold text-black"
+              className="press shrink-0 rounded-full bg-[#68ed00] px-4 py-2 text-[12px] font-bold text-black"
             >
               Desbloquear · {unlockCost} cr
             </Link>
@@ -251,10 +251,10 @@ function Index() {
             <h2 className="text-base font-semibold text-white">Salvar modelo</h2>
             <p className="mt-1 text-sm text-[#888]">Dê um nome ao seu design.</p>
             <input autoFocus value={saveName} onChange={(e) => setSaveName(e.target.value)}
-              className="mt-4 w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none focus:border-[#cffc0b]" />
+              className="mt-4 w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none focus:border-[#68ed00]" />
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setSaveOpen(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-[#888] hover:bg-[#1a1a1a]">Cancelar</button>
-              <button onClick={handleSave} className="rounded-lg bg-[#cffc0b] px-4 py-2 text-sm font-bold text-black hover:opacity-90">Salvar</button>
+              <button onClick={handleSave} className="rounded-lg bg-[#68ed00] px-4 py-2 text-sm font-bold text-black hover:opacity-90">Salvar</button>
             </div>
           </div>
         </div>
@@ -266,11 +266,11 @@ function Index() {
             <h2 className="text-base font-semibold text-white">Baixar uniforme</h2>
             <p className="mt-1 text-sm text-[#888]">Escolha o formato.</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <button onClick={downloadPng} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#cffc0b]">
+              <button onClick={downloadPng} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00]">
                 <div className="text-sm font-semibold text-white">PNG</div>
                 <div className="mt-1 text-xs text-[#888]">Alta resolução</div>
               </button>
-              <button onClick={downloadSvg} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#cffc0b]">
+              <button onClick={downloadSvg} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00]">
                 <div className="text-sm font-semibold text-white">SVG</div>
                 <div className="mt-1 text-xs text-[#888]">Vetor editável</div>
               </button>
@@ -280,7 +280,7 @@ function Index() {
       )}
 
       {savedToast && (
-        <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#cffc0b] px-4 py-2 text-sm font-bold text-black shadow-lg">
+        <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#68ed00] px-4 py-2 text-sm font-bold text-black shadow-lg">
           {savedToast}
         </div>
       )}

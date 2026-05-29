@@ -22,7 +22,7 @@ function KitsPage() {
           <p className="mt-3 text-sm font-semibold text-white">Entre para ver seus kits salvos</p>
           <Link
             to="/login" search={{ redirect: "/kits" }}
-            className="press mt-4 inline-flex h-[52px] items-center justify-center rounded-2xl bg-[#cffc0b] px-6 text-sm font-bold text-black"
+            className="press mt-4 inline-flex h-[52px] items-center justify-center rounded-2xl bg-[#68ed00] px-6 text-sm font-bold text-black"
           >
             Entrar
           </Link>

@@ -21,7 +21,7 @@ export function ColorPanel({
               aria-label={c}
               className={[
                 "h-9 w-9 rounded-full border border-[#2a2a2a] transition",
-                sel ? "ring-2 ring-[#cffc0b] ring-offset-2 ring-offset-[#0f0f0f]" : "hover:scale-105",
+                sel ? "ring-2 ring-[#68ed00] ring-offset-2 ring-offset-[#0f0f0f]" : "hover:scale-105",
               ].join(" ")}
               style={{ backgroundColor: c }}
             />

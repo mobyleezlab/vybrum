@@ -49,7 +49,7 @@ function ExplorarPage() {
               onClick={() => setFilter(f)}
               className="press shrink-0 h-9 rounded-full px-4 text-[12px] font-semibold capitalize"
               style={{
-                background: active ? "#cffc0b" : "#1a1a1a",
+                background: active ? "#68ed00" : "#1a1a1a",
                 color: active ? "#000" : "#888",
                 border: active ? "none" : "1px solid #2a2a2a",
               }}

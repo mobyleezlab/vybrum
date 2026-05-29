@@ -82,7 +82,7 @@ export function KitTabs({
               className={[
                 "press relative flex h-14 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-xl text-[9px] font-semibold transition",
                 active
-                  ? "bg-[#cffc0b] text-black"
+                  ? "bg-[#68ed00] text-black"
                   : "bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] hover:text-white",
               ].join(" ")}
             >

@@ -35,12 +35,12 @@ export function TabBar() {
               >
                 <Icon
                   className="h-6 w-6"
-                  style={{ color: active ? "#cffc0b" : "#444" }}
+                  style={{ color: active ? "#68ed00" : "#444" }}
                   strokeWidth={active ? 2.4 : 1.8}
                 />
                 <span
                   className="text-[10px] font-semibold tracking-wide"
-                  style={{ color: active ? "#cffc0b" : "#666" }}
+                  style={{ color: active ? "#68ed00" : "#666" }}
                 >
                   {label}
                 </span>

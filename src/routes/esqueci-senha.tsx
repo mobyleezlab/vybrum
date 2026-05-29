@@ -38,13 +38,13 @@ function ForgotPage() {
           <input
             type="email" required placeholder="E-mail" value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#cffc0b]"
+            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#68ed00]"
           />
           {err && <p className="text-xs text-red-400">{err}</p>}
-          {msg && <p className="text-xs text-[#cffc0b]">{msg}</p>}
+          {msg && <p className="text-xs text-[#68ed00]">{msg}</p>}
           <button
             type="submit" disabled={loading}
-            className="press h-[52px] w-full rounded-2xl bg-[#cffc0b] text-sm font-bold text-black disabled:opacity-60"
+            className="press h-[52px] w-full rounded-2xl bg-[#68ed00] text-sm font-bold text-black disabled:opacity-60"
           >
             {loading ? "Enviando..." : "Enviar link"}
           </button>

@@ -103,7 +103,7 @@ function PackCard({ pack }: { pack: Pack }) {
           </div>
         )}
         {pack.discount_pct ? (
-          <span className="absolute right-2 top-2 rounded-full bg-[#cffc0b] px-2 py-0.5 text-[10px] font-bold text-black">
+          <span className="absolute right-2 top-2 rounded-full bg-[#68ed00] px-2 py-0.5 text-[10px] font-bold text-black">
             {pack.discount_pct}% OFF
           </span>
         ) : null}
@@ -113,7 +113,7 @@ function PackCard({ pack }: { pack: Pack }) {
           <Package className="h-3 w-3" /> Pack
         </div>
         <div className="mt-0.5 truncate text-[13px] font-semibold text-white">{pack.name}</div>
-        <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-[#cffc0b]">
+        <div className="mt-1 flex items-center gap-1 text-[11px] font-bold text-[#68ed00]">
           <Diamond className="h-3 w-3" /> {pack.cost_credits} cr
         </div>
       </div>
@@ -142,7 +142,7 @@ function SectionRow({
           )}
           {label}
         </h2>
-        <Link to="/explorar" className="text-[12px] font-semibold text-[#cffc0b] press">
+        <Link to="/explorar" className="text-[12px] font-semibold text-[#68ed00] press">
           Ver todos
         </Link>
       </div>
@@ -167,9 +167,9 @@ function PacksRow({ packs, loading }: { packs: Pack[]; loading: boolean }) {
     <section className="mt-6">
       <div className="flex items-center justify-between px-4">
         <h2 className="flex items-center gap-2 text-base font-extrabold tracking-tight text-white">
-          <Flame className="h-4 w-4 text-[#cffc0b]" /> Packs
+          <Flame className="h-4 w-4 text-[#68ed00]" /> Packs
         </h2>
-        <Link to="/creditos" className="text-[12px] font-semibold text-[#cffc0b] press">
+        <Link to="/creditos" className="text-[12px] font-semibold text-[#68ed00] press">
           Ver todos
         </Link>
       </div>
@@ -197,7 +197,7 @@ function FeaturedHero() {
     <section className="px-4 pt-1">
       <Link
         to="/editor"
-        className="press relative block overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#cffc0b] via-[#a8d109] to-[#0f0f0f]"
+        className="press relative block overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#68ed00] via-[#a8d109] to-[#0f0f0f]"
       >
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage:
@@ -206,7 +206,7 @@ function FeaturedHero() {
         }} />
         <div className="relative grid gap-3 p-5">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#cffc0b]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#68ed00]">
               <Sparkles className="h-3 w-3" /> Em destaque
             </span>
             <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold tracking-wider text-black">
@@ -222,11 +222,11 @@ function FeaturedHero() {
               <p className="mt-2 max-w-[200px] text-[12px] font-semibold text-black/70">
                 Personalize cores, escudo, nomes e número direto no app.
               </p>
-              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[12px] font-bold text-[#cffc0b]">
+              <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[12px] font-bold text-[#68ed00]">
                 Abrir editor <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </div>
-            <div className="grid h-24 w-24 place-items-center rounded-2xl bg-black/85 text-[#cffc0b] shadow-lg">
+            <div className="grid h-24 w-24 place-items-center rounded-2xl bg-black/85 text-[#68ed00] shadow-lg">
               <Shirt className="h-12 w-12" />
             </div>
           </div>
@@ -263,7 +263,7 @@ function HomeContent() {
             to="/creditos"
             className="press flex h-9 items-center gap-1.5 rounded-full bg-[#1a1a1a] px-3 text-[12px] font-semibold text-white border border-[#2a2a2a]"
           >
-            <Diamond className="h-3.5 w-3.5 text-[#cffc0b]" /> 0
+            <Diamond className="h-3.5 w-3.5 text-[#68ed00]" /> 0
           </Link>
           <button
             aria-label="Notificações"

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/perfil")({
 function Row({ icon, label, to, onClick }: { icon: React.ReactNode; label: string; to?: "/creditos"; onClick?: () => void }) {
   const inner = (
     <div className="press flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4">
-      <span className="text-[#cffc0b]">{icon}</span>
+      <span className="text-[#68ed00]">{icon}</span>
       <span className="flex-1 text-sm font-semibold text-white">{label}</span>
       <span className="text-[#444]">›</span>
     </div>
@@ -37,7 +37,7 @@ function PerfilPage() {
           <div className="mt-5 flex gap-2">
             <Link
               to="/login" search={{ redirect: "/perfil" }}
-              className="press h-[52px] flex-1 rounded-2xl bg-[#cffc0b] text-sm font-bold text-black inline-flex items-center justify-center"
+              className="press h-[52px] flex-1 rounded-2xl bg-[#68ed00] text-sm font-bold text-black inline-flex items-center justify-center"
             >
               Entrar
             </Link>
@@ -52,7 +52,7 @@ function PerfilPage() {
       ) : (
         <>
           <div className="mx-4 mt-4 flex items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#cffc0b] text-sm font-bold text-black">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#68ed00] text-sm font-bold text-black">
               {getInitials(user)}
             </div>
             <div className="min-w-0">
