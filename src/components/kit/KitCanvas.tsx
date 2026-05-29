@@ -108,7 +108,9 @@ export function KitCanvas({
             willChange: "transform",
           }}
         >
-          <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} />
+          <div key={state.view} className="vy-flip flex h-full w-full items-center justify-center">
+            <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} />
+          </div>
         </div>
       </div>
 

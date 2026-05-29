@@ -21,38 +21,38 @@ function PackageCard({
       className={[
         "relative rounded-2xl border bg-[#0f0f0f] p-4 transition",
         highlight === "best"
-          ? "border-[#cffc0b] ring-2 ring-[#cffc0b]/30"
+          ? "border-[#68ed00] ring-2 ring-[#68ed00]/30"
           : highlight === "popular"
-          ? "border-[#cffc0b]/60"
+          ? "border-[#68ed00]/60"
           : "border-[#2a2a2a]",
       ].join(" ")}
     >
       {highlight === "best" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#cffc0b] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#68ed00] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
           <Star className="mr-1 inline h-3 w-3" />
           Melhor custo-benefício
         </div>
       )}
       {highlight === "popular" && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#cffc0b] border border-[#cffc0b]/40">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#1a1a1a] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#68ed00] border border-[#68ed00]/40">
           <Flame className="mr-1 inline h-3 w-3" />
           Popular
         </div>
       )}
       <h3 className="text-sm font-semibold text-white">{pkg.name}</h3>
       <div className="mt-2 flex items-baseline gap-1.5">
-        <Diamond className="h-5 w-5 text-[#cffc0b]" />
+        <Diamond className="h-5 w-5 text-[#68ed00]" />
         <span className="text-2xl font-extrabold text-white tabular-nums">{total}</span>
         <span className="text-xs text-[#888]">créditos</span>
       </div>
       {pkg.bonus_credits > 0 && (
-        <div className="text-[11px] font-semibold text-[#cffc0b]">+{pkg.bonus_credits} bônus</div>
+        <div className="text-[11px] font-semibold text-[#68ed00]">+{pkg.bonus_credits} bônus</div>
       )}
       <div className="mt-3 text-lg font-extrabold text-white">{formatBRL(Number(pkg.price_brl))}</div>
       <div className="text-[11px] text-[#666]">{formatBRL(perCredit)} / crédito</div>
       <button
         onClick={() => alert("Compra em breve!")}
-        className="press mt-4 w-full rounded-xl bg-[#cffc0b] py-2.5 text-sm font-bold text-black hover:opacity-90"
+        className="press mt-4 w-full rounded-xl bg-[#68ed00] py-2.5 text-sm font-bold text-black hover:opacity-90"
       >
         Comprar
       </button>
@@ -72,7 +72,7 @@ function PackCard({ pack }: { pack: Pack }) {
           </div>
         )}
         {pack.discount_pct ? (
-          <span className="absolute right-2 top-2 rounded-full bg-[#cffc0b] px-2 py-0.5 text-[10px] font-bold text-black">
+          <span className="absolute right-2 top-2 rounded-full bg-[#68ed00] px-2 py-0.5 text-[10px] font-bold text-black">
             {pack.discount_pct}% OFF
           </span>
         ) : null}
@@ -86,7 +86,7 @@ function PackCard({ pack }: { pack: Pack }) {
           <p className="mt-1 line-clamp-2 text-[11px] text-[#888]">{pack.description}</p>
         )}
         <div className="mt-2 flex items-center justify-between">
-          <div className="flex items-center gap-1 text-[12px] font-bold text-[#cffc0b]">
+          <div className="flex items-center gap-1 text-[12px] font-bold text-[#68ed00]">
             <Diamond className="h-3.5 w-3.5" /> {pack.cost_credits}
           </div>
           <button
@@ -112,7 +112,7 @@ function CreditosPage() {
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+12px)]">
-      <header className="flex h-14 items-center justify-between px-2 pt-1">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-black/90 px-2 pt-1 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <Link
           to="/"
           aria-label="Voltar"
@@ -126,7 +126,7 @@ function CreditosPage() {
 
       {/* Balance card */}
       <section className="px-4">
-        <div className="relative overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#cffc0b] via-[#a8d109] to-[#0f0f0f] p-5">
+        <div className="relative overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#68ed00] via-[#a8d109] to-[#0f0f0f] p-5">
           <div
             className="absolute inset-0 opacity-20"
             style={{
@@ -149,7 +149,7 @@ function CreditosPage() {
             {!user && (
               <Link
                 to="/login"
-                className="press mt-3 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[12px] font-bold text-[#cffc0b]"
+                className="press mt-3 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[12px] font-bold text-[#68ed00]"
               >
                 Entrar para ver saldo
               </Link>
@@ -161,7 +161,7 @@ function CreditosPage() {
       {/* Benefits */}
       <section className="mt-5 px-4">
         <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#cffc0b]">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#68ed00]">
             <Sparkles className="h-3.5 w-3.5" /> O que você desbloqueia
           </div>
           <ul className="mt-3 grid gap-2 text-[13px] text-white">
@@ -172,7 +172,7 @@ function CreditosPage() {
               "Goleiro separado e kit de time",
             ].map((t) => (
               <li key={t} className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-[#cffc0b]" /> {t}
+                <Check className="h-4 w-4 text-[#68ed00]" /> {t}
               </li>
             ))}
           </ul>
@@ -218,7 +218,7 @@ function CreditosPage() {
       <section className="mt-8 px-4">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-extrabold tracking-tight text-white">
-            <Flame className="h-4 w-4 text-[#cffc0b]" /> Packs
+            <Flame className="h-4 w-4 text-[#68ed00]" /> Packs
           </h2>
           <span className="text-[11px] font-semibold text-[#666]">Combos com desconto</span>
         </div>
@@ -248,7 +248,7 @@ function CreditosPage() {
       <div className="mt-8 px-4">
         <Link
           to="/"
-          className="press flex w-full items-center justify-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#0f0f0f] py-3 text-sm font-semibold text-white hover:border-[#cffc0b] hover:text-[#cffc0b]"
+          className="press flex w-full items-center justify-center gap-2 rounded-xl border border-[#2a2a2a] bg-[#0f0f0f] py-3 text-sm font-semibold text-white hover:border-[#68ed00] hover:text-[#68ed00]"
         >
           <Shirt className="h-4 w-4" /> Ver catálogo
         </Link>

@@ -12,7 +12,7 @@ function KitsPage() {
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
-      <header className="px-4 pt-3 pb-2">
+      <header className="sticky top-0 z-30 bg-black/90 px-4 pt-3 pb-2 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <h1 className="text-[22px] font-extrabold tracking-tight text-white">Meus Kits</h1>
       </header>
 
@@ -22,7 +22,7 @@ function KitsPage() {
           <p className="mt-3 text-sm font-semibold text-white">Entre para ver seus kits salvos</p>
           <Link
             to="/login" search={{ redirect: "/kits" }}
-            className="press mt-4 inline-flex h-[52px] items-center justify-center rounded-2xl bg-[#cffc0b] px-6 text-sm font-bold text-black"
+            className="press mt-4 inline-flex h-[52px] items-center justify-center rounded-2xl bg-[#68ed00] px-6 text-sm font-bold text-black"
           >
             Entrar
           </Link>

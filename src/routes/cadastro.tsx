@@ -49,18 +49,18 @@ function SignupPage() {
           <input
             type="email" required placeholder="E-mail" value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#cffc0b]"
+            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#68ed00]"
           />
           <input
             type="password" required minLength={6} placeholder="Senha (mín. 6 caracteres)" value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#cffc0b]"
+            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#68ed00]"
           />
           {err && <p className="text-xs text-red-400">{err}</p>}
-          {msg && <p className="text-xs text-[#cffc0b]">{msg}</p>}
+          {msg && <p className="text-xs text-[#68ed00]">{msg}</p>}
           <button
             type="submit" disabled={loading}
-            className="press h-[52px] w-full rounded-2xl bg-[#cffc0b] text-sm font-bold text-black disabled:opacity-60"
+            className="press h-[52px] w-full rounded-2xl bg-[#68ed00] text-sm font-bold text-black disabled:opacity-60"
           >
             {loading ? "Criando..." : "Criar conta"}
           </button>
@@ -68,7 +68,7 @@ function SignupPage() {
 
         <p className="mt-5 text-center text-sm text-[#888]">
           Já tem conta?{" "}
-          <Link to="/login" search={{ redirect }} className="font-semibold text-[#cffc0b]">Entrar</Link>
+          <Link to="/login" search={{ redirect }} className="font-semibold text-[#68ed00]">Entrar</Link>
         </p>
       </div>
     </div>

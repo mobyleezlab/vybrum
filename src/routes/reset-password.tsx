@@ -29,12 +29,12 @@ function ResetPage() {
           <input
             type="password" required minLength={6} placeholder="Nova senha" value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#cffc0b]"
+            className="h-[52px] w-full rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-4 text-sm text-white placeholder:text-[#444] outline-none focus:border-[#68ed00]"
           />
           {err && <p className="text-xs text-red-400">{err}</p>}
           <button
             type="submit" disabled={loading}
-            className="press h-[52px] w-full rounded-2xl bg-[#cffc0b] text-sm font-bold text-black disabled:opacity-60"
+            className="press h-[52px] w-full rounded-2xl bg-[#68ed00] text-sm font-bold text-black disabled:opacity-60"
           >
             {loading ? "Salvando..." : "Salvar nova senha"}
           </button>

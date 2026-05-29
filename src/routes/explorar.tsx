@@ -27,7 +27,7 @@ function ExplorarPage() {
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
-      <header className="px-4 pt-3 pb-2">
+      <header className="sticky top-0 z-30 bg-black/90 px-4 pt-3 pb-2 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <h1 className="text-[22px] font-extrabold tracking-tight text-white">Explorar</h1>
       </header>
 
@@ -49,7 +49,7 @@ function ExplorarPage() {
               onClick={() => setFilter(f)}
               className="press shrink-0 h-9 rounded-full px-4 text-[12px] font-semibold capitalize"
               style={{
-                background: active ? "#cffc0b" : "#1a1a1a",
+                background: active ? "#68ed00" : "#1a1a1a",
                 color: active ? "#000" : "#888",
                 border: active ? "none" : "1px solid #2a2a2a",
               }}

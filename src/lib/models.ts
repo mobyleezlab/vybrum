@@ -88,7 +88,7 @@ export function categoryBadge(category: string | null | undefined) {
     case "premium":
       return { label: "PREMIUM", className: "bg-violet-500/15 text-violet-300 border border-violet-500/30" };
     case "elite":
-      return { label: "ELITE", className: "bg-[#cffc0b]/15 text-[#cffc0b] border border-[#cffc0b]/30" };
+      return { label: "ELITE", className: "bg-[#68ed00]/15 text-[#68ed00] border border-[#68ed00]/30" };
     case "rare":
     case "limited":
       return { label: "RARE", className: "bg-red-500/15 text-red-300 border border-red-500/30" };

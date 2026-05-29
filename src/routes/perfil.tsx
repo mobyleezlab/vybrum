@@ -10,7 +10,7 @@ export const Route = createFileRoute("/perfil")({
 function Row({ icon, label, to, onClick }: { icon: React.ReactNode; label: string; to?: "/creditos"; onClick?: () => void }) {
   const inner = (
     <div className="press flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4">
-      <span className="text-[#cffc0b]">{icon}</span>
+      <span className="text-[#68ed00]">{icon}</span>
       <span className="flex-1 text-sm font-semibold text-white">{label}</span>
       <span className="text-[#444]">›</span>
     </div>
@@ -24,7 +24,7 @@ function PerfilPage() {
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
-      <header className="px-4 pt-3 pb-2">
+      <header className="sticky top-0 z-30 bg-black/90 px-4 pt-3 pb-2 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <h1 className="text-[22px] font-extrabold tracking-tight text-white">Perfil</h1>
       </header>
 
@@ -37,7 +37,7 @@ function PerfilPage() {
           <div className="mt-5 flex gap-2">
             <Link
               to="/login" search={{ redirect: "/perfil" }}
-              className="press h-[52px] flex-1 rounded-2xl bg-[#cffc0b] text-sm font-bold text-black inline-flex items-center justify-center"
+              className="press h-[52px] flex-1 rounded-2xl bg-[#68ed00] text-sm font-bold text-black inline-flex items-center justify-center"
             >
               Entrar
             </Link>
@@ -52,7 +52,7 @@ function PerfilPage() {
       ) : (
         <>
           <div className="mx-4 mt-4 flex items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#cffc0b] text-sm font-bold text-black">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-[#68ed00] text-sm font-bold text-black">
               {getInitials(user)}
             </div>
             <div className="min-w-0">
@@ -66,7 +66,17 @@ function PerfilPage() {
             <Row icon={<ShoppingBag className="h-5 w-5" />} label="Comprar créditos" to="/creditos" />
             <Row icon={<History className="h-5 w-5" />} label="Histórico" onClick={() => {}} />
             <Row icon={<Settings className="h-5 w-5" />} label="Configurações" onClick={() => {}} />
-            <Row icon={<LogOut className="h-5 w-5" />} label="Sair" onClick={() => { void signOut(); }} />
+          </div>
+
+          <div className="mx-4 mt-8">
+            <button
+              type="button"
+              onClick={() => { void signOut(); }}
+              className="press inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13px] font-medium text-[#888] transition hover:bg-[#1a1a1a] hover:text-white"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair da conta
+            </button>
           </div>
         </>
       )}
