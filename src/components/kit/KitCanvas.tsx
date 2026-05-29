@@ -25,6 +25,39 @@ export function KitCanvas({
   const pinch = useRef<{ d: number; z: number } | null>(null);
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [flipPhase, setFlipPhase] = useState<"idle" | "out" | "prep" | "in">("idle");
+
+  const handleFlip = () => {
+    if (flipPhase !== "idle") return;
+    setFlipPhase("out");
+    window.setTimeout(() => {
+      onFlip();
+      setFlipPhase("prep");
+      // double rAF: ensure the "prep" frame paints before transitioning to "in"
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setFlipPhase("in");
+          window.setTimeout(() => setFlipPhase("idle"), 320);
+        });
+      });
+    }, 300);
+  };
+
+  const flipStyle: React.CSSProperties = (() => {
+    const base = "perspective(1200px)";
+    const t = "transform 300ms cubic-bezier(.4,0,.2,1), opacity 220ms ease";
+    switch (flipPhase) {
+      case "out":
+        return { transform: `${base} rotateY(-90deg) scale(.92)`, opacity: 0, transition: t };
+      case "prep":
+        // instant snap to the mirrored start position — no transition
+        return { transform: `${base} rotateY(90deg) scale(.92)`, opacity: 0, transition: "none" };
+      case "in":
+        return { transform: `${base} rotateY(0deg) scale(1)`, opacity: 1, transition: t };
+      default:
+        return { transform: `${base} rotateY(0deg) scale(1)`, opacity: 1 };
+    }
+  })();
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -83,9 +116,10 @@ export function KitCanvas({
       }}
     >
       <button
-        onClick={onFlip}
+        onClick={handleFlip}
+        disabled={flipPhase !== "idle"}
         aria-label="Frente / Costas"
-        className="press absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626]"
+        className="press absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626] disabled:opacity-60"
       >
         <RefreshCw className="h-4 w-4" />
       </button>
@@ -108,7 +142,10 @@ export function KitCanvas({
             willChange: "transform",
           }}
         >
-          <div key={state.view} className="vy-flip flex h-full w-full items-center justify-center">
+          <div
+            className="flex h-full w-full items-center justify-center"
+            style={{ ...flipStyle, transformStyle: "preserve-3d", backfaceVisibility: "hidden" }}
+          >
             <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} />
           </div>
         </div>
