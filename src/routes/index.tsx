@@ -254,7 +254,7 @@ function HomeContent() {
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+12px)]">
-      <header className="flex items-center justify-between px-4 pt-2 pb-3">
+      <header className="sticky top-0 z-30 flex items-center justify-between bg-black/90 px-4 pt-2 pb-3 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <Link to="/" className="text-[22px] font-extrabold tracking-tight text-white">
           VYBRUM
         </Link>
