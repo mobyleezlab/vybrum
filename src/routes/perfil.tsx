@@ -66,7 +66,17 @@ function PerfilPage() {
             <Row icon={<ShoppingBag className="h-5 w-5" />} label="Comprar créditos" to="/creditos" />
             <Row icon={<History className="h-5 w-5" />} label="Histórico" onClick={() => {}} />
             <Row icon={<Settings className="h-5 w-5" />} label="Configurações" onClick={() => {}} />
-            <Row icon={<LogOut className="h-5 w-5" />} label="Sair" onClick={() => { void signOut(); }} />
+          </div>
+
+          <div className="mx-4 mt-8">
+            <button
+              type="button"
+              onClick={() => { void signOut(); }}
+              className="press inline-flex h-10 items-center gap-2 rounded-full px-4 text-[13px] font-medium text-[#888] transition hover:bg-[#1a1a1a] hover:text-white"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair da conta
+            </button>
           </div>
         </>
       )}
