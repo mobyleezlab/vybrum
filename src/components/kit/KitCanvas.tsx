@@ -101,15 +101,16 @@ export function KitCanvas({
       >
         <div
           ref={exportRef}
-          key={state.view}
-          className="vy-flip flex h-full w-full items-center justify-center"
+          className="flex h-full w-full items-center justify-center"
           style={{
             transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
             transition: drag || pinch.current ? "none" : "transform 200ms ease-out",
             willChange: "transform",
           }}
         >
-          <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} />
+          <div key={state.view} className="vy-flip flex h-full w-full items-center justify-center">
+            <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} />
+          </div>
         </div>
       </div>
 
