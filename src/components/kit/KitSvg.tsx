@@ -2,8 +2,8 @@ import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import frontRawDefault from "@/assets/kit-front.svg?raw";
 import backRawDefault from "@/assets/kit-back.svg?raw";
 import {
-  COLOR_GROUP_IDS, TEXT_GROUP_IDS, ESCUDO_IDS,
-  type KitState, type ColorGroup, type TextGroup,
+  COLOR_GROUP_IDS, TEXT_FILL_IDS, TEXT_STROKE_IDS, ESCUDO_IDS, SPONSOR_IDS,
+  type KitState, type ColorGroup, type TextGroup, type TextLayer,
 } from "@/lib/kit-state";
 
 interface Props {
@@ -23,25 +23,34 @@ function applyFill(root: SVGElement, id: string, color: string) {
   });
 }
 
-function replaceText(
+function getBBox(g: SVGGElement): { x: number; y: number; w: number; h: number } | null {
+  const cached = g.getAttribute("data-bbox");
+  if (cached) {
+    const [x, y, w, h] = cached.split(",").map(Number);
+    return { x, y, w, h };
+  }
+  try {
+    const b = g.getBBox();
+    const bb = { x: b.x, y: b.y, w: b.width, h: b.height };
+    g.setAttribute("data-bbox", `${bb.x},${bb.y},${bb.w},${bb.h}`);
+    return bb;
+  } catch {
+    return null;
+  }
+}
+
+/** Render text inside a group with a fixed bbox. mode controls fill vs stroke. */
+function renderText(
   root: SVGElement, id: string,
-  layer: { value: string; color: string; font: string }, upper: boolean,
+  layer: TextLayer, upper: boolean,
+  mode: "fill" | "stroke",
 ) {
   const g = root.querySelector(`#${id}`) as SVGGElement | null;
   if (!g) return;
-  const cached = g.getAttribute("data-bbox");
-  let bbox: { x: number; y: number; w: number; h: number };
-  if (cached) {
-    const [x, y, w, h] = cached.split(",").map(Number);
-    bbox = { x, y, w, h };
-  } else {
-    try {
-      const b = g.getBBox();
-      bbox = { x: b.x, y: b.y, w: b.width, h: b.height };
-      g.setAttribute("data-bbox", `${bbox.x},${bbox.y},${bbox.w},${bbox.h}`);
-    } catch { return; }
-  }
+  const bbox = getBBox(g);
+  if (!bbox) return;
   while (g.firstChild) g.removeChild(g.firstChild);
+  if (mode === "stroke" && !layer.outlineEnabled) return; // contorno OFF
   const ns = "http://www.w3.org/2000/svg";
   const t = document.createElementNS(ns, "text");
   t.setAttribute("x", String(bbox.x + bbox.w / 2));
@@ -50,7 +59,18 @@ function replaceText(
   t.setAttribute("dominant-baseline", "central");
   t.setAttribute("font-family", `${layer.font}, sans-serif`);
   t.setAttribute("font-size", String(bbox.h));
-  t.setAttribute("fill", layer.color);
+  t.setAttribute("font-weight", "700");
+  if (mode === "fill") {
+    t.setAttribute("fill", layer.color);
+    t.setAttribute("stroke", "none");
+  } else {
+    t.setAttribute("fill", "none");
+    t.setAttribute("stroke", layer.outlineColor);
+    t.setAttribute("stroke-width", String(layer.outlineWidth * 2));
+    t.setAttribute("stroke-linejoin", "round");
+    t.setAttribute("stroke-linecap", "round");
+    t.setAttribute("paint-order", "stroke fill");
+  }
   t.style.pointerEvents = "none";
   t.textContent = upper ? (layer.value || "").toUpperCase() : layer.value;
   g.appendChild(t);
@@ -59,18 +79,8 @@ function replaceText(
 function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: number) {
   const g = root.querySelector(`#${id}`) as SVGGElement | null;
   if (!g) return;
-  const cached = g.getAttribute("data-bbox");
-  let bbox: { x: number; y: number; w: number; h: number };
-  if (cached) {
-    const [x, y, w, h] = cached.split(",").map(Number);
-    bbox = { x, y, w, h };
-  } else {
-    try {
-      const b = g.getBBox();
-      bbox = { x: b.x, y: b.y, w: b.width, h: b.height };
-      g.setAttribute("data-bbox", `${bbox.x},${bbox.y},${bbox.w},${bbox.h}`);
-    } catch { return; }
-  }
+  const bbox = getBBox(g);
+  if (!bbox) return;
   g.querySelectorAll("image").forEach((n) => n.remove());
   g.querySelectorAll<SVGElement>("path, rect, circle, polygon").forEach((s) => {
     s.style.display = src ? "none" : "";
@@ -93,19 +103,23 @@ function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: n
 
 const SHORT_ONLY_IDS = [
   "short_frente", "short_verso",
-  "estampa_short_frente", "estampa_short_verso",
-  "numero_short_frente",
-  "escudo_short_frente",
+  "short_estampa_frente", "short_estampa_verso",
+  "short-numero_frente", "short_numero_frente",
+  "short-numero_contorno_frente", "short_numero_contorno_frente",
+  "short_escudo_frente",
 ];
 const SHIRT_ONLY_IDS = [
   "camisa_frente", "camisa_verso",
-  "mangas_frente", "mangas_verso",
-  "gola_frente", "gola_verso",
-  "estampa_camisa_frente", "estampa_camisa_verso",
-  "estampa_mangas_frente", "estampa_mangas_verso",
-  "numero_camisa_frente", "numero_camisa_verso",
-  "nome_camisa_verso",
-  "escudo_camisa_frente",
+  "camisa_mangas_frente", "camisa_mangas_verso",
+  "camisa_gola_frente", "camisa_gola_verso",
+  "camisa_estampa_frente", "camisa_estampa_verso",
+  "camisa_mangas_estampa_frente", "camisa_mangas_estampa_verso",
+  "camisa_numero_frente", "camisa_numero_verso",
+  "camisa_numero_contorno_frente", "camisa_numero_contorno_verso",
+  "camisa_nome_verso", "camisa_nome_contorno_verso",
+  "camisa_escudo_frente",
+  "camisa_patrocinador_frente", "camisa_patrocinador_verso",
+  "camisa_logo_vybrum_frente",
 ];
 
 function setHidden(root: SVGElement, id: string, hidden: boolean) {
@@ -140,18 +154,26 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-    // Cores — aplica a TODOS os ids do grupo presentes neste view
+    // Cores — apenas se o usuário tocou o grupo
     (Object.keys(COLOR_GROUP_IDS) as ColorGroup[]).forEach((g) => {
+      if (!state.colorsTouched[g]) return;
       COLOR_GROUP_IDS[g].forEach((id) => applyFill(svg, id, state.colors[g]));
     });
-    // Textos
-    (Object.keys(TEXT_GROUP_IDS) as TextGroup[]).forEach((g) => {
-      TEXT_GROUP_IDS[g].forEach((id) =>
-        replaceText(svg, id, state.texts[g], g === "nome"),
-      );
+    // Textos — apenas se o layer foi tocado
+    (Object.keys(TEXT_FILL_IDS) as TextGroup[]).forEach((g) => {
+      const layer = state.texts[g];
+      if (!layer.touched) return;
+      const upper = g === "nome";
+      TEXT_FILL_IDS[g].forEach((id) => renderText(svg, id, layer, upper, "fill"));
+      TEXT_STROKE_IDS[g].forEach((id) => renderText(svg, id, layer, upper, "stroke"));
     });
-    // Escudo (mesmo arquivo em peito e calção)
-    ESCUDO_IDS.forEach((id) => applyBadge(svg, id, state.escudo.src, state.escudo.size));
+    // Escudo
+    if (state.escudo.touched) {
+      ESCUDO_IDS.forEach((id) => applyBadge(svg, id, state.escudo.src, state.escudo.size));
+    }
+    // Patrocinador
+    if (state.sponsor.front !== null) applyBadge(svg, SPONSOR_IDS.front, state.sponsor.front, 1);
+    if (state.sponsor.back !== null) applyBadge(svg, SPONSOR_IDS.back, state.sponsor.back, 1);
     // Visibility per display mode
     const hideShort = display === "shirt";
     const hideShirt = display === "short";
