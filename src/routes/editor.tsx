@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Sparkles, Hash, Minus, Lock,
+  Shirt, Type as TypeIcon, Shield, Sparkles, Hash, Minus, Lock, Handshake,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -11,8 +11,9 @@ import { useModels, canUseModel, type ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextPanel } from "@/components/kit/panels/TextPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
+import { SponsorPanel } from "@/components/kit/panels/SponsorPanel";
 import {
-  INITIAL_STATE, COLOR_LABELS, TEXT_LABELS, COLOR_GROUP_IDS, TEXT_GROUP_IDS,
+  INITIAL_STATE, COLOR_LABELS, TEXT_LABELS, COLOR_GROUP_IDS, TEXT_FILL_IDS,
   FRONT_TABS, BACK_TABS,
   type KitState, type TabId, type ColorGroup, type TextGroup,
 } from "@/lib/kit-state";
@@ -20,6 +21,7 @@ import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
 import { saveDesign } from "@/lib/kit-storage";
 import { CreditBadge } from "@/components/CreditBadge";
+import { UnlockSheet } from "@/components/UnlockSheet";
 
 export const Route = createFileRoute("/editor")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -38,15 +40,14 @@ const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
   estampaCamisa: { label: "Estampa Camisa", icon: <Sparkles className="h-5 w-5" /> },
   estampaMangas: { label: "Estampa Mangas", icon: <Sparkles className="h-5 w-5" /> },
   estampaShort:  { label: "Estampa Short",  icon: <Sparkles className="h-5 w-5" /> },
-  costuras:      { label: "Costuras",       icon: <Minus className="h-5 w-5" /> },
-  numeroCamisa:  { label: "Número",         icon: <Hash className="h-5 w-5" /> },
-  numeroShort:   { label: "Número Short",   icon: <Hash className="h-5 w-5" /> },
+  numero:        { label: "Número",         icon: <Hash className="h-5 w-5" /> },
   nome:          { label: "Nome",           icon: <TypeIcon className="h-5 w-5" /> },
   escudo:        { label: "Escudo",         icon: <Shield className="h-5 w-5" /> },
+  patrocinador:  { label: "Patrocin.",      icon: <Handshake className="h-5 w-5" /> },
 };
 
 const COLOR_GROUP_SET = new Set<TabId>(Object.keys(COLOR_GROUP_IDS) as TabId[]);
-const TEXT_GROUP_SET = new Set<TabId>(Object.keys(TEXT_GROUP_IDS) as TabId[]);
+const TEXT_GROUP_SET = new Set<TabId>(Object.keys(TEXT_FILL_IDS) as TabId[]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
@@ -59,6 +60,7 @@ function Index() {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [saveName, setSaveName] = useState("Modelo VY001");
   const [selectedModel, setSelectedModel] = useState<ModelRow | null>(null);
+  const [sponsorUnlockOpen, setSponsorUnlockOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -142,35 +144,42 @@ function Index() {
       return (
         <ColorPanel
           value={state.colors[g]}
-          onChange={(c) => set((s) => ({ ...s, colors: { ...s.colors, [g]: c } }))}
+          onChange={(c) => set((s) => ({
+            ...s,
+            colors: { ...s.colors, [g]: c },
+            colorsTouched: { ...s.colorsTouched, [g]: true },
+          }))}
           label={COLOR_LABELS[g]}
         />
       );
     }
     if (TEXT_GROUP_SET.has(id)) {
       const g = id as TextGroup;
-      // Número é compartilhado: editar camisa também atualiza o short.
-      if (g === "numeroCamisa") {
-        return (
-          <TextPanel
-            label="Número"
-            layer={state.texts.numeroCamisa}
-            numeric
-            onChange={(l) =>
-              set((s) => ({
-                ...s,
-                texts: { ...s.texts, numeroCamisa: l, numeroShort: l },
-              }))
-            }
-          />
-        );
-      }
       return (
         <TextPanel
           label={TEXT_LABELS[g]}
           layer={state.texts[g]}
-          numeric={g !== "nome"}
+          numeric={g === "numero"}
           onChange={(l) => set((s) => ({ ...s, texts: { ...s.texts, [g]: l } }))}
+        />
+      );
+    }
+    if (id === "patrocinador") {
+      if (isLocked) {
+        // Acessível mas bloqueada: abrir unlock sheet ao tentar usar
+        return (
+          <button
+            onClick={() => setSponsorUnlockOpen(true)}
+            className="press flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-[#2a2a2a] bg-[#0f0f0f] px-4 py-10 text-sm font-semibold text-[#bbb] hover:text-white"
+          >
+            <Lock className="h-4 w-4" /> Desbloquear patrocinador
+          </button>
+        );
+      }
+      return (
+        <SponsorPanel
+          value={state.sponsor}
+          onChange={(v) => set((s) => ({ ...s, sponsor: v }))}
         />
       );
     }
@@ -179,7 +188,7 @@ function Index() {
       <BadgePanel
         label="Escudo (peito + calção)"
         layer={state.escudo}
-        onChange={(l) => set((s) => ({ ...s, escudo: l }))}
+        onChange={(l) => set((s) => ({ ...s, escudo: { ...l, touched: true } }))}
       />
     );
   };
@@ -227,8 +236,8 @@ function Index() {
         />
 
         <div
-          aria-disabled={isLocked}
-          className={isLocked ? "pointer-events-none opacity-[0.35]" : ""}
+          aria-disabled={isLocked && state.activeTab !== "patrocinador"}
+          className={isLocked && state.activeTab !== "patrocinador" ? "pointer-events-none opacity-[0.35]" : ""}
         >
           <KitTabs tabs={visibleTabs} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
 
@@ -307,6 +316,8 @@ function Index() {
           {savedToast}
         </div>
       )}
+
+      <UnlockSheet open={sponsorUnlockOpen} onClose={() => setSponsorUnlockOpen(false)} feature="sponsors" />
     </div>
   );
 }
