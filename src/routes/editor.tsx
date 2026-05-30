@@ -317,7 +317,7 @@ function Index() {
         </div>
       )}
 
-      <UnlockSheet open={sponsorUnlockOpen} onClose={() => setSponsorUnlockOpen(false)} feature="sponsor" />
+      <UnlockSheet open={sponsorUnlockOpen} onClose={() => setSponsorUnlockOpen(false)} feature="sponsors" />
     </div>
   );
 }
