@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RefreshCw, ZoomIn, Maximize2 } from "lucide-react";
+import { RefreshCw, ZoomIn, Maximize2, PaintBucket, Layers, Shirt, RectangleHorizontal, Settings2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { KitSvg } from "./KitSvg";
 import type { KitState } from "@/lib/kit-state";
@@ -26,6 +26,9 @@ export function KitCanvas({
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
   const [zoomOpen, setZoomOpen] = useState(false);
   const [flipPhase, setFlipPhase] = useState<"idle" | "out" | "prep" | "in">("idle");
+  const [bgMode, setBgMode] = useState<"dark" | "light">("dark");
+  const [display, setDisplay] = useState<"full" | "shirt" | "short">("full");
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   const handleFlip = () => {
     if (flipPhase !== "idle") return;
@@ -105,13 +108,20 @@ export function KitCanvas({
     if (pointers.current.size === 0) setDrag(null);
   };
 
+  const isLight = bgMode === "light";
+  const gridLine = isLight ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.03)";
+  const bgColor = isLight ? "#f3f3f3" : "#111111";
+
+  const toolBtn = "press grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626] disabled:opacity-60";
+  const toolBtnActive = "press grid h-9 w-9 place-items-center rounded-full bg-[#68ed00] text-black shadow-sm ring-1 ring-[#68ed00] transition";
+
   return (
     <div
-      className="relative mt-2 overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#111111] p-2"
+      className="relative mt-2 overflow-hidden rounded-2xl border border-[#2a2a2a] p-2"
       style={{
         height: "clamp(420px, 62vh, 620px)",
-        backgroundImage:
-          "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
+        backgroundColor: bgColor,
+        backgroundImage: `linear-gradient(${gridLine} 1px, transparent 1px), linear-gradient(90deg, ${gridLine} 1px, transparent 1px)`,
         backgroundSize: "24px 24px",
       }}
     >
@@ -119,10 +129,63 @@ export function KitCanvas({
         onClick={handleFlip}
         disabled={flipPhase !== "idle"}
         aria-label="Frente / Costas"
-        className="press absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626] disabled:opacity-60"
+        className={`${toolBtn} absolute right-3 top-3 z-10`}
       >
         <RefreshCw className="h-4 w-4" />
       </button>
+
+      {/* Retractable visualization tools — right column, between flip (top) and zoom (bottom) */}
+      <div className="absolute right-3 top-14 z-10 flex flex-col items-center gap-2">
+        <button
+          onClick={() => setToolsOpen((v) => !v)}
+          aria-label="Ferramentas de visualização"
+          aria-pressed={toolsOpen}
+          className={`${toolBtn} ${toolsOpen ? "ring-[#68ed00]" : ""}`}
+        >
+          <Settings2 className="h-4 w-4" />
+        </button>
+        <div
+          className="flex flex-col items-center gap-2 overflow-hidden transition-all duration-300"
+          style={{
+            maxHeight: toolsOpen ? 200 : 0,
+            opacity: toolsOpen ? 1 : 0,
+            transform: toolsOpen ? "translateY(0)" : "translateY(-6px)",
+            pointerEvents: toolsOpen ? "auto" : "none",
+          }}
+        >
+          <button
+            onClick={() => setBgMode((m) => (m === "dark" ? "light" : "dark"))}
+            aria-label="Trocar cor do fundo"
+            className={toolBtn}
+          >
+            <PaintBucket className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setDisplay("full")}
+            aria-label="Uniforme completo"
+            aria-pressed={display === "full"}
+            className={display === "full" ? toolBtnActive : toolBtn}
+          >
+            <Layers className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setDisplay("shirt")}
+            aria-label="Apenas camisa"
+            aria-pressed={display === "shirt"}
+            className={display === "shirt" ? toolBtnActive : toolBtn}
+          >
+            <Shirt className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setDisplay("short")}
+            aria-label="Apenas short"
+            aria-pressed={display === "short"}
+            className={display === "short" ? toolBtnActive : toolBtn}
+          >
+            <RectangleHorizontal className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
       <div
         ref={wrapRef}
@@ -146,7 +209,7 @@ export function KitCanvas({
             className="flex h-full w-full items-center justify-center"
             style={{ ...flipStyle, transformStyle: "preserve-3d", backfaceVisibility: "hidden" }}
           >
-            <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} />
+            <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} display={display} />
           </div>
         </div>
       </div>
@@ -156,7 +219,7 @@ export function KitCanvas({
         onClick={() => setZoomOpen((v) => !v)}
         aria-label="Zoom"
         aria-pressed={zoomOpen}
-        className="press absolute right-3 bottom-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626]"
+        className={`${toolBtn} absolute right-3 bottom-3 z-20`}
       >
         <ZoomIn className="h-4 w-4" />
       </button>

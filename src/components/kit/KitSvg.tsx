@@ -10,6 +10,7 @@ interface Props {
   state: KitState;
   frontRaw?: string;
   backRaw?: string;
+  display?: "full" | "shirt" | "short";
 }
 
 function applyFill(root: SVGElement, id: string, color: string) {
@@ -90,7 +91,30 @@ function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: n
   }
 }
 
-export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backRaw }, ref) => {
+const SHORT_ONLY_IDS = [
+  "short_frente", "short_verso",
+  "estampa_short_frente", "estampa_short_verso",
+  "numero_short_frente",
+  "escudo_short_frente",
+];
+const SHIRT_ONLY_IDS = [
+  "camisa_frente", "camisa_verso",
+  "mangas_frente", "mangas_verso",
+  "gola_frente", "gola_verso",
+  "estampa_camisa_frente", "estampa_camisa_verso",
+  "estampa_mangas_frente", "estampa_mangas_verso",
+  "numero_camisa_frente", "numero_camisa_verso",
+  "nome_camisa_verso",
+  "escudo_camisa_frente",
+];
+
+function setHidden(root: SVGElement, id: string, hidden: boolean) {
+  const g = root.querySelector(`#${id}`) as SVGGElement | null;
+  if (!g) return;
+  g.style.display = hidden ? "none" : "";
+}
+
+export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backRaw, display = "full" }, ref) => {
   const hostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -128,6 +152,11 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
     });
     // Escudo (mesmo arquivo em peito e calção)
     ESCUDO_IDS.forEach((id) => applyBadge(svg, id, state.escudo.src, state.escudo.size));
+    // Visibility per display mode
+    const hideShort = display === "shirt";
+    const hideShirt = display === "short";
+    SHORT_ONLY_IDS.forEach((id) => setHidden(svg, id, hideShort));
+    SHIRT_ONLY_IDS.forEach((id) => setHidden(svg, id, hideShirt));
   });
 
   return <div ref={hostRef} className="h-full w-full" />;
