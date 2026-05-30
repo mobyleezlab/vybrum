@@ -1,6 +1,10 @@
 /**
  * Estado consolidado: cada "grupo visual" tem UM controle no painel
  * e é mapeado para todos os IDs correspondentes na frente e verso do SVG.
+ *
+ * Os SVGs (kit-front.svg / kit-back.svg) já trazem todos os elementos
+ * desenhados — o editor só os sobrescreve quando o usuário interage
+ * (touched=true). Enquanto não interagir, o SVG original é preservado.
  */
 
 export type ColorGroup =
@@ -10,53 +14,86 @@ export type ColorGroup =
   | "short"
   | "estampaCamisa"
   | "estampaMangas"
-  | "estampaShort"
-  | "costuras";
+  | "estampaShort";
 
-export type TextGroup = "numeroCamisa" | "numeroShort" | "nome";
+export type TextGroup = "numero" | "nome";
 
 export type BadgeGroup = "escudo";
+export type SponsorGroup = "patrocinador";
 
-export type TabId = ColorGroup | TextGroup | BadgeGroup;
+export type TabId = ColorGroup | TextGroup | BadgeGroup | SponsorGroup;
 
-/** IDs reais dentro dos SVGs (kit-front.svg / kit-back.svg). */
+/** IDs reais dentro dos SVGs. */
 export const COLOR_GROUP_IDS: Record<ColorGroup, string[]> = {
   camisa: ["camisa_frente", "camisa_verso"],
-  mangas: ["mangas_frente", "mangas_verso"],
-  gola: ["gola_frente", "gola_verso"],
+  mangas: ["camisa_mangas_frente", "camisa_mangas_verso"],
+  gola: ["camisa_gola_frente", "camisa_gola_verso"],
   short: ["short_frente", "short_verso"],
-  estampaCamisa: ["estampa_camisa_frente", "estampa_camisa_verso"],
-  estampaMangas: ["estampa_mangas_frente", "estampa_mangas_verso"],
-  estampaShort: ["estampa_short_frente", "estampa_short_verso"],
-  costuras: ["costuras_frente", "costuras_verso"],
+  estampaCamisa: ["camisa_estampa_frente", "camisa_estampa_verso"],
+  estampaMangas: ["camisa_mangas_estampa_frente", "camisa_mangas_estampa_verso"],
+  estampaShort: ["short_estampa_frente", "short_estampa_verso"],
 };
 
-export const TEXT_GROUP_IDS: Record<TextGroup, string[]> = {
-  numeroCamisa: ["numero_camisa_frente", "numero_camisa_verso"],
-  numeroShort: ["numero_short_frente"],
-  nome: ["nome_camisa_verso"],
+/** Texto: grupo de FILL (cor do número/nome) */
+export const TEXT_FILL_IDS: Record<TextGroup, string[]> = {
+  numero: [
+    "camisa_numero_frente",
+    "camisa_numero_verso",
+    "short-numero_frente",
+    "short_numero_frente",
+  ],
+  nome: ["camisa_nome_verso"],
 };
 
-/** O escudo é aplicado nos dois locais (peito e calção) simultaneamente. */
-export const ESCUDO_IDS = ["escudo_camisa_frente", "escudo_short_frente"];
+/** Texto: grupo de STROKE (contorno do número/nome) */
+export const TEXT_STROKE_IDS: Record<TextGroup, string[]> = {
+  numero: [
+    "camisa_numero_contorno_frente",
+    "camisa_numero_contorno_verso",
+    "short-numero_contorno_frente",
+    "short_numero_contorno_frente",
+  ],
+  nome: ["camisa_nome_contorno_verso"],
+};
+
+/** O escudo aparece no peito e no calção. */
+export const ESCUDO_IDS = ["camisa_escudo_frente", "short_escudo_frente"];
+
+/** Patrocinador: front e back independentes. */
+export const SPONSOR_IDS = {
+  front: "camisa_patrocinador_frente",
+  back: "camisa_patrocinador_verso",
+} as const;
 
 export interface TextLayer {
   value: string;
   font: string;
   color: string;
+  outlineEnabled: boolean;
+  outlineColor: string;
+  outlineWidth: number; // 1..8
+  touched: boolean;
 }
 
 export interface BadgeLayer {
   src: string | null;
   size: number;
+  touched: boolean;
+}
+
+export interface SponsorLayer {
+  front: string | null; // base64 / URL
+  back: string | null;
 }
 
 export interface KitState {
   view: "front" | "back";
   activeTab: TabId;
   colors: Record<ColorGroup, string>;
+  colorsTouched: Partial<Record<ColorGroup, boolean>>;
   texts: Record<TextGroup, TextLayer>;
   escudo: BadgeLayer;
+  sponsor: SponsorLayer;
 }
 
 export const SPORT_FONTS = [
@@ -70,14 +107,13 @@ export const PALETTE: string[] = [
 ];
 
 export const DEFAULT_COLORS: Record<ColorGroup, string> = {
-  camisa: "#5D08BF",
-  mangas: "#0669F7",
-  gola: "#FFB600",
-  short: "#18ED87",
-  estampaCamisa: "#4B4B4B",
-  estampaMangas: "#4B4B4B",
-  estampaShort: "#4B4B4B",
-  costuras: "#4B4B4B",
+  camisa: "#FFFFFF",
+  mangas: "#FFFFFF",
+  gola: "#111111",
+  short: "#FFFFFF",
+  estampaCamisa: "#68ED00",
+  estampaMangas: "#68ED00",
+  estampaShort: "#68ED00",
 };
 
 export const COLOR_LABELS: Record<ColorGroup, string> = {
@@ -88,26 +124,23 @@ export const COLOR_LABELS: Record<ColorGroup, string> = {
   estampaCamisa: "Estampa da Camisa",
   estampaMangas: "Estampa das Mangas",
   estampaShort: "Estampa do Short",
-  costuras: "Cor das Costuras",
 };
 
 export const TEXT_LABELS: Record<TextGroup, string> = {
-  numeroCamisa: "Número da Camisa",
-  numeroShort: "Número do Short",
-  nome: "Nome do Jogador",
+  numero: "Número",
+  nome: "Nome",
 };
 
-/** Tabs visíveis por view (front/back). Ambas mostram os grupos
- * compartilhados — o controle único atualiza os dois lados. */
+/** Tabs visíveis por view. O controle único atualiza ambos os lados. */
 export const FRONT_TABS: TabId[] = [
   "camisa","mangas","gola","short",
   "estampaCamisa","estampaMangas","estampaShort",
-  "numeroCamisa","nome","escudo","costuras",
+  "numero","nome","escudo","patrocinador",
 ];
 export const BACK_TABS: TabId[] = [
   "camisa","mangas","gola","short",
   "estampaCamisa","estampaMangas","estampaShort",
-  "numeroCamisa","nome","escudo","costuras",
+  "numero","nome","escudo","patrocinador",
 ];
 
 const badge = (label: string, bg: string, fg: string) =>
@@ -129,10 +162,27 @@ export const INITIAL_STATE: KitState = {
   view: "front",
   activeTab: "camisa",
   colors: { ...DEFAULT_COLORS },
+  colorsTouched: {},
   texts: {
-    numeroCamisa: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
-    numeroShort: { value: "10", font: "Bebas Neue", color: "#FFFFFF" },
-    nome: { value: "JOGADOR", font: "Bebas Neue", color: "#FFFFFF" },
+    numero: {
+      value: "10",
+      font: "Bebas Neue",
+      color: "#FFFFFF",
+      outlineEnabled: true,
+      outlineColor: "#000000",
+      outlineWidth: 4,
+      touched: false,
+    },
+    nome: {
+      value: "JOGADOR",
+      font: "Bebas Neue",
+      color: "#FFFFFF",
+      outlineEnabled: false,
+      outlineColor: "#000000",
+      outlineWidth: 4,
+      touched: false,
+    },
   },
-  escudo: { src: null, size: 1 },
+  escudo: { src: null, size: 1, touched: false },
+  sponsor: { front: null, back: null },
 };
