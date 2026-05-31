@@ -26,7 +26,7 @@ export function KitCanvas({
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
   const [zoomOpen, setZoomOpen] = useState(false);
   const [flipPhase, setFlipPhase] = useState<"idle" | "out" | "prep" | "in">("idle");
-  const [bgMode, setBgMode] = useState<"dark" | "light">("dark");
+  const [bgMode, setBgMode] = useState<"dark" | "light">("light");
   const [display, setDisplay] = useState<"full" | "shirt" | "short">("full");
   const [toolsOpen, setToolsOpen] = useState(false);
 
@@ -114,6 +114,11 @@ export function KitCanvas({
 
   const toolBtn = "press grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] text-white shadow-sm ring-1 ring-[#2a2a2a] transition hover:bg-[#262626] disabled:opacity-60";
   const toolBtnActive = "press grid h-9 w-9 place-items-center rounded-full bg-[#68ed00] text-black shadow-sm ring-1 ring-[#68ed00] transition";
+
+  const isTransformed = zoom !== 1 || pan.x !== 0 || pan.y !== 0;
+  const showResetHint = isTransformed && !zoomOpen;
+
+  const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
 
   return (
     <div
@@ -214,14 +219,18 @@ export function KitCanvas({
         </div>
       </div>
 
-      {/* Zoom toggle button (bottom-right, mirrors the flip button) */}
+      {/* Zoom toggle button — turns into "reset view" affordance when user has zoomed/panned */}
       <button
-        onClick={() => setZoomOpen((v) => !v)}
-        aria-label="Zoom"
+        onClick={() => {
+          if (showResetHint) { resetView(); return; }
+          setZoomOpen((v) => !v);
+        }}
+        aria-label={showResetHint ? "Restaurar tamanho" : "Zoom"}
         aria-pressed={zoomOpen}
-        className={`${toolBtn} absolute right-3 bottom-3 z-20`}
+        title={showResetHint ? "Restaurar tamanho" : "Zoom"}
+        className={`${showResetHint ? toolBtnActive : toolBtn} absolute right-3 bottom-3 z-20`}
       >
-        <ZoomIn className="h-4 w-4" />
+        {showResetHint ? <Maximize2 className="h-4 w-4" /> : <ZoomIn className="h-4 w-4" />}
       </button>
 
       {zoomOpen && (
