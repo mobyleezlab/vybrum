@@ -107,6 +107,7 @@ const SHORT_ONLY_IDS = [
   "short-numero_frente", "short_numero_frente",
   "short-numero_contorno_frente", "short_numero_contorno_frente",
   "short_escudo_frente",
+  "short_costura_frente", "short_costura_verso",
 ];
 const SHIRT_ONLY_IDS = [
   "camisa_frente", "camisa_verso",
@@ -120,12 +121,39 @@ const SHIRT_ONLY_IDS = [
   "camisa_escudo_frente",
   "camisa_patrocinador_frente", "camisa_patrocinador_verso",
   "camisa_logo_vybrum_frente",
+  "camisa_costura_frente", "camisa_costura_verso",
 ];
 
 function setHidden(root: SVGElement, id: string, hidden: boolean) {
   const g = root.querySelector(`#${id}`) as SVGGElement | null;
   if (!g) return;
   g.style.display = hidden ? "none" : "";
+}
+
+/** Original viewBox cached per svg element to restore when display === 'full'. */
+const ORIGINAL_VB = new WeakMap<SVGSVGElement, string>();
+
+function fitViewBoxTo(svg: SVGSVGElement, ids: string[]) {
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const id of ids) {
+    const g = svg.querySelector(`#${id}`) as SVGGElement | null;
+    if (!g) continue;
+    if (g.style.display === "none") continue;
+    try {
+      const b = g.getBBox();
+      if (b.width === 0 && b.height === 0) continue;
+      minX = Math.min(minX, b.x);
+      minY = Math.min(minY, b.y);
+      maxX = Math.max(maxX, b.x + b.width);
+      maxY = Math.max(maxY, b.y + b.height);
+    } catch { /* noop */ }
+  }
+  if (!isFinite(minX)) return;
+  const pad = 20;
+  svg.setAttribute(
+    "viewBox",
+    `${minX - pad} ${minY - pad} ${maxX - minX + pad * 2} ${maxY - minY + pad * 2}`,
+  );
 }
 
 export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backRaw, display = "full" }, ref) => {
@@ -179,6 +207,19 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
     const hideShirt = display === "short";
     SHORT_ONLY_IDS.forEach((id) => setHidden(svg, id, hideShort));
     SHIRT_ONLY_IDS.forEach((id) => setHidden(svg, id, hideShirt));
+    // Fit viewBox to visible content so shirt/short fill the canvas.
+    if (!ORIGINAL_VB.has(svg)) {
+      const vb = svg.getAttribute("viewBox");
+      if (vb) ORIGINAL_VB.set(svg, vb);
+    }
+    if (display === "shirt") {
+      fitViewBoxTo(svg, SHIRT_ONLY_IDS);
+    } else if (display === "short") {
+      fitViewBoxTo(svg, SHORT_ONLY_IDS);
+    } else {
+      const orig = ORIGINAL_VB.get(svg);
+      if (orig) svg.setAttribute("viewBox", orig);
+    }
   });
 
   return <div ref={hostRef} className="h-full w-full" />;
