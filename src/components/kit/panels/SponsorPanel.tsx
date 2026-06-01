@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Upload, Trash2 } from "lucide-react";
+import { Upload, Trash2, ImageIcon } from "lucide-react";
 import type { SponsorLayer } from "@/lib/kit-state";
 
 const MAX = 2 * 1024 * 1024;
@@ -25,11 +25,14 @@ function Slot({
   return (
     <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
       <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-[#888]">{label}</p>
-      <div className="mb-3 grid h-28 place-items-center rounded-xl border border-dashed border-[#2a2a2a] bg-[#1a1a1a]">
+      <div className="mb-3 grid h-40 place-items-center overflow-hidden rounded-xl border border-dashed border-[#2a2a2a] bg-[#1a1a1a]">
         {value ? (
-          <img src={value} alt={label} className="max-h-full max-w-full object-contain p-2" />
+          <img src={value} alt={label} className="h-full w-full object-contain p-3" />
         ) : (
-          <span className="text-[11px] text-[#666]">Sem patrocinador</span>
+          <span className="flex flex-col items-center gap-1 text-[11px] text-[#666]">
+            <ImageIcon className="h-5 w-5 opacity-60" />
+            Sem patrocinador
+          </span>
         )}
       </div>
       <div className="flex gap-2">
@@ -42,7 +45,7 @@ function Slot({
         <button
           onClick={() => onChange(null)}
           disabled={!value}
-          className="press flex items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-xs font-medium text-[#bbb] transition hover:text-white disabled:opacity-40"
+          className="press flex items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-xs font-medium text-[#bbb] transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -67,12 +70,16 @@ export function SponsorPanel({
       <Slot
         label="Frente"
         value={value.front}
-        onChange={(v) => onChange({ ...value, front: v })}
+        onChange={(v) =>
+          onChange({ ...value, front: v, touched: { ...value.touched, front: true } })
+        }
       />
       <Slot
         label="Verso"
         value={value.back}
-        onChange={(v) => onChange({ ...value, back: v })}
+        onChange={(v) =>
+          onChange({ ...value, back: v, touched: { ...value.touched, back: true } })
+        }
       />
     </div>
   );

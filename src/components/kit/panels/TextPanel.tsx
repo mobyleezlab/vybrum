@@ -1,6 +1,7 @@
 import { SPORT_FONTS, type TextLayer } from "@/lib/kit-state";
 import { ColorPanel } from "./ColorPanel";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 
 export function TextPanel({
   label, layer, onChange, numeric,
@@ -63,25 +64,13 @@ export function TextPanel({
       <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
         <div className="flex items-center justify-between">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-[#888]">Contorno</p>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={layer.outlineEnabled}
-            onClick={() =>
-              onChange({ ...layer, outlineEnabled: !layer.outlineEnabled, touched: true })
+          <Switch
+            checked={layer.outlineEnabled}
+            onCheckedChange={(v) =>
+              onChange({ ...layer, outlineEnabled: v, touched: true })
             }
-            className={[
-              "relative h-6 w-11 rounded-full transition",
-              layer.outlineEnabled ? "bg-[#68ed00]" : "bg-[#2a2a2a]",
-            ].join(" ")}
-          >
-            <span
-              className={[
-                "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-                layer.outlineEnabled ? "translate-x-[22px]" : "translate-x-0.5",
-              ].join(" ")}
-            />
-          </button>
+            className="data-[state=checked]:bg-[#68ed00] data-[state=unchecked]:bg-[#2a2a2a]"
+          />
         </div>
 
         {layer.outlineEnabled && (

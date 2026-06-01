@@ -100,8 +100,7 @@ export function categoryBadge(category: string | null | undefined) {
 }
 
 export function canUseModel(m: ModelRow): boolean {
+  // Durante o desenvolvimento, todos os recursos estão liberados.
   if (m.is_expired) return false;
-  const cat = (m.category ?? "free").toLowerCase();
-  if (cat === "free") return true;
-  return !!m.is_unlocked;
+  return true;
 }
