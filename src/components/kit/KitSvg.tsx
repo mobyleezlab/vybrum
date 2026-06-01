@@ -76,16 +76,24 @@ function renderText(
   g.appendChild(t);
 }
 
+/** Cache original innerHTML for restore-on-clear (badges/sponsors). */
+const ORIGINAL_HTML = new WeakMap<SVGGElement, string>();
+
 function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: number) {
   const g = root.querySelector(`#${id}`) as SVGGElement | null;
   if (!g) return;
+  if (!ORIGINAL_HTML.has(g)) ORIGINAL_HTML.set(g, g.innerHTML);
   const bbox = getBBox(g);
   if (!bbox) return;
-  g.querySelectorAll("image").forEach((n) => n.remove());
-  g.querySelectorAll<SVGElement>("path, rect, circle, polygon").forEach((s) => {
-    s.style.display = src ? "none" : "";
-  });
-  if (src) {
+  if (!src) {
+    // Restore original SVG default
+    const orig = ORIGINAL_HTML.get(g);
+    if (orig !== undefined) g.innerHTML = orig;
+    return;
+  }
+  // Replace content with uploaded image
+  g.innerHTML = "";
+  {
     const ns = "http://www.w3.org/2000/svg";
     const img = document.createElementNS(ns, "image");
     const w = bbox.w * sizeMul;
@@ -199,9 +207,9 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
     if (state.escudo.touched) {
       ESCUDO_IDS.forEach((id) => applyBadge(svg, id, state.escudo.src, state.escudo.size));
     }
-    // Patrocinador
-    if (state.sponsor.front !== null) applyBadge(svg, SPONSOR_IDS.front, state.sponsor.front, 1);
-    if (state.sponsor.back !== null) applyBadge(svg, SPONSOR_IDS.back, state.sponsor.back, 1);
+    // Patrocinador — só intervém se o usuário tocou; null restaura o default
+    if (state.sponsor.touched.front) applyBadge(svg, SPONSOR_IDS.front, state.sponsor.front, 1);
+    if (state.sponsor.touched.back) applyBadge(svg, SPONSOR_IDS.back, state.sponsor.back, 1);
     // Visibility per display mode
     const hideShort = display === "shirt";
     const hideShirt = display === "short";
