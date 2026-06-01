@@ -172,7 +172,7 @@ export const INITIAL_STATE: KitState = {
       outlineEnabled: true,
       outlineColor: "#000000",
       outlineWidth: 4,
-      touched: false,
+      touched: true,
     },
     nome: {
       value: "JOGADOR",
