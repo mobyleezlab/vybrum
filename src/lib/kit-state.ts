@@ -84,6 +84,7 @@ export interface BadgeLayer {
 export interface SponsorLayer {
   front: string | null; // base64 / URL
   back: string | null;
+  touched: { front: boolean; back: boolean };
 }
 
 export interface KitState {
@@ -165,7 +166,7 @@ export const INITIAL_STATE: KitState = {
   colorsTouched: {},
   texts: {
     numero: {
-      value: "10",
+      value: "9",
       font: "Bebas Neue",
       color: "#FFFFFF",
       outlineEnabled: true,
@@ -184,5 +185,5 @@ export const INITIAL_STATE: KitState = {
     },
   },
   escudo: { src: null, size: 1, touched: false },
-  sponsor: { front: null, back: null },
+  sponsor: { front: null, back: null, touched: { front: false, back: false } },
 };
