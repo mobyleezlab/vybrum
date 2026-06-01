@@ -70,12 +70,16 @@ export function SponsorPanel({
       <Slot
         label="Frente"
         value={value.front}
-        onChange={(v) => onChange({ ...value, front: v })}
+        onChange={(v) =>
+          onChange({ ...value, front: v, touched: { ...value.touched, front: true } })
+        }
       />
       <Slot
         label="Verso"
         value={value.back}
-        onChange={(v) => onChange({ ...value, back: v })}
+        onChange={(v) =>
+          onChange({ ...value, back: v, touched: { ...value.touched, back: true } })
+        }
       />
     </div>
   );
