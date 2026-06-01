@@ -16,7 +16,8 @@ export function useEntitlements() {
     enabled: !loading,
     staleTime: 60_000,
     queryFn: async () => {
-      if (!user) return { plan: "guest", isAdmin: false, hasAnyUnlock: false, unlockedTemplates: [] };
+      // Durante o desenvolvimento, todos os recursos estão liberados.
+      if (!user) return { plan: "guest", isAdmin: false, hasAnyUnlock: true, unlockedTemplates: [] };
       const [{ data: prof }, { data: unlocks }] = await Promise.all([
         (supabase as any).from("profiles").select("plan").eq("id", user.id).maybeSingle(),
         (supabase as any).from("unlocked_templates").select("model_code"),
@@ -26,7 +27,7 @@ export function useEntitlements() {
       return {
         plan,
         isAdmin: plan === "admin",
-        hasAnyUnlock: codes.length > 0 || plan !== "free",
+        hasAnyUnlock: true,
         unlockedTemplates: codes,
       };
     },
