@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { Pipette } from "lucide-react";
 import { PALETTE } from "@/lib/kit-state";
+import { ColorPickerModal } from "./ColorPickerModal";
 
 export function ColorPanel({
   value,
   onChange,
   label,
 }: { value: string; onChange: (c: string) => void; label?: string }) {
+  const [open, setOpen] = useState(false);
+  const inPalette = PALETTE.some((c) => c.toLowerCase() === value.toLowerCase());
   return (
     <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
       <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-[#888]">
@@ -27,16 +31,25 @@ export function ColorPanel({
             />
           );
         })}
-        <label className="relative grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-[#888] transition hover:text-white">
-          <Pipette className="h-4 w-4" />
-          <input
-            type="color"
-            value={value}
-            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-            onChange={(e) => onChange(e.target.value)}
-          />
-        </label>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Escolher cor personalizada"
+          className={[
+            "relative grid h-9 w-9 place-items-center rounded-full border border-[#2a2a2a] text-[#888] transition hover:text-white",
+            !inPalette ? "ring-2 ring-[#68ed00] ring-offset-2 ring-offset-[#0f0f0f]" : "",
+          ].join(" ")}
+          style={{ backgroundColor: inPalette ? "#1a1a1a" : value }}
+        >
+          <Pipette className={["h-4 w-4", !inPalette ? "text-white mix-blend-difference" : ""].join(" ")} />
+        </button>
       </div>
+      <ColorPickerModal
+        open={open}
+        value={value}
+        onClose={() => setOpen(false)}
+        onConfirm={onChange}
+      />
     </div>
   );
 }
