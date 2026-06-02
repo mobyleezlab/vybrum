@@ -21,7 +21,17 @@ export type TextGroup = "numero" | "nome";
 export type BadgeGroup = "escudo";
 export type SponsorGroup = "patrocinador";
 
-export type TabId = ColorGroup | TextGroup | BadgeGroup | SponsorGroup;
+/** Painel combinado: nome + número (inputs + fonte). */
+export type TextosGroup = "textos";
+/** Painel de ajustes finos: cores/contornos/tamanhos/posições do nome e número. */
+export type AjustesGroup = "ajustes";
+
+export type TabId =
+  | ColorGroup
+  | TextosGroup
+  | AjustesGroup
+  | BadgeGroup
+  | SponsorGroup;
 
 /** IDs reais dentro dos SVGs. */
 export const COLOR_GROUP_IDS: Record<ColorGroup, string[]> = {
@@ -72,6 +82,10 @@ export interface TextLayer {
   outlineEnabled: boolean;
   outlineColor: string;
   outlineWidth: number; // 1..8
+  /** Multiplicador de tamanho da fonte (1 = padrão do bbox). */
+  sizeScale: number; // 0.6..1.6
+  /** Deslocamento em Y dentro do viewBox do SVG. */
+  yOffset: number; // -150..150
   touched: boolean;
 }
 
@@ -136,12 +150,12 @@ export const TEXT_LABELS: Record<TextGroup, string> = {
 export const FRONT_TABS: TabId[] = [
   "camisa","mangas","gola","short",
   "estampaCamisa","estampaMangas","estampaShort",
-  "numero","nome","escudo","patrocinador",
+  "textos","ajustes","escudo","patrocinador",
 ];
 export const BACK_TABS: TabId[] = [
   "camisa","mangas","gola","short",
   "estampaCamisa","estampaMangas","estampaShort",
-  "numero","nome","escudo","patrocinador",
+  "textos","ajustes","escudo","patrocinador",
 ];
 
 const badge = (label: string, bg: string, fg: string) =>
@@ -172,6 +186,8 @@ export const INITIAL_STATE: KitState = {
       outlineEnabled: true,
       outlineColor: "#000000",
       outlineWidth: 4,
+      sizeScale: 1,
+      yOffset: 0,
       touched: true,
     },
     nome: {
@@ -181,6 +197,8 @@ export const INITIAL_STATE: KitState = {
       outlineEnabled: false,
       outlineColor: "#000000",
       outlineWidth: 4,
+      sizeScale: 1,
+      yOffset: 0,
       touched: false,
     },
   },
