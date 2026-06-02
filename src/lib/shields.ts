@@ -26,7 +26,19 @@ export function useUserShields() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw new Error(error.message);
-      return (data ?? []) as UserShield[];
+      const rows = (data ?? []) as UserShield[];
+      // Bucket is private — refresh signed URLs for each shield.
+      const signed = await Promise.all(
+        rows.map(async (r) => {
+          const path = extractShieldPath(r.image_url);
+          if (!path) return r;
+          const { data: s } = await supabase.storage
+            .from("user-shields")
+            .createSignedUrl(path, 60 * 60);
+          return s?.signedUrl ? { ...r, image_url: s.signedUrl } : r;
+        }),
+      );
+      return signed;
     },
   });
 }
@@ -50,14 +62,17 @@ export function useUploadShield() {
         .from("user-shields")
         .upload(path, file, { upsert: false, contentType: file.type });
       if (upErr) throw new Error(upErr.message);
-      const { data: pub } = supabase.storage.from("user-shields").getPublicUrl(path);
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("user-shields")
+        .createSignedUrl(path, 60 * 60);
+      if (signErr) throw new Error(signErr.message);
       const { data: row, error: dbErr } = await (supabase as any)
         .from("user_shields")
-        .insert({ user_id: user.id, name: file.name.replace(/\.[^.]+$/, "") || "Meu Escudo", image_url: pub.publicUrl })
+        .insert({ user_id: user.id, name: file.name.replace(/\.[^.]+$/, "") || "Meu Escudo", image_url: path })
         .select()
         .single();
       if (dbErr) throw new Error(dbErr.message);
-      return row as UserShield;
+      return { ...(row as UserShield), image_url: signed.signedUrl };
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user-shields"] }),
   });
@@ -67,13 +82,25 @@ export function useDeleteShield() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (s: UserShield) => {
-      const url = new URL(s.image_url);
-      const parts = url.pathname.split("/user-shields/");
-      const path = parts[1];
+      const path = extractShieldPath(s.image_url);
       if (path) await supabase.storage.from("user-shields").remove([path]);
       const { error } = await (supabase as any).from("user_shields").delete().eq("id", s.id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user-shields"] }),
   });
+}
+
+// Accepts either a stored bucket path (`<uid>/<id>.ext`) or a legacy full URL.
+function extractShieldPath(value: string): string | null {
+  if (!value) return null;
+  if (!/^https?:\/\//i.test(value)) return value.replace(/^\/+/, "");
+  try {
+    const url = new URL(value);
+    const idx = url.pathname.indexOf("/user-shields/");
+    if (idx === -1) return null;
+    return url.pathname.slice(idx + "/user-shields/".length);
+  } catch {
+    return null;
+  }
 }
