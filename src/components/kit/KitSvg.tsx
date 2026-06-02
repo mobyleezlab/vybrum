@@ -53,12 +53,14 @@ function renderText(
   if (mode === "stroke" && !layer.outlineEnabled) return; // contorno OFF
   const ns = "http://www.w3.org/2000/svg";
   const t = document.createElementNS(ns, "text");
+  const scale = Math.max(0.4, Math.min(2, layer.sizeScale ?? 1));
+  const dy = layer.yOffset ?? 0;
   t.setAttribute("x", String(bbox.x + bbox.w / 2));
-  t.setAttribute("y", String(bbox.y + bbox.h / 2));
+  t.setAttribute("y", String(bbox.y + bbox.h / 2 + dy));
   t.setAttribute("text-anchor", "middle");
   t.setAttribute("dominant-baseline", "central");
   t.setAttribute("font-family", `${layer.font}, sans-serif`);
-  t.setAttribute("font-size", String(bbox.h));
+  t.setAttribute("font-size", String(bbox.h * scale));
   t.setAttribute("font-weight", "700");
   if (mode === "fill") {
     t.setAttribute("fill", layer.color);
