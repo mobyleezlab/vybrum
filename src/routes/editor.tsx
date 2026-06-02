@@ -2,20 +2,21 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Sparkles, Hash, Minus, Lock, Handshake,
+  Shirt, Type as TypeIcon, Shield, Sparkles, Minus, Lock, Handshake, SlidersHorizontal,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
 import { useQuery } from "@tanstack/react-query";
 import { useModels, canUseModel, type ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
-import { TextPanel } from "@/components/kit/panels/TextPanel";
+import { TextsPanel } from "@/components/kit/panels/TextsPanel";
+import { AdjustsPanel } from "@/components/kit/panels/AdjustsPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import { SponsorPanel } from "@/components/kit/panels/SponsorPanel";
 import {
-  INITIAL_STATE, COLOR_LABELS, TEXT_LABELS, COLOR_GROUP_IDS, TEXT_FILL_IDS,
+  INITIAL_STATE, COLOR_LABELS, COLOR_GROUP_IDS,
   FRONT_TABS, BACK_TABS,
-  type KitState, type TabId, type ColorGroup, type TextGroup,
+  type KitState, type TabId, type ColorGroup,
 } from "@/lib/kit-state";
 import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
@@ -40,14 +41,13 @@ const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
   estampaCamisa: { label: "Estampa Camisa", icon: <Sparkles className="h-5 w-5" /> },
   estampaMangas: { label: "Estampa Mangas", icon: <Sparkles className="h-5 w-5" /> },
   estampaShort:  { label: "Estampa Short",  icon: <Sparkles className="h-5 w-5" /> },
-  numero:        { label: "Número",         icon: <Hash className="h-5 w-5" /> },
-  nome:          { label: "Nome",           icon: <TypeIcon className="h-5 w-5" /> },
+  textos:        { label: "Nome/Nº",        icon: <TypeIcon className="h-5 w-5" /> },
+  ajustes:       { label: "Ajustes",        icon: <SlidersHorizontal className="h-5 w-5" /> },
   escudo:        { label: "Escudo",         icon: <Shield className="h-5 w-5" /> },
   patrocinador:  { label: "Patrocin.",      icon: <Handshake className="h-5 w-5" /> },
 };
 
 const COLOR_GROUP_SET = new Set<TabId>(Object.keys(COLOR_GROUP_IDS) as TabId[]);
-const TEXT_GROUP_SET = new Set<TabId>(Object.keys(TEXT_FILL_IDS) as TabId[]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
@@ -100,13 +100,7 @@ function Index() {
   }, [state.view]);
 
   const handleTab = (id: TabId) =>
-    set((s) => {
-      // "Nome" só existe no verso — vira automaticamente.
-      if (id === "nome" && s.view === "front") {
-        return { ...s, view: "back", activeTab: id };
-      }
-      return { ...s, activeTab: id };
-    }, false);
+    set((s) => ({ ...s, activeTab: id }), false);
 
   const handleFlip = () =>
     set((s) => {
@@ -153,14 +147,21 @@ function Index() {
         />
       );
     }
-    if (TEXT_GROUP_SET.has(id)) {
-      const g = id as TextGroup;
+    if (id === "textos") {
       return (
-        <TextPanel
-          label={TEXT_LABELS[g]}
-          layer={state.texts[g]}
-          numeric={g === "numero"}
-          onChange={(l) => set((s) => ({ ...s, texts: { ...s.texts, [g]: l } }))}
+        <TextsPanel
+          nome={state.texts.nome}
+          numero={state.texts.numero}
+          onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
+        />
+      );
+    }
+    if (id === "ajustes") {
+      return (
+        <AdjustsPanel
+          nome={state.texts.nome}
+          numero={state.texts.numero}
+          onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
         />
       );
     }
