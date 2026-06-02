@@ -29,8 +29,14 @@ export const FEATURE_LABEL: Record<Feature, string> = {
   "premium-template": "Template premium",
 };
 
-export function canUseFeature(_: Feature, ent: Entitlements | undefined): boolean {
+export function canUseFeature(
+  _: Feature,
+  ent: Entitlements | undefined,
+  modelCategory?: string | null,
+): boolean {
   if (!ent) return false;
+  const cat = (modelCategory ?? "").toLowerCase();
+  if (cat === "free") return true;
   return ent.hasAnyUnlock;
 }
 
