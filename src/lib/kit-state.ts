@@ -98,6 +98,10 @@ export interface BadgeLayer {
 export interface SponsorLayer {
   front: string | null; // base64 / URL
   back: string | null;
+  sizeFront: number;
+  sizeBack: number;
+  yFront: number;
+  yBack: number;
   touched: { front: boolean; back: boolean };
 }
 
@@ -203,5 +207,10 @@ export const INITIAL_STATE: KitState = {
     },
   },
   escudo: { src: null, size: 1, touched: false },
-  sponsor: { front: null, back: null, touched: { front: false, back: false } },
+  sponsor: {
+    front: null, back: null,
+    sizeFront: 1, sizeBack: 1,
+    yFront: 0, yBack: 0,
+    touched: { front: false, back: false },
+  },
 };

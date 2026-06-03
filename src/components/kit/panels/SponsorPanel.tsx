@@ -1,13 +1,22 @@
 import { useRef, useState } from "react";
 import { Upload, Trash2, ImageIcon } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import type { SponsorLayer } from "@/lib/kit-state";
 
 const MAX = 2 * 1024 * 1024;
 const ACCEPT = ["image/png", "image/jpeg", "image/svg+xml"];
 
 function Slot({
-  label, value, onChange,
-}: { label: string; value: string | null; onChange: (v: string | null) => void }) {
+  label, value, size, yOffset, onChange, onSize, onY,
+}: {
+  label: string;
+  value: string | null;
+  size: number;
+  yOffset: number;
+  onChange: (v: string | null) => void;
+  onSize: (v: number) => void;
+  onY: (v: number) => void;
+}) {
   const ref = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,6 +67,21 @@ function Slot({
         />
       </div>
       {error && <p className="mt-2 text-[11px] text-red-400">{error}</p>}
+
+      <div className="mt-4 space-y-3">
+        <SliderRow
+          label="Tamanho"
+          value={Math.round(size * 100)}
+          min={50} max={250} step={5} suffix="%"
+          onChange={(v) => onSize(v / 100)}
+        />
+        <SliderRow
+          label="Posição vertical"
+          value={yOffset}
+          min={-150} max={150} step={2}
+          onChange={onY}
+        />
+      </div>
     </div>
   );
 }
@@ -70,16 +94,52 @@ export function SponsorPanel({
       <Slot
         label="Frente"
         value={value.front}
+        size={value.sizeFront}
+        yOffset={value.yFront}
         onChange={(v) =>
           onChange({ ...value, front: v, touched: { ...value.touched, front: true } })
+        }
+        onSize={(s) =>
+          onChange({ ...value, sizeFront: s, touched: { ...value.touched, front: true } })
+        }
+        onY={(y) =>
+          onChange({ ...value, yFront: y, touched: { ...value.touched, front: true } })
         }
       />
       <Slot
         label="Verso"
         value={value.back}
+        size={value.sizeBack}
+        yOffset={value.yBack}
         onChange={(v) =>
           onChange({ ...value, back: v, touched: { ...value.touched, back: true } })
         }
+        onSize={(s) =>
+          onChange({ ...value, sizeBack: s, touched: { ...value.touched, back: true } })
+        }
+        onY={(y) =>
+          onChange({ ...value, yBack: y, touched: { ...value.touched, back: true } })
+        }
+      />
+    </div>
+  );
+}
+
+function SliderRow({
+  label, value, min, max, step, suffix, onChange,
+}: {
+  label: string; value: number; min: number; max: number; step: number;
+  suffix?: string; onChange: (v: number) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-widest text-[#888]">
+        <span>{label}</span>
+        <span className="tabular-nums text-white">{value}{suffix ?? ""}</span>
+      </div>
+      <Slider
+        value={[value]} min={min} max={max} step={step}
+        onValueChange={(v) => onChange(v[0])}
       />
     </div>
   );
