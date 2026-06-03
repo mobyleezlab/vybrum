@@ -122,7 +122,7 @@ export function KitCanvas({
 
   return (
     <div
-      className="relative mt-2 overflow-hidden rounded-2xl border border-[#2a2a2a] p-2"
+      className="relative mt-2 shrink-0 overflow-hidden rounded-2xl border border-[#2a2a2a] p-2"
       style={{
         height: "clamp(420px, 62vh, 620px)",
         backgroundColor: bgColor,

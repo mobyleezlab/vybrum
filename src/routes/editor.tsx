@@ -198,9 +198,9 @@ function Index() {
   const unlockCost = selectedModel?.unlock_cost ?? 0;
 
   return (
-    <div className="min-h-screen bg-black pt-safe">
-      <div className="mx-auto flex min-h-screen max-w-[460px] flex-col bg-black px-4 pb-[calc(72px+env(safe-area-inset-bottom))] pt-3">
-        <header className="sticky top-0 z-30 -mx-4 flex h-12 items-center justify-between gap-2 border-b border-[#1a1a1a] bg-black/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-black/70">
+    <div className="h-[100dvh] overflow-hidden bg-black pt-safe">
+      <div className="mx-auto flex h-full max-w-[460px] flex-col bg-black px-4 pt-3">
+        <header className="-mx-4 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-[#1a1a1a] bg-black/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-black/70">
           <Link to="/" aria-label="Voltar ao catálogo" className="press grid h-10 w-10 place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-white">
             <ChevronLeft className="h-5 w-5" />
           </Link>
@@ -238,11 +238,17 @@ function Index() {
 
         <div
           aria-disabled={isLocked && state.activeTab !== "patrocinador"}
-          className={isLocked && state.activeTab !== "patrocinador" ? "pointer-events-none opacity-[0.35]" : ""}
+          className={
+            "flex min-h-0 flex-1 flex-col " +
+            (isLocked && state.activeTab !== "patrocinador" ? "pointer-events-none opacity-[0.35]" : "")
+          }
         >
           <KitTabs tabs={visibleTabs} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
 
-          <div key={state.activeTab} className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <div
+            key={state.activeTab}
+            className="mt-4 min-h-0 flex-1 overflow-y-auto pb-[calc(72px+env(safe-area-inset-bottom))] animate-in fade-in slide-in-from-bottom-2 duration-200"
+          >
             {renderPanel()}
           </div>
         </div>
