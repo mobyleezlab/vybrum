@@ -81,7 +81,7 @@ function renderText(
 /** Cache original innerHTML for restore-on-clear (badges/sponsors). */
 const ORIGINAL_HTML = new WeakMap<SVGGElement, string>();
 
-function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: number) {
+function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: number, dy = 0) {
   const g = root.querySelector(`#${id}`) as SVGGElement | null;
   if (!g) return;
   if (!ORIGINAL_HTML.has(g)) ORIGINAL_HTML.set(g, g.innerHTML);
@@ -101,7 +101,7 @@ function applyBadge(root: SVGElement, id: string, src: string | null, sizeMul: n
     const w = bbox.w * sizeMul;
     const h = bbox.h * sizeMul;
     img.setAttribute("x", String(bbox.x + bbox.w / 2 - w / 2));
-    img.setAttribute("y", String(bbox.y + bbox.h / 2 - h / 2));
+    img.setAttribute("y", String(bbox.y + bbox.h / 2 - h / 2 + dy));
     img.setAttribute("width", String(w));
     img.setAttribute("height", String(h));
     img.setAttribute("preserveAspectRatio", "xMidYMid meet");
@@ -202,16 +202,24 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
       const layer = state.texts[g];
       if (!layer.touched) return;
       const upper = g === "nome";
-      TEXT_FILL_IDS[g].forEach((id) => renderText(svg, id, layer, upper, "fill"));
-      TEXT_STROKE_IDS[g].forEach((id) => renderText(svg, id, layer, upper, "stroke"));
+      const effective = (id: string) => {
+        // Tamanho e posição Y só afetam nome/número do VERSO.
+        // IDs da FRENTE recebem layer com sizeScale=1 e yOffset=0.
+        if (id.includes("_verso")) return layer;
+        return { ...layer, sizeScale: 1, yOffset: 0 };
+      };
+      TEXT_FILL_IDS[g].forEach((id) => renderText(svg, id, effective(id), upper, "fill"));
+      TEXT_STROKE_IDS[g].forEach((id) => renderText(svg, id, effective(id), upper, "stroke"));
     });
     // Escudo
     if (state.escudo.touched) {
       ESCUDO_IDS.forEach((id) => applyBadge(svg, id, state.escudo.src, state.escudo.size));
     }
     // Patrocinador — só intervém se o usuário tocou; null restaura o default
-    if (state.sponsor.touched.front) applyBadge(svg, SPONSOR_IDS.front, state.sponsor.front, 1);
-    if (state.sponsor.touched.back) applyBadge(svg, SPONSOR_IDS.back, state.sponsor.back, 1);
+    if (state.sponsor.touched.front)
+      applyBadge(svg, SPONSOR_IDS.front, state.sponsor.front, state.sponsor.sizeFront, state.sponsor.yFront);
+    if (state.sponsor.touched.back)
+      applyBadge(svg, SPONSOR_IDS.back, state.sponsor.back, state.sponsor.sizeBack, state.sponsor.yBack);
     // Visibility per display mode
     const hideShort = display === "shirt";
     const hideShirt = display === "short";
