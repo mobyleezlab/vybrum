@@ -83,6 +83,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:url", content: `${SITE_URL}/` },
       { property: "og:site_name", content: "Vybrum" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "Vybrum" },
+      { name: "description", content: "Vybrum is a real-time visual sports uniform configurator." },
+      { property: "og:description", content: "Vybrum is a real-time visual sports uniform configurator." },
+      { name: "twitter:description", content: "Vybrum is a real-time visual sports uniform configurator." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f00d030d-935d-4924-8b42-1e72f4cfaa5c/id-preview-843164ad--2ed1b39b-63fd-4128-8f9f-7eb22fd0233e.lovable.app-1780490324037.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/f00d030d-935d-4924-8b42-1e72f4cfaa5c/id-preview-843164ad--2ed1b39b-63fd-4128-8f9f-7eb22fd0233e.lovable.app-1780490324037.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
