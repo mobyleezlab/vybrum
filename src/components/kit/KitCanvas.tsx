@@ -243,12 +243,15 @@ export function KitCanvas({
         aria-pressed={zoomOpen}
         title={showResetHint ? "Restaurar tamanho" : "Zoom"}
         className={`${showResetHint ? toolBtnActive : toolBtn} absolute right-3 bottom-3 z-20`}
+        onMouseDown={() => {
+          if (!showResetHint) setToolsOpen(false);
+        }}
       >
         {showResetHint ? <Maximize2 className="h-4 w-4" /> : <ZoomIn className="h-4 w-4" />}
       </button>
 
       {zoomOpen && (
-        <div className="absolute right-3 bottom-14 z-10 flex flex-col items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#1a1a1a] px-1.5 py-3 shadow-sm">
+        <div className="absolute right-3 bottom-14 z-30 flex w-9 flex-col items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#1a1a1a] py-3 shadow-sm">
           <span className="text-[10px] font-medium tabular-nums text-[#888]">
             {Math.round(zoom * 100)}%
           </span>
