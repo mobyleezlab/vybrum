@@ -237,15 +237,13 @@ export function KitCanvas({
       <button
         onClick={() => {
           if (showResetHint) { resetView(); return; }
+          setToolsOpen(false);
           setZoomOpen((v) => !v);
         }}
         aria-label={showResetHint ? "Restaurar tamanho" : "Zoom"}
         aria-pressed={zoomOpen}
         title={showResetHint ? "Restaurar tamanho" : "Zoom"}
         className={`${showResetHint ? toolBtnActive : toolBtn} absolute right-3 bottom-3 z-20`}
-        onMouseDown={() => {
-          if (!showResetHint) setToolsOpen(false);
-        }}
       >
         {showResetHint ? <Maximize2 className="h-4 w-4" /> : <ZoomIn className="h-4 w-4" />}
       </button>
