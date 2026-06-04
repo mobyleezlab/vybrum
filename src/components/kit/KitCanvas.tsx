@@ -124,7 +124,7 @@ export function KitCanvas({
     <div
       className="relative mt-2 shrink-0 overflow-hidden rounded-2xl border border-[#2a2a2a] p-2"
       style={{
-        height: "clamp(300px, 46vh, 520px)",
+        height: "50vh",
         backgroundColor: bgColor,
         backgroundImage: `linear-gradient(${gridLine} 1px, transparent 1px), linear-gradient(90deg, ${gridLine} 1px, transparent 1px)`,
         backgroundSize: "24px 24px",
@@ -139,22 +139,43 @@ export function KitCanvas({
         <RefreshCw className="h-4 w-4" />
       </button>
 
-      {/* Retractable visualization tools — right column, between flip (top) and zoom (bottom) */}
-      <div className="absolute right-3 top-14 z-10 flex flex-col items-center gap-2">
-        <button
-          onClick={() => setToolsOpen((v) => !v)}
-          aria-label="Ferramentas de visualização"
-          aria-pressed={toolsOpen}
-          className={`${toolBtn} ${toolsOpen ? "ring-[#68ed00]" : ""}`}
+      <div
+        ref={wrapRef}
+        className="relative h-full w-full touch-none select-none overflow-hidden"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        style={{ cursor: zoom > 1 ? (drag ? "grabbing" : "grab") : "default" }}
+      >
+        <div
+          ref={exportRef}
+          className="flex h-full w-full items-center justify-center"
+          style={{
+            transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
+            transition: drag || pinch.current ? "none" : "transform 200ms ease-out",
+            willChange: "transform",
+          }}
         >
-          <Settings2 className="h-4 w-4" />
-        </button>
+          <div
+            className="flex h-full w-full items-center justify-center"
+            style={{ ...flipStyle, transformStyle: "preserve-3d", backfaceVisibility: "hidden" }}
+          >
+            <div key={display} className="flex h-full w-full items-center justify-center animate-scale-in">
+              <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} display={display} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Retractable visualization tools — stacked above zoom button at bottom right */}
+      <div className="absolute right-3 bottom-14 z-10 flex flex-col items-center gap-2">
         <div
           className="flex flex-col items-center gap-2 overflow-hidden transition-all duration-300"
           style={{
-            maxHeight: toolsOpen ? 200 : 0,
+            maxHeight: toolsOpen ? 240 : 0,
             opacity: toolsOpen ? 1 : 0,
-            transform: toolsOpen ? "translateY(0)" : "translateY(-6px)",
+            transform: toolsOpen ? "translateY(0)" : "translateY(6px)",
             pointerEvents: toolsOpen ? "auto" : "none",
           }}
         >
@@ -190,33 +211,14 @@ export function KitCanvas({
             <RectangleHorizontal className="h-4 w-4" />
           </button>
         </div>
-      </div>
-
-      <div
-        ref={wrapRef}
-        className="relative h-full w-full touch-none select-none overflow-hidden"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        style={{ cursor: zoom > 1 ? (drag ? "grabbing" : "grab") : "default" }}
-      >
-        <div
-          ref={exportRef}
-          className="flex h-full w-full items-center justify-center"
-          style={{
-            transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
-            transition: drag || pinch.current ? "none" : "transform 200ms ease-out",
-            willChange: "transform",
-          }}
+        <button
+          onClick={() => setToolsOpen((v) => !v)}
+          aria-label="Ferramentas de visualização"
+          aria-pressed={toolsOpen}
+          className={`${toolBtn} ${toolsOpen ? "ring-[#68ed00]" : ""}`}
         >
-          <div
-            className="flex h-full w-full items-center justify-center"
-            style={{ ...flipStyle, transformStyle: "preserve-3d", backfaceVisibility: "hidden" }}
-          >
-            <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} display={display} />
-          </div>
-        </div>
+          <Settings2 className="h-4 w-4" />
+        </button>
       </div>
 
       {/* Zoom toggle button — turns into "reset view" affordance when user has zoomed/panned */}
