@@ -247,7 +247,10 @@ function Index() {
 
           <div
             key={state.activeTab}
-            className="mt-4 min-h-0 flex-1 overflow-y-auto pb-[calc(72px+env(safe-area-inset-bottom))] animate-in fade-in slide-in-from-bottom-2 duration-200"
+            className={
+              "mt-4 min-h-0 flex-1 pb-[calc(72px+env(safe-area-inset-bottom))] animate-in fade-in slide-in-from-bottom-2 duration-200 " +
+              (COLOR_GROUP_SET.has(state.activeTab) ? "overflow-hidden" : "overflow-y-auto")
+            }
           >
             {renderPanel()}
           </div>

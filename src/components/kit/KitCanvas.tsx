@@ -124,7 +124,7 @@ export function KitCanvas({
     <div
       className="relative mt-2 shrink-0 overflow-hidden rounded-2xl border border-[#2a2a2a] p-2"
       style={{
-        height: "clamp(420px, 62vh, 620px)",
+        height: "clamp(300px, 46vh, 520px)",
         backgroundColor: bgColor,
         backgroundImage: `linear-gradient(${gridLine} 1px, transparent 1px), linear-gradient(90deg, ${gridLine} 1px, transparent 1px)`,
         backgroundSize: "24px 24px",
