@@ -120,9 +120,19 @@ export function KitCanvas({
 
   const resetView = () => { setZoom(1); setPan({ x: 0, y: 0 }); };
 
+  const handleDisplay = (next: "full" | "shirt" | "short") => {
+    if (next === display) return;
+    setDisplay(next);
+  };
+
+  const displayMotionStyle = {
+    "--vy-display-y": display === "shirt" ? "-18px" : display === "short" ? "18px" : "0px",
+    "--vy-display-origin": display === "shirt" ? "center top" : display === "short" ? "center bottom" : "center center",
+  } as React.CSSProperties;
+
   return (
     <div
-      className="relative mt-2 shrink-0 overflow-hidden rounded-2xl border border-[#2a2a2a] p-2"
+      className="relative mt-2 shrink-0 overflow-visible rounded-2xl border border-[#2a2a2a] p-2"
       style={{
         height: "50vh",
         backgroundColor: bgColor,
@@ -134,14 +144,14 @@ export function KitCanvas({
         onClick={handleFlip}
         disabled={flipPhase !== "idle"}
         aria-label="Frente / Costas"
-        className={`${toolBtn} absolute right-3 top-3 z-10`}
+        className={`${toolBtn} absolute right-3 top-3 z-30`}
       >
         <RefreshCw className="h-4 w-4" />
       </button>
 
       <div
         ref={wrapRef}
-        className="relative h-full w-full touch-none select-none overflow-hidden"
+        className="relative h-full w-full touch-none select-none overflow-hidden rounded-xl"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -161,7 +171,11 @@ export function KitCanvas({
             className="flex h-full w-full items-center justify-center"
             style={{ ...flipStyle, transformStyle: "preserve-3d", backfaceVisibility: "hidden" }}
           >
-            <div key={display} className="flex h-full w-full items-center justify-center animate-scale-in">
+            <div
+              key={display}
+              className="vy-display-switch flex h-full w-full items-center justify-center"
+              style={displayMotionStyle}
+            >
               <KitSvg ref={svgRef} state={state} frontRaw={frontRaw} backRaw={backRaw} display={display} />
             </div>
           </div>
@@ -169,16 +183,9 @@ export function KitCanvas({
       </div>
 
       {/* Retractable visualization tools — stacked above zoom button at bottom right */}
-      <div className="absolute right-3 bottom-14 z-10 flex flex-col items-center gap-2">
-        <div
-          className="flex flex-col items-center gap-2 overflow-hidden transition-all duration-300"
-          style={{
-            maxHeight: toolsOpen ? 240 : 0,
-            opacity: toolsOpen ? 1 : 0,
-            transform: toolsOpen ? "translateY(0)" : "translateY(6px)",
-            pointerEvents: toolsOpen ? "auto" : "none",
-          }}
-        >
+      <div className="absolute right-3 bottom-14 z-30 flex w-9 flex-col items-center gap-2">
+        {toolsOpen && (
+        <div className="vy-tools-open flex w-9 flex-col items-center gap-2">
           <button
             onClick={() => setBgMode((m) => (m === "dark" ? "light" : "dark"))}
             aria-label="Trocar cor do fundo"
@@ -187,7 +194,7 @@ export function KitCanvas({
             <PaintBucket className="h-4 w-4" />
           </button>
           <button
-            onClick={() => setDisplay("full")}
+            onClick={() => handleDisplay("full")}
             aria-label="Uniforme completo"
             aria-pressed={display === "full"}
             className={display === "full" ? toolBtnActive : toolBtn}
@@ -195,7 +202,7 @@ export function KitCanvas({
             <Layers className="h-4 w-4" />
           </button>
           <button
-            onClick={() => setDisplay("shirt")}
+            onClick={() => handleDisplay("shirt")}
             aria-label="Apenas camisa"
             aria-pressed={display === "shirt"}
             className={display === "shirt" ? toolBtnActive : toolBtn}
@@ -203,7 +210,7 @@ export function KitCanvas({
             <Shirt className="h-4 w-4" />
           </button>
           <button
-            onClick={() => setDisplay("short")}
+            onClick={() => handleDisplay("short")}
             aria-label="Apenas short"
             aria-pressed={display === "short"}
             className={display === "short" ? toolBtnActive : toolBtn}
@@ -211,8 +218,13 @@ export function KitCanvas({
             <RectangleHorizontal className="h-4 w-4" />
           </button>
         </div>
+        )}
         <button
-          onClick={() => setToolsOpen((v) => !v)}
+          onClick={() => setToolsOpen((v) => {
+            const next = !v;
+            if (next) setZoomOpen(false);
+            return next;
+          })}
           aria-label="Ferramentas de visualização"
           aria-pressed={toolsOpen}
           className={`${toolBtn} ${toolsOpen ? "ring-[#68ed00]" : ""}`}
@@ -225,6 +237,7 @@ export function KitCanvas({
       <button
         onClick={() => {
           if (showResetHint) { resetView(); return; }
+          setToolsOpen(false);
           setZoomOpen((v) => !v);
         }}
         aria-label={showResetHint ? "Restaurar tamanho" : "Zoom"}
@@ -236,7 +249,7 @@ export function KitCanvas({
       </button>
 
       {zoomOpen && (
-        <div className="absolute right-3 bottom-14 z-10 flex flex-col items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#1a1a1a] px-1.5 py-3 shadow-sm">
+        <div className="absolute right-3 bottom-14 z-30 flex w-9 flex-col items-center gap-2 rounded-full border border-[#2a2a2a] bg-[#1a1a1a] py-3 shadow-sm">
           <span className="text-[10px] font-medium tabular-nums text-[#888]">
             {Math.round(zoom * 100)}%
           </span>

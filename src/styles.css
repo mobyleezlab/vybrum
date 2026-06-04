@@ -112,3 +112,35 @@ button, [role="button"], a {
   transform-style: preserve-3d;
   backface-visibility: hidden;
 }
+
+@keyframes vy-display-switch {
+  0% {
+    opacity: 0;
+    transform: translateY(var(--vy-display-y, 0)) scale(0.92);
+    filter: blur(3px);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(calc(var(--vy-display-y, 0) * -0.18)) scale(1.025);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.vy-display-switch {
+  animation: vy-display-switch 360ms cubic-bezier(.2,.9,.25,1) both;
+  transform-origin: var(--vy-display-origin, center center);
+}
+
+@keyframes vy-tools-open {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.vy-tools-open {
+  animation: vy-tools-open 180ms ease-out both;
+}
