@@ -1,4 +1,5 @@
-import { SPORT_FONTS, type TextLayer } from "@/lib/kit-state";
+import type { TextLayer } from "@/lib/kit-state";
+import { Slider } from "@/components/ui/slider";
 
 export function TextsPanel({
   nome, numero, onChange,
@@ -11,8 +12,6 @@ export function TextsPanel({
     onChange({ nome: { ...nome, value: v.toUpperCase().slice(0, 14), touched: true }, numero });
   const setNumero = (v: string) =>
     onChange({ nome, numero: { ...numero, value: v.replace(/\D/g, "").slice(0, 2), touched: true } });
-  const setFont = (f: string) =>
-    onChange({ nome: { ...nome, font: f, touched: true }, numero: { ...numero, font: f, touched: true } });
 
   return (
     <div className="space-y-4">
@@ -42,29 +41,57 @@ export function TextsPanel({
         </div>
       </div>
 
-      <div>
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-[#888]">Fonte</p>
-        <div className="grid grid-cols-2 gap-2">
-          {SPORT_FONTS.map((f) => {
-            const sel = nome.font === f && numero.font === f;
-            return (
-              <button
-                key={f}
-                onClick={() => setFont(f)}
-                className={[
-                  "rounded-lg border px-3 py-2 text-left transition",
-                  sel
-                    ? "border-[#68ed00] bg-[#68ed00]/10 text-white"
-                    : "border-[#2a2a2a] bg-[#1a1a1a] text-[#bbb] hover:border-[#3a3a3a]",
-                ].join(" ")}
-              >
-                <div style={{ fontFamily: f }} className="text-base leading-none">{f}</div>
-                <div style={{ fontFamily: f }} className="mt-1 text-xs text-[#888]">ABC 10</div>
-              </button>
-            );
-          })}
-        </div>
+      <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4 space-y-4">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#888]">Nome</p>
+        <SliderRow
+          label="Tamanho do nome"
+          value={Math.round((nome.sizeScale ?? 1) * 100)}
+          min={60} max={160} step={5} suffix="%"
+          onChange={(v) => onChange({ nome: { ...nome, sizeScale: v / 100, touched: true }, numero })}
+        />
+        <SliderRow
+          label="Posição vertical do nome"
+          value={nome.yOffset ?? 0}
+          min={-150} max={150} step={2}
+          onChange={(v) => onChange({ nome: { ...nome, yOffset: v, touched: true }, numero })}
+        />
       </div>
+
+      <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4 space-y-4">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#888]">Número</p>
+        <SliderRow
+          label="Tamanho do número"
+          value={Math.round((numero.sizeScale ?? 1) * 100)}
+          min={60} max={160} step={5} suffix="%"
+          onChange={(v) => onChange({ nome, numero: { ...numero, sizeScale: v / 100, touched: true } })}
+        />
+        <SliderRow
+          label="Posição vertical do número (frente e verso)"
+          value={numero.yOffset ?? 0}
+          min={-150} max={150} step={2}
+          onChange={(v) => onChange({ nome, numero: { ...numero, yOffset: v, touched: true } })}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SliderRow({
+  label, value, min, max, step, suffix, onChange,
+}: {
+  label: string; value: number; min: number; max: number; step: number;
+  suffix?: string; onChange: (v: number) => void;
+}) {
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-widest text-[#888]">
+        <span>{label}</span>
+        <span className="tabular-nums text-white">{value}{suffix ?? ""}</span>
+      </div>
+      <Slider
+        value={[value]} min={min} max={max} step={step}
+        onValueChange={(v) => onChange(v[0])}
+      />
     </div>
   );
 }

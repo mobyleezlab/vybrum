@@ -144,3 +144,22 @@ button, [role="button"], a {
 .vy-tools-open {
   animation: vy-tools-open 180ms ease-out both;
 }
+
+/* Painel rolável com indicador verde */
+.vy-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #68ed00 transparent;
+}
+.vy-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.vy-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.vy-scroll::-webkit-scrollbar-thumb {
+  background: #68ed00;
+  border-radius: 999px;
+}
+.vy-scroll::-webkit-scrollbar-thumb:hover {
+  background: #7dff14;
+}
