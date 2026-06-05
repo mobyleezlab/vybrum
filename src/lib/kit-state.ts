@@ -23,12 +23,15 @@ export type SponsorGroup = "patrocinador";
 
 /** Painel combinado: nome + número (inputs + fonte). */
 export type TextosGroup = "textos";
+/** Painel de fontes — seleciona a tipografia aplicada a nome e número. */
+export type FontGroup = "fontes";
 /** Painel de ajustes finos: cores/contornos/tamanhos/posições do nome e número. */
 export type AjustesGroup = "ajustes";
 
 export type TabId =
   | ColorGroup
   | TextosGroup
+  | FontGroup
   | AjustesGroup
   | BadgeGroup
   | SponsorGroup;
@@ -153,13 +156,11 @@ export const TEXT_LABELS: Record<TextGroup, string> = {
 /** Tabs visíveis por view. O controle único atualiza ambos os lados. */
 export const FRONT_TABS: TabId[] = [
   "camisa","mangas","gola","short",
-  "estampaCamisa","estampaMangas","estampaShort",
-  "textos","ajustes","escudo","patrocinador",
+  "textos","fontes","ajustes","escudo","patrocinador",
 ];
 export const BACK_TABS: TabId[] = [
   "camisa","mangas","gola","short",
-  "estampaCamisa","estampaMangas","estampaShort",
-  "textos","ajustes","escudo","patrocinador",
+  "textos","fontes","ajustes","escudo","patrocinador",
 ];
 
 const badge = (label: string, bg: string, fg: string) =>

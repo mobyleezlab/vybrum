@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Sparkles, Minus, Lock, Handshake, SlidersHorizontal,
+  Shirt, Type as TypeIcon, Shield, Minus, Lock, Handshake, Palette,
+  ChevronUp, ChevronDown, Tag,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -10,13 +11,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useModels, canUseModel, type ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextsPanel } from "@/components/kit/panels/TextsPanel";
+import { FontsPanel } from "@/components/kit/panels/FontsPanel";
 import { AdjustsPanel } from "@/components/kit/panels/AdjustsPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import { SponsorPanel } from "@/components/kit/panels/SponsorPanel";
 import {
-  INITIAL_STATE, COLOR_LABELS, COLOR_GROUP_IDS,
+  INITIAL_STATE, COLOR_LABELS,
   FRONT_TABS, BACK_TABS,
-  type KitState, type TabId, type ColorGroup,
+  type KitState, type TabId,
 } from "@/lib/kit-state";
 import { useHistory } from "@/lib/kit-history";
 import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
@@ -34,20 +36,22 @@ export const Route = createFileRoute("/editor")({
 type Tab = { id: TabId; label: string; icon: React.ReactNode };
 
 const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
-  camisa:        { label: "Camisa",         icon: <Shirt className="h-5 w-5" /> },
-  mangas:        { label: "Mangas",         icon: <Shirt className="h-5 w-5" /> },
-  gola:          { label: "Gola",           icon: <Minus className="h-5 w-5" /> },
-  short:         { label: "Short",          icon: <Shirt className="h-5 w-5" /> },
-  estampaCamisa: { label: "Estampa Camisa", icon: <Sparkles className="h-5 w-5" /> },
-  estampaMangas: { label: "Estampa Mangas", icon: <Sparkles className="h-5 w-5" /> },
-  estampaShort:  { label: "Estampa Short",  icon: <Sparkles className="h-5 w-5" /> },
-  textos:        { label: "Nome/Nº",        icon: <TypeIcon className="h-5 w-5" /> },
-  ajustes:       { label: "Ajustes",        icon: <SlidersHorizontal className="h-5 w-5" /> },
-  escudo:        { label: "Escudo",         icon: <Shield className="h-5 w-5" /> },
-  patrocinador:  { label: "Patrocin.",      icon: <Handshake className="h-5 w-5" /> },
+  camisa:        { label: "Camisa",       icon: <Shirt className="h-5 w-5" /> },
+  mangas:        { label: "Mangas",       icon: <Shirt className="h-5 w-5" /> },
+  gola:          { label: "Gola",         icon: <Minus className="h-5 w-5" /> },
+  short:         { label: "Short",        icon: <Shirt className="h-5 w-5" /> },
+  estampaCamisa: { label: "Estampa Camisa", icon: <Shirt className="h-5 w-5" /> },
+  estampaMangas: { label: "Estampa Mangas", icon: <Shirt className="h-5 w-5" /> },
+  estampaShort:  { label: "Estampa Short",  icon: <Shirt className="h-5 w-5" /> },
+  textos:        { label: "Nome/Nº",      icon: <Tag className="h-5 w-5" /> },
+  fontes:        { label: "Fontes",       icon: <TypeIcon className="h-5 w-5" /> },
+  ajustes:       { label: "Cor Texto",    icon: <Palette className="h-5 w-5" /> },
+  escudo:        { label: "Escudo",       icon: <Shield className="h-5 w-5" /> },
+  patrocinador:  { label: "Patrocin.",    icon: <Handshake className="h-5 w-5" /> },
 };
 
-const COLOR_GROUP_SET = new Set<TabId>(Object.keys(COLOR_GROUP_IDS) as TabId[]);
+// Tabs com painel "simples" (sem rolagem necessária)
+const SHORT_PANEL_TABS = new Set<TabId>(["gola"]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
@@ -133,23 +137,51 @@ function Index() {
 
   const renderPanel = () => {
     const id = state.activeTab;
-    if (COLOR_GROUP_SET.has(id)) {
-      const g = id as ColorGroup;
+    const setColor = (g: keyof KitState["colors"]) => (c: string) =>
+      set((s) => ({
+        ...s,
+        colors: { ...s.colors, [g]: c },
+        colorsTouched: { ...s.colorsTouched, [g]: true },
+      }));
+    if (id === "camisa") {
       return (
-        <ColorPanel
-          value={state.colors[g]}
-          onChange={(c) => set((s) => ({
-            ...s,
-            colors: { ...s.colors, [g]: c },
-            colorsTouched: { ...s.colorsTouched, [g]: true },
-          }))}
-          label={COLOR_LABELS[g]}
-        />
+        <div className="space-y-4">
+          <ColorPanel value={state.colors.camisa} onChange={setColor("camisa")} label={COLOR_LABELS.camisa} />
+          <ColorPanel value={state.colors.estampaCamisa} onChange={setColor("estampaCamisa")} label={COLOR_LABELS.estampaCamisa} />
+        </div>
       );
+    }
+    if (id === "mangas") {
+      return (
+        <div className="space-y-4">
+          <ColorPanel value={state.colors.mangas} onChange={setColor("mangas")} label={COLOR_LABELS.mangas} />
+          <ColorPanel value={state.colors.estampaMangas} onChange={setColor("estampaMangas")} label={COLOR_LABELS.estampaMangas} />
+        </div>
+      );
+    }
+    if (id === "short") {
+      return (
+        <div className="space-y-4">
+          <ColorPanel value={state.colors.short} onChange={setColor("short")} label={COLOR_LABELS.short} />
+          <ColorPanel value={state.colors.estampaShort} onChange={setColor("estampaShort")} label={COLOR_LABELS.estampaShort} />
+        </div>
+      );
+    }
+    if (id === "gola") {
+      return <ColorPanel value={state.colors.gola} onChange={setColor("gola")} label={COLOR_LABELS.gola} />;
     }
     if (id === "textos") {
       return (
         <TextsPanel
+          nome={state.texts.nome}
+          numero={state.texts.numero}
+          onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
+        />
+      );
+    }
+    if (id === "fontes") {
+      return (
+        <FontsPanel
           nome={state.texts.nome}
           numero={state.texts.numero}
           onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
@@ -245,15 +277,9 @@ function Index() {
         >
           <KitTabs tabs={visibleTabs} activeId={state.activeTab} onChange={(id) => handleTab(id as TabId)} />
 
-          <div
-            key={state.activeTab}
-            className={
-              "mt-4 min-h-0 flex-1 pb-[calc(72px+env(safe-area-inset-bottom))] animate-in fade-in slide-in-from-bottom-2 duration-200 " +
-              (COLOR_GROUP_SET.has(state.activeTab) ? "overflow-hidden" : "overflow-y-auto")
-            }
-          >
+          <ScrollPanel key={state.activeTab} fixed={SHORT_PANEL_TABS.has(state.activeTab)}>
             {renderPanel()}
-          </div>
+          </ScrollPanel>
         </div>
       </div>
 
@@ -328,6 +354,62 @@ function Index() {
       )}
 
       <UnlockSheet open={sponsorUnlockOpen} onClose={() => setSponsorUnlockOpen(false)} feature="sponsors" />
+    </div>
+  );
+}
+
+/** Painel rolável com indicadores verdes nas extremidades. */
+function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ top: false, bottom: false });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const update = () => {
+      const top = el.scrollTop > 4;
+      const bottom = el.scrollTop + el.clientHeight < el.scrollHeight - 4;
+      setEdges({ top, bottom });
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => { el.removeEventListener("scroll", update); ro.disconnect(); };
+  }, []);
+
+  const scrollBy = (n: number) => ref.current?.scrollBy({ top: n, behavior: "smooth" });
+
+  return (
+    <div className="relative mt-4 min-h-0 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+      <div
+        ref={ref}
+        className={
+          "vy-scroll h-full pb-[calc(72px+env(safe-area-inset-bottom))] pr-2 " +
+          (fixed ? "overflow-hidden" : "overflow-y-auto")
+        }
+      >
+        {children}
+      </div>
+      {!fixed && edges.top && (
+        <button
+          aria-label="Rolar para cima"
+          onClick={() => scrollBy(-160)}
+          className="press absolute right-0 top-1 grid h-6 w-6 place-items-center rounded-full bg-[#68ed00] text-black shadow-md ring-1 ring-black/20"
+        >
+          <ChevronUp className="h-4 w-4" />
+        </button>
+      )}
+      {!fixed && edges.bottom && (
+        <button
+          aria-label="Rolar para baixo"
+          onClick={() => scrollBy(160)}
+          className="press absolute right-0 grid h-6 w-6 place-items-center rounded-full bg-[#68ed00] text-black shadow-md ring-1 ring-black/20"
+          style={{ bottom: "calc(72px + env(safe-area-inset-bottom) + 4px)" }}
+        >
+          <ChevronDown className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 }
