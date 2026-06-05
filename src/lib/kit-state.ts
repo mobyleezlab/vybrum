@@ -155,11 +155,11 @@ export const TEXT_LABELS: Record<TextGroup, string> = {
 
 /** Tabs visíveis por view. O controle único atualiza ambos os lados. */
 export const FRONT_TABS: TabId[] = [
-  "camisa","mangas","gola","short",
+  "camisa","mangas","short","gola",
   "textos","fontes","ajustes","escudo","patrocinador",
 ];
 export const BACK_TABS: TabId[] = [
-  "camisa","mangas","gola","short",
+  "camisa","mangas","short","gola",
   "textos","fontes","ajustes","escudo","patrocinador",
 ];
 
