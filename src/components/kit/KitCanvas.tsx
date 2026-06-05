@@ -134,7 +134,7 @@ export function KitCanvas({
     <div
       className="relative mt-2 shrink-0 overflow-visible rounded-2xl border border-[#2a2a2a] p-2"
       style={{
-        height: "50vh",
+        height: "55vh",
         backgroundColor: bgColor,
         backgroundImage: `linear-gradient(${gridLine} 1px, transparent 1px), linear-gradient(90deg, ${gridLine} 1px, transparent 1px)`,
         backgroundSize: "24px 24px",
