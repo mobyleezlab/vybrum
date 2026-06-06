@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Minus, Lock, Handshake, Palette,
-  ChevronUp, ChevronDown, Tag,
+  Shirt, Shield, Lock, Megaphone, Palette,
+  MoveHorizontal, ChevronDown, RectangleHorizontal, Hash,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -11,7 +11,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useModels, canUseModel, type ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextsPanel } from "@/components/kit/panels/TextsPanel";
-import { FontsPanel } from "@/components/kit/panels/FontsPanel";
 import { AdjustsPanel } from "@/components/kit/panels/AdjustsPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import { SponsorPanel } from "@/components/kit/panels/SponsorPanel";
@@ -37,17 +36,17 @@ type Tab = { id: TabId; label: string; icon: React.ReactNode };
 
 const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
   camisa:        { label: "Camisa",       icon: <Shirt className="h-5 w-5" /> },
-  mangas:        { label: "Mangas",       icon: <Shirt className="h-5 w-5" /> },
-  gola:          { label: "Gola",         icon: <Minus className="h-5 w-5" /> },
-  short:         { label: "Short",        icon: <Shirt className="h-5 w-5" /> },
+  mangas:        { label: "Mangas",       icon: <MoveHorizontal className="h-5 w-5" /> },
+  gola:          { label: "Gola",         icon: <ChevronDown className="h-5 w-5" /> },
+  short:         { label: "Short",        icon: <RectangleHorizontal className="h-5 w-5" /> },
   estampaCamisa: { label: "Estampa Camisa", icon: <Shirt className="h-5 w-5" /> },
-  estampaMangas: { label: "Estampa Mangas", icon: <Shirt className="h-5 w-5" /> },
-  estampaShort:  { label: "Estampa Short",  icon: <Shirt className="h-5 w-5" /> },
-  textos:        { label: "Nome/Nº",      icon: <Tag className="h-5 w-5" /> },
-  fontes:        { label: "Fontes",       icon: <TypeIcon className="h-5 w-5" /> },
+  estampaMangas: { label: "Estampa Mangas", icon: <MoveHorizontal className="h-5 w-5" /> },
+  estampaShort:  { label: "Estampa Short",  icon: <RectangleHorizontal className="h-5 w-5" /> },
+  textos:        { label: "Nome/Nº",      icon: <Hash className="h-5 w-5" /> },
+  fontes:        { label: "Fontes",       icon: <Hash className="h-5 w-5" /> },
   ajustes:       { label: "Cor Texto",    icon: <Palette className="h-5 w-5" /> },
   escudo:        { label: "Escudo",       icon: <Shield className="h-5 w-5" /> },
-  patrocinador:  { label: "Patrocin.",    icon: <Handshake className="h-5 w-5" /> },
+  patrocinador:  { label: "Patrocin.",    icon: <Megaphone className="h-5 w-5" /> },
 };
 
 // Tabs com painel "simples" (sem rolagem necessária)
@@ -173,15 +172,6 @@ function Index() {
     if (id === "textos") {
       return (
         <TextsPanel
-          nome={state.texts.nome}
-          numero={state.texts.numero}
-          onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
-        />
-      );
-    }
-    if (id === "fontes") {
-      return (
-        <FontsPanel
           nome={state.texts.nome}
           numero={state.texts.numero}
           onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
@@ -358,32 +348,11 @@ function Index() {
   );
 }
 
-/** Painel rolável com indicadores verdes nas extremidades. */
+/** Painel rolável com scrollbar verde do design system. */
 function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [edges, setEdges] = useState({ top: false, bottom: false });
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const update = () => {
-      const top = el.scrollTop > 4;
-      const bottom = el.scrollTop + el.clientHeight < el.scrollHeight - 4;
-      setEdges({ top, bottom });
-    };
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => { el.removeEventListener("scroll", update); ro.disconnect(); };
-  }, []);
-
-  const scrollBy = (n: number) => ref.current?.scrollBy({ top: n, behavior: "smooth" });
-
   return (
     <div className="relative mt-4 min-h-0 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div
-        ref={ref}
         className={
           "vy-scroll h-full pb-[calc(72px+env(safe-area-inset-bottom))] pr-2 " +
           (fixed ? "overflow-hidden" : "overflow-y-auto")
@@ -391,25 +360,6 @@ function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: b
       >
         {children}
       </div>
-      {!fixed && edges.top && (
-        <button
-          aria-label="Rolar para cima"
-          onClick={() => scrollBy(-160)}
-          className="press absolute right-0 top-1 grid h-6 w-6 place-items-center rounded-full bg-[#68ed00] text-black shadow-md ring-1 ring-black/20"
-        >
-          <ChevronUp className="h-4 w-4" />
-        </button>
-      )}
-      {!fixed && edges.bottom && (
-        <button
-          aria-label="Rolar para baixo"
-          onClick={() => scrollBy(160)}
-          className="press absolute right-0 grid h-6 w-6 place-items-center rounded-full bg-[#68ed00] text-black shadow-md ring-1 ring-black/20"
-          style={{ bottom: "calc(72px + env(safe-area-inset-bottom) + 4px)" }}
-        >
-          <ChevronDown className="h-4 w-4" />
-        </button>
-      )}
     </div>
   );
 }
