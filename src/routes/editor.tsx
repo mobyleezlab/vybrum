@@ -368,8 +368,6 @@ function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: b
     return () => { el.removeEventListener("scroll", update); ro.disconnect(); };
   }, []);
 
-  const scrollBy = (n: number) => ref.current?.scrollBy({ top: n, behavior: "smooth" });
-
   return (
     <div className="relative mt-4 min-h-0 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div
@@ -381,25 +379,6 @@ function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: b
       >
         {children}
       </div>
-      {!fixed && edges.top && (
-        <button
-          aria-label="Rolar para cima"
-          onClick={() => scrollBy(-160)}
-          className="press absolute right-0 top-1 grid h-6 w-6 place-items-center rounded-full bg-[#68ed00] text-black shadow-md ring-1 ring-black/20"
-        >
-          <ChevronUp className="h-4 w-4" />
-        </button>
-      )}
-      {!fixed && edges.bottom && (
-        <button
-          aria-label="Rolar para baixo"
-          onClick={() => scrollBy(160)}
-          className="press absolute right-0 grid h-6 w-6 place-items-center rounded-full bg-[#68ed00] text-black shadow-md ring-1 ring-black/20"
-          style={{ bottom: "calc(72px + env(safe-area-inset-bottom) + 4px)" }}
-        >
-          <ChevronDown className="h-4 w-4" />
-        </button>
-      )}
     </div>
   );
 }
