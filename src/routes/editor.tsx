@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Type as TypeIcon, Shield, Minus, Lock, Handshake, Palette,
-  ChevronUp, ChevronDown, Tag,
+  Shirt, Shield, Lock, Megaphone, Palette,
+  MoveHorizontal, ChevronDown, RectangleHorizontal, Hash,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -11,7 +11,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useModels, canUseModel, type ModelRow } from "@/lib/models";
 import { ColorPanel } from "@/components/kit/panels/ColorPanel";
 import { TextsPanel } from "@/components/kit/panels/TextsPanel";
-import { FontsPanel } from "@/components/kit/panels/FontsPanel";
 import { AdjustsPanel } from "@/components/kit/panels/AdjustsPanel";
 import { BadgePanel } from "@/components/kit/panels/BadgePanel";
 import { SponsorPanel } from "@/components/kit/panels/SponsorPanel";
@@ -37,17 +36,17 @@ type Tab = { id: TabId; label: string; icon: React.ReactNode };
 
 const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
   camisa:        { label: "Camisa",       icon: <Shirt className="h-5 w-5" /> },
-  mangas:        { label: "Mangas",       icon: <Shirt className="h-5 w-5" /> },
-  gola:          { label: "Gola",         icon: <Minus className="h-5 w-5" /> },
-  short:         { label: "Short",        icon: <Shirt className="h-5 w-5" /> },
+  mangas:        { label: "Mangas",       icon: <MoveHorizontal className="h-5 w-5" /> },
+  gola:          { label: "Gola",         icon: <ChevronDown className="h-5 w-5" /> },
+  short:         { label: "Short",        icon: <RectangleHorizontal className="h-5 w-5" /> },
   estampaCamisa: { label: "Estampa Camisa", icon: <Shirt className="h-5 w-5" /> },
-  estampaMangas: { label: "Estampa Mangas", icon: <Shirt className="h-5 w-5" /> },
-  estampaShort:  { label: "Estampa Short",  icon: <Shirt className="h-5 w-5" /> },
-  textos:        { label: "Nome/Nº",      icon: <Tag className="h-5 w-5" /> },
-  fontes:        { label: "Fontes",       icon: <TypeIcon className="h-5 w-5" /> },
+  estampaMangas: { label: "Estampa Mangas", icon: <MoveHorizontal className="h-5 w-5" /> },
+  estampaShort:  { label: "Estampa Short",  icon: <RectangleHorizontal className="h-5 w-5" /> },
+  textos:        { label: "Nome/Nº",      icon: <Hash className="h-5 w-5" /> },
+  fontes:        { label: "Fontes",       icon: <Hash className="h-5 w-5" /> },
   ajustes:       { label: "Cor Texto",    icon: <Palette className="h-5 w-5" /> },
   escudo:        { label: "Escudo",       icon: <Shield className="h-5 w-5" /> },
-  patrocinador:  { label: "Patrocin.",    icon: <Handshake className="h-5 w-5" /> },
+  patrocinador:  { label: "Patrocin.",    icon: <Megaphone className="h-5 w-5" /> },
 };
 
 // Tabs com painel "simples" (sem rolagem necessária)
@@ -173,15 +172,6 @@ function Index() {
     if (id === "textos") {
       return (
         <TextsPanel
-          nome={state.texts.nome}
-          numero={state.texts.numero}
-          onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
-        />
-      );
-    }
-    if (id === "fontes") {
-      return (
-        <FontsPanel
           nome={state.texts.nome}
           numero={state.texts.numero}
           onChange={(t) => set((s) => ({ ...s, texts: { nome: t.nome, numero: t.numero } }))}
