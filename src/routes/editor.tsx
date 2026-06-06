@@ -348,30 +348,11 @@ function Index() {
   );
 }
 
-/** Painel rolável com indicadores verdes nas extremidades. */
+/** Painel rolável com scrollbar verde do design system. */
 function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: boolean }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [edges, setEdges] = useState({ top: false, bottom: false });
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const update = () => {
-      const top = el.scrollTop > 4;
-      const bottom = el.scrollTop + el.clientHeight < el.scrollHeight - 4;
-      setEdges({ top, bottom });
-    };
-    update();
-    el.addEventListener("scroll", update, { passive: true });
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => { el.removeEventListener("scroll", update); ro.disconnect(); };
-  }, []);
-
   return (
     <div className="relative mt-4 min-h-0 flex-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div
-        ref={ref}
         className={
           "vy-scroll h-full pb-[calc(72px+env(safe-area-inset-bottom))] pr-2 " +
           (fixed ? "overflow-hidden" : "overflow-y-auto")
