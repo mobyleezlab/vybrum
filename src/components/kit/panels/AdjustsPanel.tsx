@@ -54,6 +54,38 @@ export function AdjustsPanel({
           </div>
         )}
       </div>
+
+      <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4 space-y-4">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#888]">Nome</p>
+        <SliderRow
+          label="Tamanho do nome"
+          value={Math.round((nome.sizeScale ?? 1) * 100)}
+          min={60} max={160} step={5} suffix="%"
+          onChange={(v) => onChange({ nome: { ...nome, sizeScale: v / 100, touched: true }, numero })}
+        />
+        <SliderRow
+          label="Posição vertical do nome"
+          value={nome.yOffset ?? 0}
+          min={-150} max={150} step={2}
+          onChange={(v) => onChange({ nome: { ...nome, yOffset: v, touched: true }, numero })}
+        />
+      </div>
+
+      <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4 space-y-4">
+        <p className="text-[11px] font-semibold uppercase tracking-widest text-[#888]">Número</p>
+        <SliderRow
+          label="Tamanho do número"
+          value={Math.round((numero.sizeScale ?? 1) * 100)}
+          min={60} max={160} step={5} suffix="%"
+          onChange={(v) => onChange({ nome, numero: { ...numero, sizeScale: v / 100, touched: true } })}
+        />
+        <SliderRow
+          label="Posição vertical do número (frente e verso)"
+          value={numero.yOffset ?? 0}
+          min={-150} max={150} step={2}
+          onChange={(v) => onChange({ nome, numero: { ...numero, yOffset: v, touched: true } })}
+        />
+      </div>
     </div>
   );
 }
