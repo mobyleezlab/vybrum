@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { X, Copy, Check } from "lucide-react";
 
 export function ColorPickerModal({
   open, value, onClose, onConfirm,
@@ -10,6 +10,7 @@ export function ColorPickerModal({
   onConfirm: (hex: string) => void;
 }) {
   const [hsv, setHsv] = useState(() => hexToHsv(value));
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => { if (open) setHsv(hexToHsv(value)); }, [open, value]);
 
@@ -127,6 +128,27 @@ export function ColorPickerModal({
             className="w-full bg-transparent text-sm uppercase tracking-widest text-white outline-none"
             placeholder="FFFFFF"
           />
+          <button
+            type="button"
+            aria-label="Copiar código HEX"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(hex.toUpperCase());
+              } catch {
+                const ta = document.createElement("textarea");
+                ta.value = hex.toUpperCase();
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand("copy"); } catch {}
+                document.body.removeChild(ta);
+              }
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1200);
+            }}
+            className="press grid h-7 w-7 shrink-0 place-items-center rounded-md text-[#68ed00] transition hover:bg-[#68ed00]/10"
+          >
+            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          </button>
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
