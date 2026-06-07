@@ -25,6 +25,7 @@ import { exportComposite, exportCompositePdf, exportCompositeSvg } from "@/lib/k
 import { saveDesign } from "@/lib/kit-storage";
 import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
+import { useDialogA11y } from "@/hooks/use-dialog-a11y";
 
 export const Route = createFileRoute("/editor")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -71,6 +72,8 @@ function Index() {
   const composeFrontRef = useRef<SVGSVGElement>(null);
   const composeBackRef = useRef<SVGSVGElement>(null);
   const [exporting, setExporting] = useState(false);
+  useDialogA11y(saveOpen, () => setSaveOpen(false));
+  useDialogA11y(downloadOpen, () => setDownloadOpen(false));
 
   useEffect(() => {
     if (!models || !modelCode) return;
@@ -322,11 +325,18 @@ function Index() {
       )}
 
       {saveOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6">
-          <div className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-5 shadow-xl">
-            <h2 className="text-base font-semibold text-white">Salvar modelo</h2>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="save-dialog-title"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6"
+          onClick={() => setSaveOpen(false)}
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 id="save-dialog-title" className="text-base font-semibold text-white">Salvar modelo</h2>
             <p className="mt-1 text-sm text-[#888]">Dê um nome ao seu design.</p>
-            <input autoFocus value={saveName} onChange={(e) => setSaveName(e.target.value)}
+            <label htmlFor="save-name" className="sr-only">Nome do modelo</label>
+            <input id="save-name" autoFocus value={saveName} onChange={(e) => setSaveName(e.target.value)}
               className="mt-4 w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none focus:border-[#68ed00]" />
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setSaveOpen(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-[#888] hover:bg-[#1a1a1a]">Cancelar</button>
@@ -337,9 +347,15 @@ function Index() {
       )}
 
       {downloadOpen && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6" onClick={() => setDownloadOpen(false)}>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="download-dialog-title"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6"
+          onClick={() => setDownloadOpen(false)}
+        >
           <div className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-base font-semibold text-white">Baixar uniforme</h2>
+            <h2 id="download-dialog-title" className="text-base font-semibold text-white">Baixar uniforme</h2>
             <p className="mt-1 text-sm text-[#888]">Frente e verso lado a lado · 16:9</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <button disabled={exporting} onClick={() => runExport("jpg720")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
@@ -359,13 +375,13 @@ function Index() {
                 <div className="mt-1 text-xs text-[#888]">Vetor editável</div>
               </button>
             </div>
-            {exporting && <p className="mt-3 text-center text-xs text-[#68ed00]">Gerando arquivo…</p>}
+            {exporting && <p role="status" aria-live="polite" className="mt-3 text-center text-xs text-[#68ed00]">Gerando arquivo…</p>}
           </div>
         </div>
       )}
 
       {savedToast && (
-        <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#68ed00] px-4 py-2 text-sm font-bold text-black shadow-lg">
+        <div role="status" aria-live="polite" className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#68ed00] px-4 py-2 text-sm font-bold text-black shadow-lg">
           {savedToast}
         </div>
       )}
