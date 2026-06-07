@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { X, Copy, Check } from "lucide-react";
+import { useDialogA11y } from "@/hooks/use-dialog-a11y";
 
 export function ColorPickerModal({
   open, value, onClose, onConfirm,
@@ -12,6 +13,7 @@ export function ColorPickerModal({
   const [hsv, setHsv] = useState(() => hexToHsv(value));
   const [copied, setCopied] = useState(false);
   const [hexInput, setHexInput] = useState(() => value.replace(/^#/, "").toUpperCase());
+  useDialogA11y(open, onClose);
 
   useEffect(() => {
     if (open) {
@@ -77,6 +79,9 @@ export function ColorPickerModal({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="color-picker-title"
       className="fixed inset-0 z-[60] grid place-items-center bg-black/70 px-6"
       onClick={onClose}
     >
@@ -85,7 +90,7 @@ export function ColorPickerModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-white">
+          <h2 id="color-picker-title" className="text-sm font-bold uppercase tracking-widest text-white">
             Cor personalizada
           </h2>
           <button
