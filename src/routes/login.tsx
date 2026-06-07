@@ -29,8 +29,8 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-safe">
-      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col px-5 pb-8 pt-3">
+    <div className="min-h-dvh bg-black pt-safe">
+      <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col px-5 pb-8 pt-3">
         <header className="flex h-12 items-center">
           <Link to="/" className="press grid h-10 w-10 place-items-center rounded-full hover:bg-[#1a1a1a]">
             <ChevronLeft className="h-6 w-6 text-white" />

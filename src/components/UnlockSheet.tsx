@@ -2,6 +2,7 @@ import { X, Sparkles, Check } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { FEATURE_LABEL, type Feature } from "@/lib/feature-gate";
 import { useUserShields } from "@/lib/shields";
+import { useDialogA11y } from "@/hooks/use-dialog-a11y";
 
 interface Props {
   open: boolean;
@@ -12,12 +13,19 @@ interface Props {
 export function UnlockSheet({ open, onClose, feature }: Props) {
   const { data: shields } = useUserShields();
   const hasShield = (shields?.length ?? 0) > 0;
+  useDialogA11y(open, onClose);
 
   if (!open) return null;
   const title = feature ? FEATURE_LABEL[feature] : "Recurso exclusivo";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center" onClick={onClose}>
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="unlock-sheet-title"
+      className="fixed inset-0 z-50 flex items-end bg-black/50 sm:items-center sm:justify-center"
+      onClick={onClose}
+    >
       <div
         className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
@@ -26,11 +34,16 @@ export function UnlockSheet({ open, onClose, feature }: Props) {
           <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#2196F3] to-[#8B00E8] text-white">
             <Sparkles className="h-5 w-5" />
           </div>
-          <button onClick={onClose} className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100">
+          <button
+            type="button"
+            aria-label="Fechar"
+            onClick={onClose}
+            className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <h2 className="mt-4 text-lg font-semibold text-neutral-900">{title}</h2>
+        <h2 id="unlock-sheet-title" className="mt-4 text-lg font-semibold text-neutral-900">{title}</h2>
         <p className="mt-1 text-sm text-neutral-500">
           {hasShield
             ? "Com o escudo do seu time já adicionado, libere tudo permanentemente."

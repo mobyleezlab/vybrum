@@ -20,8 +20,8 @@ function ResetPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black pt-safe">
-      <div className="mx-auto flex min-h-screen max-w-[480px] flex-col px-5 pb-8 pt-12">
+    <div className="min-h-dvh bg-black pt-safe">
+      <div className="mx-auto flex min-h-dvh max-w-[480px] flex-col px-5 pb-8 pt-12">
         <h1 className="text-3xl font-extrabold tracking-tight text-white">Nova senha</h1>
         <p className="mt-2 text-sm text-[#888]">Defina uma nova senha para sua conta.</p>
 
