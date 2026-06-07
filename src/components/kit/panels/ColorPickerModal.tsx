@@ -11,10 +11,20 @@ export function ColorPickerModal({
 }) {
   const [hsv, setHsv] = useState(() => hexToHsv(value));
   const [copied, setCopied] = useState(false);
+  const [hexInput, setHexInput] = useState(() => value.replace(/^#/, "").toUpperCase());
 
-  useEffect(() => { if (open) setHsv(hexToHsv(value)); }, [open, value]);
+  useEffect(() => {
+    if (open) {
+      setHsv(hexToHsv(value));
+      setHexInput(value.replace(/^#/, "").toUpperCase());
+    }
+  }, [open, value]);
 
   const hex = useMemo(() => hsvToHex(hsv.h, hsv.s, hsv.v), [hsv]);
+  // mantém o input sincronizado quando o usuário interage com sliders
+  useEffect(() => {
+    setHexInput(hex.replace(/^#/, "").toUpperCase());
+  }, [hex]);
   const hueColor = useMemo(() => hsvToHex(hsv.h, 1, 1), [hsv.h]);
 
   const svRef = useRef<HTMLDivElement>(null);
@@ -120,11 +130,21 @@ export function ColorPickerModal({
           <span className="h-5 w-5 rounded border border-[#2a2a2a]" style={{ backgroundColor: hex }} />
           <span className="text-sm text-[#888]">#</span>
           <input
-            value={hex.replace(/^#/, "").toUpperCase()}
+            value={hexInput}
             onChange={(e) => {
-              const v = e.target.value.replace(/[^0-9a-fA-F]/g, "").slice(0, 6);
+              const v = e.target.value.replace(/[^0-9a-fA-F]/g, "").slice(0, 6).toUpperCase();
+              setHexInput(v);
               if (/^[0-9a-fA-F]{6}$/.test(v)) setHsv(hexToHsv("#" + v));
             }}
+            onBlur={() => {
+              if (!/^[0-9a-fA-F]{6}$/.test(hexInput)) {
+                setHexInput(hex.replace(/^#/, "").toUpperCase());
+              }
+            }}
+            inputMode="text"
+            autoCapitalize="characters"
+            spellCheck={false}
+            maxLength={6}
             className="w-full bg-transparent text-sm uppercase tracking-widest text-white outline-none"
             placeholder="FFFFFF"
           />

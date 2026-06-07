@@ -6,6 +6,7 @@ import {
   MoveHorizontal, ChevronDown, RectangleHorizontal, Hash,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
+import { KitSvg } from "@/components/kit/KitSvg";
 import { KitTabs } from "@/components/kit/KitTabs";
 import { useQuery } from "@tanstack/react-query";
 import { useModels, canUseModel, type ModelRow } from "@/lib/models";
@@ -20,7 +21,7 @@ import {
   type KitState, type TabId,
 } from "@/lib/kit-state";
 import { useHistory } from "@/lib/kit-history";
-import { exportKitPng, exportKitSvg } from "@/lib/kit-export";
+import { exportComposite, exportCompositePdf, exportCompositeSvg } from "@/lib/kit-export";
 import { saveDesign } from "@/lib/kit-storage";
 import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
@@ -66,6 +67,10 @@ function Index() {
   const [sponsorUnlockOpen, setSponsorUnlockOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const composeRef = useRef<HTMLDivElement>(null);
+  const composeFrontRef = useRef<SVGSVGElement>(null);
+  const composeBackRef = useRef<SVGSVGElement>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!models || !modelCode) return;
@@ -123,15 +128,28 @@ function Index() {
     toast("Modelo salvo!");
   };
 
-  const downloadPng = async () => {
-    if (!exportRef.current) return;
-    setDownloadOpen(false);
-    await exportKitPng(exportRef.current, `kit-${state.view}.png`);
-  };
-  const downloadSvg = () => {
-    if (!svgRef.current) return;
-    setDownloadOpen(false);
-    exportKitSvg(svgRef.current, `kit-${state.view}.svg`);
+  const baseName = selectedModel ? `kit-${selectedModel.code}` : "kit";
+  const runExport = async (kind: "jpg720" | "jpg1080" | "pdf" | "svg") => {
+    if (!composeRef.current) return;
+    setExporting(true);
+    // aguarda o KitSvg compor (dois rAF para garantir layout)
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    try {
+      if (kind === "jpg720") {
+        await exportComposite(composeRef.current, "jpg", 720, `${baseName}-720p.jpg`);
+      } else if (kind === "jpg1080") {
+        await exportComposite(composeRef.current, "jpg", 1080, `${baseName}-1080p.jpg`);
+      } else if (kind === "pdf") {
+        await exportCompositePdf(composeRef.current, `${baseName}.pdf`);
+      } else if (kind === "svg") {
+        if (composeFrontRef.current && composeBackRef.current) {
+          exportCompositeSvg(composeFrontRef.current, composeBackRef.current, `${baseName}.svg`);
+        }
+      }
+    } finally {
+      setExporting(false);
+      setDownloadOpen(false);
+    }
   };
 
   const renderPanel = () => {
@@ -322,17 +340,26 @@ function Index() {
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6" onClick={() => setDownloadOpen(false)}>
           <div className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-base font-semibold text-white">Baixar uniforme</h2>
-            <p className="mt-1 text-sm text-[#888]">Escolha o formato.</p>
+            <p className="mt-1 text-sm text-[#888]">Frente e verso lado a lado · 16:9</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <button onClick={downloadPng} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00]">
-                <div className="text-sm font-semibold text-white">PNG</div>
-                <div className="mt-1 text-xs text-[#888]">Alta resolução</div>
+              <button disabled={exporting} onClick={() => runExport("jpg720")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
+                <div className="text-sm font-semibold text-white">JPG · 720p</div>
+                <div className="mt-1 text-xs text-[#888]">HD 1280×720</div>
               </button>
-              <button onClick={downloadSvg} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00]">
+              <button disabled={exporting} onClick={() => runExport("jpg1080")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
+                <div className="text-sm font-semibold text-white">JPG · 1080p</div>
+                <div className="mt-1 text-xs text-[#888]">Full HD 1920×1080</div>
+              </button>
+              <button disabled={exporting} onClick={() => runExport("pdf")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
+                <div className="text-sm font-semibold text-white">PDF</div>
+                <div className="mt-1 text-xs text-[#888]">Página única 16:9</div>
+              </button>
+              <button disabled={exporting} onClick={() => runExport("svg")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
                 <div className="text-sm font-semibold text-white">SVG</div>
                 <div className="mt-1 text-xs text-[#888]">Vetor editável</div>
               </button>
             </div>
+            {exporting && <p className="mt-3 text-center text-xs text-[#68ed00]">Gerando arquivo…</p>}
           </div>
         </div>
       )}
@@ -344,6 +371,30 @@ function Index() {
       )}
 
       <UnlockSheet open={sponsorUnlockOpen} onClose={() => setSponsorUnlockOpen(false)} feature="sponsors" />
+
+      {/* Composição oculta para exportar frente + verso lado a lado em 16:9 */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          left: -100000,
+          top: 0,
+          width: 1920,
+          height: 1080,
+          backgroundColor: "#ffffff",
+          display: "flex",
+          pointerEvents: "none",
+        }}
+      >
+        <div ref={composeRef} style={{ width: 1920, height: 1080, display: "flex", backgroundColor: "#ffffff" }}>
+          <div style={{ flex: 1, display: "grid", placeItems: "center", padding: 40 }}>
+            <KitSvg ref={composeFrontRef} state={{ ...state, view: "front" }} frontRaw={frontRaw} backRaw={backRaw} display="full" />
+          </div>
+          <div style={{ flex: 1, display: "grid", placeItems: "center", padding: 40 }}>
+            <KitSvg ref={composeBackRef} state={{ ...state, view: "back" }} frontRaw={frontRaw} backRaw={backRaw} display="full" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
