@@ -187,13 +187,6 @@ export function KitCanvas({
         {toolsOpen && (
         <div className="vy-tools-open flex w-9 flex-col items-center gap-2">
           <button
-            onClick={() => setBgMode((m) => (m === "dark" ? "light" : "dark"))}
-            aria-label="Trocar cor do fundo"
-            className={toolBtn}
-          >
-            <PaintBucket className="h-4 w-4" />
-          </button>
-          <button
             onClick={() => handleDisplay("full")}
             aria-label="Uniforme completo"
             aria-pressed={display === "full"}
@@ -216,6 +209,13 @@ export function KitCanvas({
             className={display === "short" ? toolBtnActive : toolBtn}
           >
             <RectangleHorizontal className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setBgMode((m) => (m === "dark" ? "light" : "dark"))}
+            aria-label="Trocar cor do fundo"
+            className={toolBtn}
+          >
+            <PaintBucket className="h-4 w-4" />
           </button>
         </div>
         )}
