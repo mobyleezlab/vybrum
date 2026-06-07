@@ -261,9 +261,10 @@ function HomeContent() {
         <div className="flex items-center gap-2">
           <Link
             to="/creditos"
+            aria-label="Meus créditos: 0"
             className="press flex h-9 items-center gap-1.5 rounded-full bg-[#1a1a1a] px-3 text-[12px] font-semibold text-white border border-[#2a2a2a]"
           >
-            <Diamond className="h-3.5 w-3.5 text-[#68ed00]" /> 0
+            <Diamond aria-hidden="true" className="h-3.5 w-3.5 text-[#68ed00]" /> 0
           </Link>
           <button
             aria-label="Notificações"
