@@ -18,7 +18,7 @@ const APP_DESCRIPTION =
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-black px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-extrabold tracking-tight text-white">404</h1>
         <h2 className="mt-4 text-lg font-semibold text-white">Página não encontrada</h2>
@@ -40,7 +40,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-black px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-bold text-white">Algo deu errado</h1>
         <p className="mt-2 text-sm text-[#888]">Tente novamente ou volte para o início.</p>
@@ -129,7 +129,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-dvh bg-black text-white">
           <Outlet />
         </div>
         <TabBar />
