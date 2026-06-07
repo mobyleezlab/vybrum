@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RefreshCw, ZoomIn, Maximize2, PaintBucket, Layers, Shirt, RectangleHorizontal, Settings2 } from "lucide-react";
+import { RefreshCw, ZoomIn, Maximize2, PaintBucket, Layers, Shirt, RectangleHorizontal, Settings2, GripHorizontal } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { KitSvg } from "./KitSvg";
 import type { KitState } from "@/lib/kit-state";
@@ -29,6 +29,24 @@ export function KitCanvas({
   const [bgMode, setBgMode] = useState<"dark" | "light">("light");
   const [display, setDisplay] = useState<"full" | "shirt" | "short">("full");
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [heightVh, setHeightVh] = useState(55);
+  const resize = useRef<{ y: number; h: number } | null>(null);
+
+  const onResizeDown = (e: React.PointerEvent) => {
+    (e.target as Element).setPointerCapture?.(e.pointerId);
+    resize.current = { y: e.clientY, h: heightVh };
+  };
+  const onResizeMove = (e: React.PointerEvent) => {
+    if (!resize.current) return;
+    const dy = e.clientY - resize.current.y;
+    const dvh = (dy / window.innerHeight) * 100;
+    const next = Math.min(85, Math.max(30, resize.current.h + dvh));
+    setHeightVh(next);
+  };
+  const onResizeUp = (e: React.PointerEvent) => {
+    (e.target as Element).releasePointerCapture?.(e.pointerId);
+    resize.current = null;
+  };
 
   const handleFlip = () => {
     if (flipPhase !== "idle") return;
@@ -131,10 +149,11 @@ export function KitCanvas({
   } as React.CSSProperties;
 
   return (
+    <>
     <div
       className="relative mt-2 shrink-0 overflow-visible rounded-2xl border border-[#2a2a2a] p-2"
       style={{
-        height: "55vh",
+        height: `${heightVh}vh`,
         backgroundColor: bgColor,
         backgroundImage: `linear-gradient(${gridLine} 1px, transparent 1px), linear-gradient(90deg, ${gridLine} 1px, transparent 1px)`,
         backgroundSize: "24px 24px",
@@ -275,5 +294,21 @@ export function KitCanvas({
         </div>
       )}
     </div>
+    <div
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label="Ajustar altura do view"
+      onPointerDown={onResizeDown}
+      onPointerMove={onResizeMove}
+      onPointerUp={onResizeUp}
+      onPointerCancel={onResizeUp}
+      onDoubleClick={() => setHeightVh(55)}
+      className="group mt-1 flex h-5 w-full shrink-0 cursor-row-resize touch-none select-none items-center justify-center"
+    >
+      <div className="flex h-1.5 w-16 items-center justify-center rounded-full bg-[#2a2a2a] transition group-hover:bg-[#68ed00] group-active:bg-[#68ed00]">
+        <GripHorizontal className="h-3 w-3 text-transparent" />
+      </div>
+    </div>
+    </>
   );
 }
