@@ -98,8 +98,9 @@ export async function exportCompositePdf(
   document.body.appendChild(holder);
   try {
     const pdf = new jsPDF({ orientation: "landscape", unit: "pt", format: [PAGE_W, PAGE_H] });
-    // @ts-expect-error svg2pdf.js augmenta jsPDF em runtime
-    await pdf.svg(composite, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
+    await (pdf as unknown as {
+      svg: (el: SVGElement, opts: { x: number; y: number; width: number; height: number }) => Promise<void>;
+    }).svg(composite, { x: 0, y: 0, width: PAGE_W, height: PAGE_H });
     pdf.save(filename);
   } finally {
     holder.remove();
