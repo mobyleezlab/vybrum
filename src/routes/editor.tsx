@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
-  Shirt, Shield, Lock, Megaphone, Palette,
-  MoveHorizontal, ChevronDown, RectangleHorizontal, Hash,
+  Shirt, Shield, Lock, Tag,
+  ArrowLeftRight, ChevronsDown, Square,
+  Type, SlidersHorizontal, Brush, Paintbrush, PaintBucket,
 } from "lucide-react";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitSvg } from "@/components/kit/KitSvg";
@@ -37,18 +38,18 @@ export const Route = createFileRoute("/editor")({
 type Tab = { id: TabId; label: string; icon: React.ReactNode };
 
 const TAB_META: Record<TabId, { label: string; icon: React.ReactNode }> = {
-  camisa:        { label: "Camisa",       icon: <Shirt className="h-5 w-5" /> },
-  mangas:        { label: "Mangas",       icon: <MoveHorizontal className="h-5 w-5" /> },
-  gola:          { label: "Gola",         icon: <ChevronDown className="h-5 w-5" /> },
-  short:         { label: "Short",        icon: <RectangleHorizontal className="h-5 w-5" /> },
-  estampaCamisa: { label: "Estampa Camisa", icon: <Shirt className="h-5 w-5" /> },
-  estampaMangas: { label: "Estampa Mangas", icon: <MoveHorizontal className="h-5 w-5" /> },
-  estampaShort:  { label: "Estampa Short",  icon: <RectangleHorizontal className="h-5 w-5" /> },
-  textos:        { label: "Nome/Nº",      icon: <Hash className="h-5 w-5" /> },
-  fontes:        { label: "Fontes",       icon: <Hash className="h-5 w-5" /> },
-  ajustes:       { label: "Cor Texto",    icon: <Palette className="h-5 w-5" /> },
-  escudo:        { label: "Escudo",       icon: <Shield className="h-5 w-5" /> },
-  patrocinador:  { label: "Patrocin.",    icon: <Megaphone className="h-5 w-5" /> },
+  camisa:        { label: "Camisa",         icon: <Shirt className="h-5 w-5" /> },
+  mangas:        { label: "Mangas",         icon: <ArrowLeftRight className="h-5 w-5" /> },
+  gola:          { label: "Gola",           icon: <ChevronsDown className="h-5 w-5" /> },
+  short:         { label: "Short",          icon: <Square className="h-5 w-5" /> },
+  estampaCamisa: { label: "Estampa Camisa", icon: <Brush className="h-5 w-5" /> },
+  estampaMangas: { label: "Estampa Mangas", icon: <Paintbrush className="h-5 w-5" /> },
+  estampaShort:  { label: "Estampa Short",  icon: <PaintBucket className="h-5 w-5" /> },
+  textos:        { label: "Nome/Nº",        icon: <Type className="h-5 w-5" /> },
+  fontes:        { label: "Fontes",         icon: <Type className="h-5 w-5" /> },
+  ajustes:       { label: "Ajustes",        icon: <SlidersHorizontal className="h-5 w-5" /> },
+  escudo:        { label: "Escudo",         icon: <Shield className="h-5 w-5" /> },
+  patrocinador:  { label: "Patrocin.",      icon: <Tag className="h-5 w-5" /> },
 };
 
 // Tabs com painel "simples" (sem rolagem necessária)
@@ -148,7 +149,7 @@ function Index() {
         }
       } else if (kind === "svg") {
         if (composeFrontRef.current && composeBackRef.current) {
-          exportCompositeSvg(composeFrontRef.current, composeBackRef.current, `${baseName}.svg`);
+          await exportCompositeSvg(composeFrontRef.current, composeBackRef.current, `${baseName}.svg`);
         }
       }
     } finally {
