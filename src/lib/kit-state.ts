@@ -120,6 +120,8 @@ export interface KitState {
 
 export const SPORT_FONTS = [
   "Bebas Neue", "Anton", "Teko", "Oswald", "Russo One", "Rajdhani", "Orbitron",
+  "Michroma", "Black Ops One", "Bowlby One", "Audiowide",
+  "Barlow Condensed", "Saira Condensed", "Staatliches", "Monoton",
 ] as const;
 
 export const PALETTE: string[] = [
