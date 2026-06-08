@@ -1,6 +1,7 @@
 import { toPng, toJpeg } from "html-to-image";
 import { jsPDF } from "jspdf";
 import "svg2pdf.js";
+import { textToCurves } from "./font-loader";
 
 /** Página fixa 16:9 — usada como referência de proporção. */
 const PAGE_W = 1920;
@@ -14,10 +15,11 @@ function download(href: string, filename: string) {
 }
 
 /** Constrói o SVG composto (frente + verso lado a lado em 16:9). */
-function buildCompositeSvg(
+async function buildCompositeSvg(
   frontSvg: SVGSVGElement,
   backSvg: SVGSVGElement,
-): SVGSVGElement {
+  opts: { outlineFonts?: boolean } = {},
+): Promise<SVGSVGElement> {
   const xmlns = "http://www.w3.org/2000/svg";
   const root = document.createElementNS(xmlns, "svg");
   root.setAttribute("xmlns", xmlns);
@@ -51,6 +53,10 @@ function buildCompositeSvg(
   };
   place(frontSvg, 0);
   place(backSvg, PAGE_W / 2);
+  if (opts.outlineFonts) {
+    // É necessário estar no DOM para algumas medições, mas getPath não exige.
+    await textToCurves(root);
+  }
   return root;
 }
 
@@ -88,7 +94,7 @@ export async function exportCompositePdf(
   filename: string,
 ) {
   if (!frontSvg || !backSvg) throw new Error("SVG refs ausentes para exportar PDF.");
-  const composite = buildCompositeSvg(frontSvg, backSvg);
+  const composite = await buildCompositeSvg(frontSvg, backSvg, { outlineFonts: true });
   // svg2pdf precisa do SVG anexado ao DOM para medir.
   const holder = document.createElement("div");
   holder.style.position = "fixed";
@@ -108,13 +114,13 @@ export async function exportCompositePdf(
 }
 
 /** Exporta como SVG composto (nested SVGs lado a lado em viewBox 16:9). */
-export function exportCompositeSvg(
+export async function exportCompositeSvg(
   frontSvg: SVGSVGElement,
   backSvg: SVGSVGElement,
   filename: string,
 ) {
   if (!frontSvg || !backSvg) throw new Error("SVG refs ausentes para exportar SVG.");
-  const root = buildCompositeSvg(frontSvg, backSvg);
+  const root = await buildCompositeSvg(frontSvg, backSvg, { outlineFonts: true });
   const xml = new XMLSerializer().serializeToString(root);
   const blob = new Blob([`<?xml version="1.0" encoding="UTF-8"?>\n${xml}`], {
     type: "image/svg+xml",
