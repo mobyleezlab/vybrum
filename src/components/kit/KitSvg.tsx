@@ -170,7 +170,12 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
   const hostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
-  useImperativeHandle(ref, () => svgRef.current as SVGSVGElement, []);
+  // Re-expose o <svg> a cada render, pois o elemento é recriado quando trocamos
+  // o raw SVG (frente/verso). Sem deps, useImperativeHandle reroda e garante
+  // que o ref do pai sempre aponte para o SVG atual — essencial para exportar.
+  useImperativeHandle(ref, () => {
+    return (hostRef.current?.querySelector("svg") as SVGSVGElement) ?? null!;
+  });
 
   useEffect(() => {
     const host = hostRef.current;
