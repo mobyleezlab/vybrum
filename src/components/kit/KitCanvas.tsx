@@ -40,7 +40,8 @@ export function KitCanvas({
     if (!resize.current) return;
     const dy = e.clientY - resize.current.y;
     const dvh = (dy / window.innerHeight) * 100;
-    const next = Math.min(85, Math.max(30, resize.current.h + dvh));
+    // Mínimo = 55vh (padrão); pode aumentar até 85vh.
+    const next = Math.min(85, Math.max(55, resize.current.h + dvh));
     setHeightVh(next);
   };
   const onResizeUp = (e: React.PointerEvent) => {
