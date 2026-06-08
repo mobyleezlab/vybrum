@@ -143,7 +143,9 @@ function Index() {
       } else if (kind === "jpg1080") {
         await exportComposite(composeRef.current, "jpg", 1080, `${baseName}-1080p.jpg`);
       } else if (kind === "pdf") {
-        await exportCompositePdf(composeRef.current, `${baseName}.pdf`);
+        if (composeFrontRef.current && composeBackRef.current) {
+          await exportCompositePdf(composeFrontRef.current, composeBackRef.current, `${baseName}.pdf`);
+        }
       } else if (kind === "svg") {
         if (composeFrontRef.current && composeBackRef.current) {
           exportCompositeSvg(composeFrontRef.current, composeBackRef.current, `${baseName}.svg`);
@@ -397,17 +399,58 @@ function Index() {
           top: 0,
           width: 1920,
           height: 1080,
-          backgroundColor: "#ffffff",
-          display: "flex",
           pointerEvents: "none",
         }}
       >
-        <div ref={composeRef} style={{ width: 1920, height: 1080, display: "flex", backgroundColor: "#ffffff" }}>
-          <div style={{ flex: 1, display: "grid", placeItems: "center", padding: 40 }}>
-            <KitSvg ref={composeFrontRef} state={{ ...state, view: "front" }} frontRaw={frontRaw} backRaw={backRaw} display="full" />
+        <div
+          ref={composeRef}
+          style={{
+            width: 1920,
+            height: 1080,
+            display: "flex",
+            backgroundColor: "#ffffff",
+            boxSizing: "border-box",
+          }}
+        >
+          <div
+            style={{
+              flex: "1 1 0",
+              minWidth: 0,
+              height: "100%",
+              padding: 40,
+              boxSizing: "border-box",
+              display: "flex",
+              alignItems: "stretch",
+              justifyContent: "stretch",
+            }}
+          >
+            <KitSvg
+              ref={composeFrontRef}
+              state={{ ...state, view: "front" }}
+              frontRaw={frontRaw}
+              backRaw={backRaw}
+              display="full"
+            />
           </div>
-          <div style={{ flex: 1, display: "grid", placeItems: "center", padding: 40 }}>
-            <KitSvg ref={composeBackRef} state={{ ...state, view: "back" }} frontRaw={frontRaw} backRaw={backRaw} display="full" />
+          <div
+            style={{
+              flex: "1 1 0",
+              minWidth: 0,
+              height: "100%",
+              padding: 40,
+              boxSizing: "border-box",
+              display: "flex",
+              alignItems: "stretch",
+              justifyContent: "stretch",
+            }}
+          >
+            <KitSvg
+              ref={composeBackRef}
+              state={{ ...state, view: "back" }}
+              frontRaw={frontRaw}
+              backRaw={backRaw}
+              display="full"
+            />
           </div>
         </div>
       </div>
