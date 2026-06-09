@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Diamond, ShoppingBag, History, Settings, LogOut } from "lucide-react";
+import { Diamond, ShoppingBag, History, Settings, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth, getInitials } from "@/lib/auth-context";
+import { useEntitlements } from "@/lib/entitlements";
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({ meta: [{ title: "Perfil · Vybrum" }] }),
   component: PerfilPage,
 });
 
-function Row({ icon, label, to, onClick }: { icon: React.ReactNode; label: string; to?: "/creditos"; onClick?: () => void }) {
+function Row({ icon, label, to, onClick }: { icon: React.ReactNode; label: string; to?: "/creditos" | "/admin"; onClick?: () => void }) {
   const inner = (
     <div className="press flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4">
       <span className="text-[#68ed00]">{icon}</span>
@@ -21,6 +22,7 @@ function Row({ icon, label, to, onClick }: { icon: React.ReactNode; label: strin
 
 function PerfilPage() {
   const { user, loading, signOut } = useAuth();
+  const { data: ent } = useEntitlements();
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
@@ -66,6 +68,9 @@ function PerfilPage() {
             <Row icon={<ShoppingBag className="h-5 w-5" />} label="Comprar créditos" to="/creditos" />
             <Row icon={<History className="h-5 w-5" />} label="Histórico" onClick={() => {}} />
             <Row icon={<Settings className="h-5 w-5" />} label="Configurações" onClick={() => {}} />
+            {ent?.isAdmin && (
+              <Row icon={<ShieldCheck className="h-5 w-5" />} label="Admin · Modelos" to="/admin" />
+            )}
           </div>
 
           <div className="mx-4 mt-8">
