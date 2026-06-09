@@ -1,4 +1,4 @@
-import opentype from "opentype.js";
+import * as opentype from "opentype.js";
 
 /** TTF URL para cada fonte de esporte usada no editor. */
 export const FONT_TTF_URLS: Record<string, string> = {
