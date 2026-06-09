@@ -14,7 +14,8 @@ export function TabBar() {
     pathname.startsWith("/login") ||
     pathname.startsWith("/cadastro") ||
     pathname.startsWith("/esqueci-senha") ||
-    pathname.startsWith("/reset-password");
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/admin");
   if (hidden) return null;
 
   return (
