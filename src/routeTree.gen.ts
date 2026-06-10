@@ -21,6 +21,7 @@ import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 import { Route as AdminModelosRouteImport } from './routes/admin.modelos'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -83,6 +84,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminModelosRoute = AdminModelosRouteImport.update({
   id: '/modelos',
   path: '/modelos',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/modelos': typeof AdminModelosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/modelos': typeof AdminModelosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/modelos': typeof AdminModelosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/admin/modelos'
+    | '/admin/usuarios'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/admin/modelos'
+    | '/admin/usuarios'
     | '/admin'
   id:
     | '__root__'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/admin/modelos'
+    | '/admin/usuarios'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -281,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/usuarios': {
+      id: '/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AdminUsuariosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/modelos': {
       id: '/admin/modelos'
       path: '/modelos'
@@ -293,11 +312,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminModelosRoute: typeof AdminModelosRoute
+  AdminUsuariosRoute: typeof AdminUsuariosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminModelosRoute: AdminModelosRoute,
+  AdminUsuariosRoute: AdminUsuariosRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
