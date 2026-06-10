@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
+
+type AdminModelRow = Database["public"]["Tables"]["models"]["Row"];
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("is_admin", { uid: userId });
@@ -18,7 +21,7 @@ export const adminCheck = createServerFn({ method: "GET" })
 
 export const adminListModels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<AdminModelRow[]> => {
     const sb = context.supabase as any;
     await assertAdmin(sb, context.userId);
     const { data, error } = await sb
@@ -27,7 +30,7 @@ export const adminListModels = createServerFn({ method: "GET" })
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []) as AdminModelRow[];
   });
 
 const modelSchema = z.object({
