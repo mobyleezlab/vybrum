@@ -22,7 +22,13 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as AdminModeracaoRouteImport } from './routes/admin.moderacao'
 import { Route as AdminModelosRouteImport } from './routes/admin.modelos'
+import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento'
+import { Route as AdminDropsRouteImport } from './routes/admin.drops'
+import { Route as AdminCreditosRouteImport } from './routes/admin.creditos'
+import { Route as AdminConfigRouteImport } from './routes/admin.config'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -89,9 +95,39 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminModeracaoRoute = AdminModeracaoRouteImport.update({
+  id: '/moderacao',
+  path: '/moderacao',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminModelosRoute = AdminModelosRouteImport.update({
   id: '/modelos',
   path: '/modelos',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFaturamentoRoute = AdminFaturamentoRouteImport.update({
+  id: '/faturamento',
+  path: '/faturamento',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDropsRoute = AdminDropsRouteImport.update({
+  id: '/drops',
+  path: '/drops',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCreditosRoute = AdminCreditosRouteImport.update({
+  id: '/creditos',
+  path: '/creditos',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConfigRoute = AdminConfigRouteImport.update({
+  id: '/config',
+  path: '/config',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -107,7 +143,13 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/config': typeof AdminConfigRoute
+  '/admin/creditos': typeof AdminCreditosRoute
+  '/admin/drops': typeof AdminDropsRoute
+  '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/modelos': typeof AdminModelosRoute
+  '/admin/moderacao': typeof AdminModeracaoRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -122,7 +164,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/config': typeof AdminConfigRoute
+  '/admin/creditos': typeof AdminCreditosRoute
+  '/admin/drops': typeof AdminDropsRoute
+  '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/modelos': typeof AdminModelosRoute
+  '/admin/moderacao': typeof AdminModeracaoRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -139,7 +187,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/config': typeof AdminConfigRoute
+  '/admin/creditos': typeof AdminCreditosRoute
+  '/admin/drops': typeof AdminDropsRoute
+  '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/modelos': typeof AdminModelosRoute
+  '/admin/moderacao': typeof AdminModeracaoRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -157,7 +211,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/perfil'
     | '/reset-password'
+    | '/admin/analytics'
+    | '/admin/config'
+    | '/admin/creditos'
+    | '/admin/drops'
+    | '/admin/faturamento'
     | '/admin/modelos'
+    | '/admin/moderacao'
     | '/admin/usuarios'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -172,7 +232,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/perfil'
     | '/reset-password'
+    | '/admin/analytics'
+    | '/admin/config'
+    | '/admin/creditos'
+    | '/admin/drops'
+    | '/admin/faturamento'
     | '/admin/modelos'
+    | '/admin/moderacao'
     | '/admin/usuarios'
     | '/admin'
   id:
@@ -188,7 +254,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/perfil'
     | '/reset-password'
+    | '/admin/analytics'
+    | '/admin/config'
+    | '/admin/creditos'
+    | '/admin/drops'
+    | '/admin/faturamento'
     | '/admin/modelos'
+    | '/admin/moderacao'
     | '/admin/usuarios'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -300,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsuariosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/moderacao': {
+      id: '/admin/moderacao'
+      path: '/moderacao'
+      fullPath: '/admin/moderacao'
+      preLoaderRoute: typeof AdminModeracaoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/modelos': {
       id: '/admin/modelos'
       path: '/modelos'
@@ -307,17 +386,64 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminModelosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/faturamento': {
+      id: '/admin/faturamento'
+      path: '/faturamento'
+      fullPath: '/admin/faturamento'
+      preLoaderRoute: typeof AdminFaturamentoRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/drops': {
+      id: '/admin/drops'
+      path: '/drops'
+      fullPath: '/admin/drops'
+      preLoaderRoute: typeof AdminDropsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/creditos': {
+      id: '/admin/creditos'
+      path: '/creditos'
+      fullPath: '/admin/creditos'
+      preLoaderRoute: typeof AdminCreditosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/config': {
+      id: '/admin/config'
+      path: '/config'
+      fullPath: '/admin/config'
+      preLoaderRoute: typeof AdminConfigRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminConfigRoute: typeof AdminConfigRoute
+  AdminCreditosRoute: typeof AdminCreditosRoute
+  AdminDropsRoute: typeof AdminDropsRoute
+  AdminFaturamentoRoute: typeof AdminFaturamentoRoute
   AdminModelosRoute: typeof AdminModelosRoute
+  AdminModeracaoRoute: typeof AdminModeracaoRoute
   AdminUsuariosRoute: typeof AdminUsuariosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminConfigRoute: AdminConfigRoute,
+  AdminCreditosRoute: AdminCreditosRoute,
+  AdminDropsRoute: AdminDropsRoute,
+  AdminFaturamentoRoute: AdminFaturamentoRoute,
   AdminModelosRoute: AdminModelosRoute,
+  AdminModeracaoRoute: AdminModeracaoRoute,
   AdminUsuariosRoute: AdminUsuariosRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
