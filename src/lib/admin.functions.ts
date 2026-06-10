@@ -2,34 +2,25 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function getAdmin(userId: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("profiles")
-    .select("plan")
-    .eq("id", userId)
-    .maybeSingle();
+async function assertAdmin(supabase: any, userId: string) {
+  const { data, error } = await supabase.rpc("is_admin", { uid: userId });
   if (error) throw new Error(error.message);
-  if (!data || data.plan !== "admin") throw new Error("Forbidden: admin only");
-  return supabaseAdmin;
+  if (!data) throw new Error("Forbidden: admin only");
 }
 
 export const adminCheck = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin
-      .from("profiles")
-      .select("plan")
-      .eq("id", context.userId)
-      .maybeSingle();
-    return { isAdmin: data?.plan === "admin" };
+    const { data, error } = await (context.supabase as any).rpc("is_admin", { uid: context.userId });
+    if (error) throw new Error(error.message);
+    return { isAdmin: !!data };
   });
 
 export const adminListModels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const sb = await getAdmin(context.userId);
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
     const { data, error } = await sb
       .from("models")
       .select("*")
@@ -62,7 +53,8 @@ export const adminUpsertModel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => modelSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const sb = await getAdmin(context.userId);
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
     const { error } = await sb.from("models").upsert(data, { onConflict: "code" });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -72,7 +64,8 @@ export const adminDeleteModel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ code: z.string().min(1).max(32) }).parse(input))
   .handler(async ({ data, context }) => {
-    const sb = await getAdmin(context.userId);
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
     const { error } = await sb.from("models").delete().eq("code", data.code);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -90,7 +83,8 @@ export const adminUploadAsset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => uploadSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const sb = await getAdmin(context.userId);
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
     const ext = (data.filename.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
     const path = `${data.code}/${data.kind}-${Date.now()}.${ext}`;
     const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
