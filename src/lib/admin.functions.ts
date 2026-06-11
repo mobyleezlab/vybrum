@@ -11,8 +11,20 @@ async function assertAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Forbidden: admin only");
 }
 
+function isRlsRecursionError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('infinite recursion detected in policy for relation "profiles"');
+}
+
+const adminSetupMessage =
+  "As policies de admin no Supabase ainda precisam ser atualizadas. Aplique a migration de correção de RLS para listar usuários.";
+
 async function getAdminDataClient(authenticatedSupabase: any, userId: string) {
   await assertAdmin(authenticatedSupabase, userId);
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    return supabaseAdmin as any;
+  }
   return authenticatedSupabase;
 }
 
@@ -47,8 +59,11 @@ export const adminCheck = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await (context.supabase as any).rpc("is_admin", { uid: context.userId });
-    if (error) throw new Error(error.message);
-    return { isAdmin: !!data };
+    if (error) {
+      if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
+      throw new Error(error.message);
+    }
+    return { isAdmin: !!data, setupError: null as string | null };
   });
 
 export const adminListModels = createServerFn({ method: "GET" })
