@@ -5,12 +5,6 @@ import type { Database } from "@/integrations/supabase/types";
 
 type AdminModelRow = Database["public"]["Tables"]["models"]["Row"];
 
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("is_admin", { uid: userId });
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden: admin only");
-}
-
 function isRlsRecursionError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   return message.includes('infinite recursion detected in policy for relation "profiles"');
@@ -19,13 +13,48 @@ function isRlsRecursionError(error: unknown) {
 const adminSetupMessage =
   "As policies de admin no Supabase ainda precisam ser atualizadas. Aplique a migration de correção de RLS para listar usuários.";
 
-async function getAdminDataClient(authenticatedSupabase: any, userId: string) {
-  await assertAdmin(authenticatedSupabase, userId);
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    return supabaseAdmin as any;
+async function getServiceAdminClientIfAvailable() {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return null;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin as any;
+}
+
+async function isAdminViaServiceClient(sb: any, userId: string) {
+  const roleRes = await sb
+    .from("user_roles")
+    .select("user_id")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (!roleRes.error && roleRes.data) return true;
+  if (roleRes.error && roleRes.error.code !== "42P01" && roleRes.error.code !== "42703") {
+    throw new Error(roleRes.error.message);
   }
-  return authenticatedSupabase;
+
+  const { data, error } = await sb.from("profiles").select("plan").eq("id", userId).maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.plan === "admin";
+}
+
+async function resolveAdmin(authenticatedSupabase: any, userId: string) {
+  const adminClient = await getServiceAdminClientIfAvailable();
+  if (adminClient) return { isAdmin: await isAdminViaServiceClient(adminClient, userId), adminClient };
+
+  const { data, error } = await authenticatedSupabase.rpc("is_admin", { uid: userId });
+  if (error) throw new Error(error.message);
+  return { isAdmin: !!data, adminClient: null as any };
+}
+
+async function assertAdmin(supabase: any, userId: string) {
+  const { isAdmin } = await resolveAdmin(supabase, userId);
+  if (!isAdmin) throw new Error("Forbidden: admin only");
+}
+
+async function getAdminDataClient(authenticatedSupabase: any, userId: string) {
+  const { isAdmin, adminClient } = await resolveAdmin(authenticatedSupabase, userId);
+  if (!isAdmin) throw new Error("Forbidden: admin only");
+  return adminClient ?? authenticatedSupabase;
 }
 
 async function syncAdminRole(supabase: any, userId: string, plan: string) {
@@ -58,12 +87,13 @@ async function audit(
 export const adminCheck = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await (context.supabase as any).rpc("is_admin", { uid: context.userId });
-    if (error) {
+    try {
+      const { isAdmin } = await resolveAdmin(context.supabase as any, context.userId);
+      return { isAdmin, setupError: null as string | null };
+    } catch (error) {
       if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
-      throw new Error(error.message);
+      throw error;
     }
-    return { isAdmin: !!data, setupError: null as string | null };
   });
 
 export const adminListModels = createServerFn({ method: "GET" })
