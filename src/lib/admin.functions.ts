@@ -30,18 +30,17 @@ async function syncAdminRole(supabase: any, userId: string, plan: string) {
 
 async function audit(
   supabase: any,
-  actorId: string,
+  adminId: string,
   action: string,
   targetType: string | null,
   targetId: string | null,
   payload: Record<string, unknown> | null = null,
 ) {
   await supabase.from("admin_audit_log").insert({
-    actor_id: actorId,
+    admin_id: adminId,
     action,
-    target_type: targetType,
-    target_id: targetId,
-    payload: payload as any,
+    target_user_id: targetType === "user" ? targetId : null,
+    payload: { ...(payload ?? {}), target_type: targetType, target_id: targetId } as any,
   });
 }
 
@@ -292,12 +291,11 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
 export const adminListAuditLog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { data, error } = await sb.from("admin_audit_log").select("*").order("created_at", { ascending: false }).limit(100);
     if (error) throw new Error(error.message);
     return (data ?? []) as Array<{
-      id: string; actor_id: string; action: string; target_type: string | null; target_id: string | null;
+      id: string; admin_id: string; target_user_id: string | null; action: string;
       payload: any; created_at: string;
     }>;
   });
@@ -347,8 +345,7 @@ export const adminBillingSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => billingSchema.parse(i))
   .handler(async ({ data, context }): Promise<AdminBillingSummary> => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
 
     const now = new Date();
     const since = new Date(now.getTime() - data.rangeDays * 86400_000);
