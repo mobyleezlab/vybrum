@@ -5,8 +5,14 @@ import type { Database } from "@/integrations/supabase/types";
 
 type AdminModelRow = Database["public"]["Tables"]["models"]["Row"];
 
+function errorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object" && "message" in error) return String((error as { message?: unknown }).message ?? "");
+  return String(error);
+}
+
 function isRlsRecursionError(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error);
+  const message = errorMessage(error);
   return message.includes('infinite recursion detected in policy for relation "profiles"');
 }
 
@@ -225,7 +231,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
     const { data: profiles, error, count } = await q;
     if (error) {
       if (isRlsRecursionError(error)) return { users: [], total: 0, setupError: adminSetupMessage };
-      throw new Error(error.message);
+      throw new Error(errorMessage(error));
     }
 
     const ids = (profiles ?? []).map((p: any) => p.id);
