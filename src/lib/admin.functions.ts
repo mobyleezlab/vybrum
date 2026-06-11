@@ -159,8 +159,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => listUsersSchema.parse(i))
   .handler(async ({ data, context }): Promise<{ users: AdminUserRow[]; total: number }> => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
 
     const from = data.page * data.pageSize;
     const to = from + data.pageSize - 1;
@@ -225,13 +224,13 @@ export const adminUpdateUserPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => updatePlanSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("profiles").update({
       plan: data.plan,
       plan_expires_at: data.plan_expires_at ?? null,
     }).eq("id", data.userId);
     if (error) throw new Error(error.message);
+    await syncAdminRole(sb, data.userId, data.plan);
     await audit(sb, context.userId, "user.update_plan", "user", data.userId, { plan: data.plan });
     return { ok: true };
   });
@@ -245,8 +244,7 @@ export const adminSetUserDisabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => setDisabledSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("profiles").update({ is_disabled: data.is_disabled }).eq("id", data.userId);
     if (error) throw new Error(error.message);
     await audit(sb, context.userId, data.is_disabled ? "user.disable" : "user.enable", "user", data.userId);
@@ -263,8 +261,7 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => adjustCreditsSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
 
     const { data: bal } = await sb.from("credit_balances").select("balance,total_earned,total_spent").eq("user_id", data.userId).maybeSingle();
     const current = bal?.balance ?? 0;
