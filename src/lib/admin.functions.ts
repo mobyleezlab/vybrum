@@ -13,8 +13,7 @@ async function assertAdmin(supabase: any, userId: string) {
 
 async function getAdminDataClient(authenticatedSupabase: any, userId: string) {
   await assertAdmin(authenticatedSupabase, userId);
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin as any;
+  return authenticatedSupabase;
 }
 
 async function syncAdminRole(supabase: any, userId: string, plan: string) {
