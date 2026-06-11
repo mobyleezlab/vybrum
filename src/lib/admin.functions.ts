@@ -11,20 +11,35 @@ async function assertAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Forbidden: admin only");
 }
 
+async function getAdminDataClient(authenticatedSupabase: any, userId: string) {
+  await assertAdmin(authenticatedSupabase, userId);
+  return authenticatedSupabase;
+}
+
+async function syncAdminRole(supabase: any, userId: string, plan: string) {
+  if (plan === "admin") {
+    const { error } = await supabase.from("user_roles").upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+    if (error && error.code !== "42P01") throw new Error(error.message);
+    return;
+  }
+
+  const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+  if (error && error.code !== "42P01") throw new Error(error.message);
+}
+
 async function audit(
   supabase: any,
-  actorId: string,
+  adminId: string,
   action: string,
   targetType: string | null,
   targetId: string | null,
   payload: Record<string, unknown> | null = null,
 ) {
   await supabase.from("admin_audit_log").insert({
-    actor_id: actorId,
+    admin_id: adminId,
     action,
-    target_type: targetType,
-    target_id: targetId,
-    payload: payload as any,
+    target_user_id: targetType === "user" ? targetId : null,
+    payload: { ...(payload ?? {}), target_type: targetType, target_id: targetId } as any,
   });
 }
 
@@ -39,8 +54,7 @@ export const adminCheck = createServerFn({ method: "GET" })
 export const adminListModels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminModelRow[]> => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { data, error } = await sb
       .from("models")
       .select("*")
@@ -73,8 +87,7 @@ export const adminUpsertModel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => modelSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("models").upsert(data, { onConflict: "code" });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -84,8 +97,7 @@ export const adminDeleteModel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ code: z.string().min(1).max(32) }).parse(input))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("models").delete().eq("code", data.code);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -103,8 +115,7 @@ export const adminUploadAsset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => uploadSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const ext = (data.filename.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
     const path = `${data.code}/${data.kind}-${Date.now()}.${ext}`;
     const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
@@ -146,8 +157,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => listUsersSchema.parse(i))
   .handler(async ({ data, context }): Promise<{ users: AdminUserRow[]; total: number }> => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
 
     const from = data.page * data.pageSize;
     const to = from + data.pageSize - 1;
@@ -212,13 +222,13 @@ export const adminUpdateUserPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => updatePlanSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("profiles").update({
       plan: data.plan,
       plan_expires_at: data.plan_expires_at ?? null,
     }).eq("id", data.userId);
     if (error) throw new Error(error.message);
+    await syncAdminRole(sb, data.userId, data.plan);
     await audit(sb, context.userId, "user.update_plan", "user", data.userId, { plan: data.plan });
     return { ok: true };
   });
@@ -232,8 +242,7 @@ export const adminSetUserDisabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => setDisabledSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("profiles").update({ is_disabled: data.is_disabled }).eq("id", data.userId);
     if (error) throw new Error(error.message);
     await audit(sb, context.userId, data.is_disabled ? "user.disable" : "user.enable", "user", data.userId);
@@ -250,8 +259,7 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => adjustCreditsSchema.parse(i))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
 
     const { data: bal } = await sb.from("credit_balances").select("balance,total_earned,total_spent").eq("user_id", data.userId).maybeSingle();
     const current = bal?.balance ?? 0;
@@ -282,12 +290,11 @@ export const adminAdjustCredits = createServerFn({ method: "POST" })
 export const adminListAuditLog = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { data, error } = await sb.from("admin_audit_log").select("*").order("created_at", { ascending: false }).limit(100);
     if (error) throw new Error(error.message);
     return (data ?? []) as Array<{
-      id: string; actor_id: string; action: string; target_type: string | null; target_id: string | null;
+      id: string; admin_id: string; target_user_id: string | null; action: string;
       payload: any; created_at: string;
     }>;
   });
@@ -337,8 +344,7 @@ export const adminBillingSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => billingSchema.parse(i))
   .handler(async ({ data, context }): Promise<AdminBillingSummary> => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
 
     const now = new Date();
     const since = new Date(now.getTime() - data.rangeDays * 86400_000);
