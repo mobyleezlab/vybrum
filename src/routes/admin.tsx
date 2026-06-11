@@ -58,7 +58,9 @@ function AdminLayout() {
       <div className="grid min-h-dvh place-items-center bg-black px-4 text-center">
         <div>
           <Lock className="mx-auto h-10 w-10 text-red-400" />
-          <p className="mt-3 text-sm text-white">Acesso restrito a administradores.</p>
+          <p className="mt-3 max-w-sm text-sm text-white">
+            {check.data?.setupError ?? "Acesso restrito a administradores."}
+          </p>
           <Link to="/" className="mt-4 inline-flex h-11 items-center rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] px-5 text-sm font-semibold text-white">Voltar</Link>
         </div>
       </div>
