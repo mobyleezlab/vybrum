@@ -11,6 +11,23 @@ async function assertAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Forbidden: admin only");
 }
 
+async function getAdminDataClient(authenticatedSupabase: any, userId: string) {
+  await assertAdmin(authenticatedSupabase, userId);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin as any;
+}
+
+async function syncAdminRole(supabase: any, userId: string, plan: string) {
+  if (plan === "admin") {
+    const { error } = await supabase.from("user_roles").upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+    if (error && error.code !== "42P01") throw new Error(error.message);
+    return;
+  }
+
+  const { error } = await supabase.from("user_roles").delete().eq("user_id", userId).eq("role", "admin");
+  if (error && error.code !== "42P01") throw new Error(error.message);
+}
+
 async function audit(
   supabase: any,
   actorId: string,
@@ -39,8 +56,7 @@ export const adminCheck = createServerFn({ method: "GET" })
 export const adminListModels = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminModelRow[]> => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { data, error } = await sb
       .from("models")
       .select("*")
@@ -73,8 +89,7 @@ export const adminUpsertModel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => modelSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("models").upsert(data, { onConflict: "code" });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -84,8 +99,7 @@ export const adminDeleteModel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ code: z.string().min(1).max(32) }).parse(input))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const { error } = await sb.from("models").delete().eq("code", data.code);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -103,8 +117,7 @@ export const adminUploadAsset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => uploadSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const sb = context.supabase as any;
-    await assertAdmin(sb, context.userId);
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
     const ext = (data.filename.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
     const path = `${data.code}/${data.kind}-${Date.now()}.${ext}`;
     const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
