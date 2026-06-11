@@ -172,7 +172,13 @@ export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => listUsersSchema.parse(i))
   .handler(async ({ data, context }): Promise<{ users: AdminUserRow[]; total: number }> => {
-    const sb = await getAdminDataClient(context.supabase as any, context.userId);
+    let sb: any;
+    try {
+      sb = await getAdminDataClient(context.supabase as any, context.userId);
+    } catch (error) {
+      if (isRlsRecursionError(error)) throw new Error(adminSetupMessage);
+      throw error;
+    }
 
     const from = data.page * data.pageSize;
     const to = from + data.pageSize - 1;
@@ -185,7 +191,10 @@ export const adminListUsers = createServerFn({ method: "POST" })
     }
     q = q.range(from, to);
     const { data: profiles, error, count } = await q;
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (isRlsRecursionError(error)) throw new Error(adminSetupMessage);
+      throw new Error(error.message);
+    }
 
     const ids = (profiles ?? []).map((p: any) => p.id);
     if (!ids.length) return { users: [], total: count ?? 0 };
