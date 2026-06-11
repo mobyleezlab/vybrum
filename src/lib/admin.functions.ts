@@ -291,3 +291,171 @@ export const adminListAuditLog = createServerFn({ method: "GET" })
       payload: any; created_at: string;
     }>;
   });
+
+// ===== Billing =====
+
+export type AdminBillingSummary = {
+  totals: {
+    revenue_brl: number;
+    completed_count: number;
+    pending_count: number;
+    failed_count: number;
+    refunded_count: number;
+    paying_users: number;
+    arpu_brl: number;
+    avg_ticket_brl: number;
+    credits_granted: number;
+  };
+  windows: {
+    today_brl: number;
+    last_7d_brl: number;
+    last_30d_brl: number;
+    prev_30d_brl: number;
+    growth_pct: number | null;
+  };
+  daily: Array<{ date: string; revenue: number; count: number }>;
+  top_packages: Array<{ package_id: string; name: string; count: number; revenue: number }>;
+  recent: Array<{
+    id: string;
+    created_at: string;
+    completed_at: string | null;
+    status: string;
+    price_brl: number;
+    credits_granted: number;
+    user_id: string;
+    user_email: string | null;
+    user_name: string | null;
+    package_name: string | null;
+  }>;
+};
+
+const billingSchema = z.object({
+  rangeDays: z.number().int().min(7).max(365).default(30),
+});
+
+export const adminBillingSummary = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => billingSchema.parse(i))
+  .handler(async ({ data, context }): Promise<AdminBillingSummary> => {
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
+
+    const now = new Date();
+    const since = new Date(now.getTime() - data.rangeDays * 86400_000);
+    const prevSince = new Date(since.getTime() - data.rangeDays * 86400_000);
+
+    const [allRes, packagesRes, recentRes] = await Promise.all([
+      sb.from("credit_purchases")
+        .select("id,user_id,package_id,price_brl,credits_granted,status,created_at,completed_at")
+        .gte("created_at", prevSince.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(5000),
+      sb.from("credit_packages").select("id,name"),
+      sb.from("credit_purchases")
+        .select("id,user_id,package_id,price_brl,credits_granted,status,created_at,completed_at")
+        .order("created_at", { ascending: false })
+        .limit(25),
+    ]);
+    if (allRes.error) throw new Error(allRes.error.message);
+
+    const rows: any[] = allRes.data ?? [];
+    const pkgMap = new Map<string, string>((packagesRes.data ?? []).map((p: any) => [p.id, p.name]));
+
+    const completedAll = rows.filter((r) => r.status === "completed");
+    const inWindow = completedAll.filter((r) => new Date(r.created_at) >= since);
+    const prevWindow = completedAll.filter((r) => {
+      const t = new Date(r.created_at);
+      return t >= prevSince && t < since;
+    });
+
+    const sum = (arr: any[]) => arr.reduce((a, r) => a + Number(r.price_brl ?? 0), 0);
+    const sumCredits = (arr: any[]) => arr.reduce((a, r) => a + Number(r.credits_granted ?? 0), 0);
+
+    const revenue = sum(inWindow);
+    const prevRevenue = sum(prevWindow);
+    const payingUsers = new Set(inWindow.map((r) => r.user_id)).size;
+
+    const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0);
+    const start7 = new Date(now.getTime() - 7 * 86400_000);
+    const start30 = new Date(now.getTime() - 30 * 86400_000);
+    const startPrev30 = new Date(now.getTime() - 60 * 86400_000);
+
+    const today_brl = sum(completedAll.filter((r) => new Date(r.created_at) >= startOfToday));
+    const last_7d_brl = sum(completedAll.filter((r) => new Date(r.created_at) >= start7));
+    const last_30d_brl = sum(completedAll.filter((r) => new Date(r.created_at) >= start30));
+    const prev_30d_brl = sum(completedAll.filter((r) => {
+      const t = new Date(r.created_at);
+      return t >= startPrev30 && t < start30;
+    }));
+
+    // Daily series
+    const byDay = new Map<string, { revenue: number; count: number }>();
+    for (let i = data.rangeDays - 1; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 86400_000);
+      const key = d.toISOString().slice(0, 10);
+      byDay.set(key, { revenue: 0, count: 0 });
+    }
+    for (const r of inWindow) {
+      const key = new Date(r.created_at).toISOString().slice(0, 10);
+      const slot = byDay.get(key);
+      if (slot) { slot.revenue += Number(r.price_brl ?? 0); slot.count += 1; }
+    }
+    const daily = Array.from(byDay.entries()).map(([date, v]) => ({ date, revenue: Number(v.revenue.toFixed(2)), count: v.count }));
+
+    // Top packages
+    const pkgAgg = new Map<string, { count: number; revenue: number }>();
+    for (const r of inWindow) {
+      const cur = pkgAgg.get(r.package_id) ?? { count: 0, revenue: 0 };
+      cur.count += 1; cur.revenue += Number(r.price_brl ?? 0);
+      pkgAgg.set(r.package_id, cur);
+    }
+    const top_packages = Array.from(pkgAgg.entries())
+      .map(([package_id, v]) => ({ package_id, name: pkgMap.get(package_id) ?? package_id.slice(0, 8), count: v.count, revenue: Number(v.revenue.toFixed(2)) }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 6);
+
+    // Recent purchases with user info
+    const recentRows: any[] = recentRes.data ?? [];
+    const userIds = Array.from(new Set(recentRows.map((r) => r.user_id)));
+    const profilesRes = userIds.length
+      ? await sb.from("profiles").select("id,email,full_name").in("id", userIds)
+      : { data: [] };
+    const profMap = new Map<string, any>((profilesRes.data ?? []).map((p: any) => [p.id, p]));
+
+    const recent = recentRows.map((r) => ({
+      id: r.id,
+      created_at: r.created_at,
+      completed_at: r.completed_at,
+      status: r.status,
+      price_brl: Number(r.price_brl ?? 0),
+      credits_granted: Number(r.credits_granted ?? 0),
+      user_id: r.user_id,
+      user_email: profMap.get(r.user_id)?.email ?? null,
+      user_name: profMap.get(r.user_id)?.full_name ?? null,
+      package_name: pkgMap.get(r.package_id) ?? null,
+    }));
+
+    return {
+      totals: {
+        revenue_brl: Number(revenue.toFixed(2)),
+        completed_count: inWindow.length,
+        pending_count: rows.filter((r) => r.status === "pending" && new Date(r.created_at) >= since).length,
+        failed_count: rows.filter((r) => r.status === "failed" && new Date(r.created_at) >= since).length,
+        refunded_count: rows.filter((r) => r.status === "refunded" && new Date(r.created_at) >= since).length,
+        paying_users: payingUsers,
+        arpu_brl: payingUsers ? Number((revenue / payingUsers).toFixed(2)) : 0,
+        avg_ticket_brl: inWindow.length ? Number((revenue / inWindow.length).toFixed(2)) : 0,
+        credits_granted: sumCredits(inWindow),
+      },
+      windows: {
+        today_brl: Number(today_brl.toFixed(2)),
+        last_7d_brl: Number(last_7d_brl.toFixed(2)),
+        last_30d_brl: Number(last_30d_brl.toFixed(2)),
+        prev_30d_brl: Number(prev_30d_brl.toFixed(2)),
+        growth_pct: prevRevenue > 0 ? Number((((revenue - prevRevenue) / prevRevenue) * 100).toFixed(1)) : null,
+      },
+      daily,
+      top_packages,
+      recent,
+    };
+  });
