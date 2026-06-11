@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Loader2, Search, ShieldOff, ShieldCheck, Coins, Crown } from "lucide-react";
+import { Loader2, Search, ShieldOff, ShieldCheck, Coins, Crown, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import {
   adminListUsers,
@@ -57,6 +57,13 @@ function AdminUsuariosPage() {
           {PLANS.map((p) => <option key={p} value={p}>{p === "all" ? "Todos planos" : p}</option>)}
         </select>
       </div>
+
+      {(q.data?.setupError || q.isError) && (
+        <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-100">
+          <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+          <p>{q.data?.setupError ?? (q.error instanceof Error ? q.error.message : "Erro ao carregar usuários.")}</p>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-[#2a2a2a]">
         <table className="w-full text-left text-xs">

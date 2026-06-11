@@ -191,6 +191,8 @@ export type AdminUserRow = {
   purchases_total_brl: number;
 };
 
+export type AdminListUsersResult = { users: AdminUserRow[]; total: number; setupError?: string | null };
+
 const listUsersSchema = z.object({
   search: z.string().trim().max(120).optional().nullable(),
   plan: z.enum(["all", "free", "pro", "premium", "admin"]).default("all"),
@@ -201,12 +203,12 @@ const listUsersSchema = z.object({
 export const adminListUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => listUsersSchema.parse(i))
-  .handler(async ({ data, context }): Promise<{ users: AdminUserRow[]; total: number }> => {
+  .handler(async ({ data, context }): Promise<AdminListUsersResult> => {
     let sb: any;
     try {
       sb = await getAdminDataClient(context.supabase as any, context.userId);
     } catch (error) {
-      if (isRlsRecursionError(error)) throw new Error(adminSetupMessage);
+      if (isRlsRecursionError(error)) return { users: [], total: 0, setupError: adminSetupMessage };
       throw error;
     }
 
@@ -222,7 +224,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
     q = q.range(from, to);
     const { data: profiles, error, count } = await q;
     if (error) {
-      if (isRlsRecursionError(error)) throw new Error(adminSetupMessage);
+      if (isRlsRecursionError(error)) return { users: [], total: 0, setupError: adminSetupMessage };
       throw new Error(error.message);
     }
 
@@ -263,7 +265,7 @@ export const adminListUsers = createServerFn({ method: "POST" })
       shields_count: shieldMap.get(p.id) ?? 0,
       purchases_total_brl: purchMap.get(p.id) ?? 0,
     }));
-    return { users, total: count ?? 0 };
+    return { users, total: count ?? 0, setupError: null };
   });
 
 const updatePlanSchema = z.object({
