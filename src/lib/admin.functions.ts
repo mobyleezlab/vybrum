@@ -340,11 +340,35 @@ const billingSchema = z.object({
   rangeDays: z.number().int().min(7).max(365).default(30),
 });
 
+function emptyBillingSummary(rangeDays: number): AdminBillingSummary {
+  const now = new Date();
+  const daily = Array.from({ length: rangeDays }, (_, index) => {
+    const d = new Date(now.getTime() - (rangeDays - index - 1) * 86400_000);
+    return { date: d.toISOString().slice(0, 10), revenue: 0, count: 0 };
+  });
+  return {
+    totals: { revenue_brl: 0, completed_count: 0, pending_count: 0, failed_count: 0, refunded_count: 0, paying_users: 0, arpu_brl: 0, avg_ticket_brl: 0, credits_granted: 0 },
+    windows: { today_brl: 0, last_7d_brl: 0, last_30d_brl: 0, prev_30d_brl: 0, growth_pct: null },
+    daily,
+    top_packages: [],
+    recent: [],
+  };
+}
+
 export const adminBillingSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => billingSchema.parse(i))
   .handler(async ({ data, context }): Promise<AdminBillingSummary> => {
-    const sb = await getAdminDataClient(context.supabase as any, context.userId);
+    try {
+      await assertAdmin(context.supabase as any, context.userId);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("infinite recursion detected in policy")) return emptyBillingSummary(data.rangeDays);
+      throw error;
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return emptyBillingSummary(data.rangeDays);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sb = supabaseAdmin as any;
 
     const now = new Date();
     const since = new Date(now.getTime() - data.rangeDays * 86400_000);
@@ -363,6 +387,8 @@ export const adminBillingSummary = createServerFn({ method: "POST" })
         .limit(25),
     ]);
     if (allRes.error) throw new Error(allRes.error.message);
+    if (packagesRes.error) throw new Error(packagesRes.error.message);
+    if (recentRes.error) throw new Error(recentRes.error.message);
 
     const rows: any[] = allRes.data ?? [];
     const pkgMap = new Map<string, string>((packagesRes.data ?? []).map((p: any) => [p.id, p.name]));
