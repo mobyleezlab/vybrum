@@ -25,6 +25,21 @@ function brl(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function emptySummary(range: number): AdminBillingSummary {
+  const now = new Date();
+  const daily = Array.from({ length: range }, (_, index) => {
+    const d = new Date(now.getTime() - (range - index - 1) * 86400_000);
+    return { date: d.toISOString().slice(0, 10), revenue: 0, count: 0 };
+  });
+  return {
+    totals: { revenue_brl: 0, completed_count: 0, pending_count: 0, failed_count: 0, refunded_count: 0, paying_users: 0, arpu_brl: 0, avg_ticket_brl: 0, credits_granted: 0 },
+    windows: { today_brl: 0, last_7d_brl: 0, last_30d_brl: 0, prev_30d_brl: 0, growth_pct: null },
+    daily,
+    top_packages: [],
+    recent: [],
+  };
+}
+
 function FaturamentoPage() {
   const fn = useServerFn(adminBillingSummary);
   const [range, setRange] = useState<number>(30);
@@ -40,7 +55,7 @@ function FaturamentoPage() {
   if (q.error) {
     return <p className="text-sm text-red-300">{(q.error as Error).message}</p>;
   }
-  const d = q.data as AdminBillingSummary;
+  const d = (q.data ?? emptySummary(range)) as AdminBillingSummary;
 
   return (
     <div className="space-y-4">

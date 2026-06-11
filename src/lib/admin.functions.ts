@@ -344,7 +344,9 @@ export const adminBillingSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i: unknown) => billingSchema.parse(i))
   .handler(async ({ data, context }): Promise<AdminBillingSummary> => {
-    const sb = await getAdminDataClient(context.supabase as any, context.userId);
+    await assertAdmin(context.supabase as any, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sb = supabaseAdmin as any;
 
     const now = new Date();
     const since = new Date(now.getTime() - data.rangeDays * 86400_000);
@@ -363,6 +365,8 @@ export const adminBillingSummary = createServerFn({ method: "POST" })
         .limit(25),
     ]);
     if (allRes.error) throw new Error(allRes.error.message);
+    if (packagesRes.error) throw new Error(packagesRes.error.message);
+    if (recentRes.error) throw new Error(recentRes.error.message);
 
     const rows: any[] = allRes.data ?? [];
     const pkgMap = new Map<string, string>((packagesRes.data ?? []).map((p: any) => [p.id, p.name]));
