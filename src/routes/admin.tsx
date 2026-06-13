@@ -1,7 +1,9 @@
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings } from "lucide-react";
+import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings, Menu } from "lucide-react";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { adminCheck } from "@/lib/admin.functions";
 import { useAuth } from "@/lib/auth-context";
 
@@ -26,6 +28,7 @@ function AdminLayout() {
   const { user, loading } = useAuth();
   const checkFn = useServerFn(adminCheck);
   const loc = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const check = useQuery({
     queryKey: ["admin", "check", user?.id],
@@ -77,28 +80,44 @@ function AdminLayout() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <h1 className="flex-1 text-base font-bold">Admin · {activeTab.label}</h1>
-        </div>
-        <nav className="flex gap-1 overflow-x-auto px-2 pb-2 lg:px-4">
-          {TABS.map((t) => {
-            const Icon = t.icon;
-            const active = loc.pathname.startsWith(t.to);
-            return (
-              <Link
-                key={t.to}
-                to={t.to}
-                className="press inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-[11px] font-bold uppercase tracking-wide"
-                style={{
-                  borderColor: active ? "#68ed00" : "#2a2a2a",
-                  background: active ? "#68ed0022" : "#0f0f0f",
-                  color: active ? "#68ed00" : "#bbb",
-                }}
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="press grid h-9 w-9 place-items-center rounded-lg border border-[#2a2a2a] bg-[#1a1a1a]"
+                aria-label="Abrir menu do admin"
               >
-                <Icon className="h-3.5 w-3.5" />
-                {t.label}
-              </Link>
-            );
-          })}
-        </nav>
+                <Menu className="h-4 w-4" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] border-[#1a1a1a] bg-black p-0 text-white">
+              <SheetHeader className="border-b border-[#1a1a1a] p-4">
+                <SheetTitle className="text-white">Admin</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 p-3">
+                {TABS.map((t) => {
+                  const Icon = t.icon;
+                  const active = loc.pathname.startsWith(t.to);
+                  return (
+                    <Link
+                      key={t.to}
+                      to={t.to}
+                      onClick={() => setMenuOpen(false)}
+                      className="press inline-flex h-11 items-center gap-3 rounded-lg border px-3 text-sm font-semibold"
+                      style={{
+                        borderColor: active ? "#68ed00" : "#2a2a2a",
+                        background: active ? "#68ed0022" : "#0f0f0f",
+                        color: active ? "#68ed00" : "#ddd",
+                      }}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {t.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </header>
       <div className="px-4 py-4 lg:px-6">
         <Outlet />
