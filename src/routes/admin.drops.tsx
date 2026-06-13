@@ -157,7 +157,7 @@ function DropCard({ drop }: { drop: AdminDrop }) {
   const [until, setUntil] = useState<string>(drop.available_until ? toLocalInput(drop.available_until) : "");
 
   const update = useMutation({
-    mutationFn: (payload: Parameters<typeof updateFn>[0]["data"]) => updateFn({ data: payload }),
+    mutationFn: (payload: { id: string; is_active?: boolean; available_until?: string | null; is_limited?: boolean; sort_order?: number | null }) => updateFn({ data: payload }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin", "drops"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
