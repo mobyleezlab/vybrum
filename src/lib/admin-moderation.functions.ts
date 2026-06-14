@@ -158,7 +158,7 @@ export const adminListSecurityLogs = createServerFn({ method: "POST" })
     }));
 
     const { data: types } = await sb.from("security_logs").select("event_type").limit(1000);
-    const eventTypes = Array.from(new Set((types ?? []).map((t: any) => String(t.event_type)))).sort();
+    const eventTypes: string[] = Array.from(new Set<string>((types ?? []).map((t: any) => String(t.event_type)))).sort();
 
     return { logs, eventTypes };
   });
