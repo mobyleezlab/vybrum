@@ -70,6 +70,45 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profile_with_plan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "app_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_balances: {
         Row: {
           balance: number
@@ -730,11 +769,12 @@ export type Database = {
           code: string | null
           days_remaining: number | null
           drop_name: string | null
-          features_level: string | null
           is_expired: boolean | null
           is_limited: boolean | null
+          is_premium: boolean | null
           is_unlocked: boolean | null
           name: string | null
+          preview_url: string | null
           rarity_level: string | null
           sort_order: number | null
           sport: string | null
@@ -752,6 +792,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string | null
+          is_disabled: boolean | null
           is_premium_active: boolean | null
           plan: string | null
           plan_expires_at: string | null
@@ -760,6 +801,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string | null
+          is_disabled?: boolean | null
           is_premium_active?: never
           plan?: string | null
           plan_expires_at?: string | null
@@ -768,6 +810,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string | null
+          is_disabled?: boolean | null
           is_premium_active?: never
           plan?: string | null
           plan_expires_at?: string | null
@@ -776,9 +819,13 @@ export type Database = {
       }
     }
     Functions: {
+      is_active_user: { Args: never; Returns: boolean }
       is_admin:
         | { Args: never; Returns: boolean }
         | { Args: { uid: string }; Returns: boolean }
+      is_premium_active: { Args: never; Returns: boolean }
+      unlock_pack: { Args: { p_pack_id: string }; Returns: Json }
+      unlock_template: { Args: { p_model_code: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
