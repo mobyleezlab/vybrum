@@ -25,7 +25,28 @@ async function getServiceAdminClientIfAvailable() {
   return supabaseAdmin as any;
 }
 
+async function readAdminPlan(sb: any, userId: string) {
+  const sources = ["profiles", "profile_with_plan"] as const;
+  let lastError: string | null = null;
+
+  for (const source of sources) {
+    const { data, error } = await sb.from(source).select("plan").eq("id", userId).maybeSingle();
+    if (!error) return { plan: typeof data?.plan === "string" ? data.plan : null, error: null as string | null };
+
+    const code = typeof error === "object" && error && "code" in error ? String((error as { code?: unknown }).code ?? "") : "";
+    lastError = errorMessage(error);
+    if (code === "42P01" || code === "42703") continue;
+    return { plan: null as string | null, error: lastError };
+  }
+
+  return { plan: null as string | null, error: lastError };
+}
+
 async function isAdminViaServiceClient(sb: any, userId: string) {
+  const planRes = await readAdminPlan(sb, userId);
+  if (planRes.error) throw new Error(planRes.error);
+  if (planRes.plan) return planRes.plan === "admin";
+
   const roleRes = await sb
     .from("user_roles")
     .select("user_id")
@@ -46,6 +67,10 @@ async function isAdminViaServiceClient(sb: any, userId: string) {
 async function resolveAdmin(authenticatedSupabase: any, userId: string) {
   const adminClient = await getServiceAdminClientIfAvailable();
   if (adminClient) return { isAdmin: await isAdminViaServiceClient(adminClient, userId), adminClient };
+
+  const planRes = await readAdminPlan(authenticatedSupabase, userId);
+  if (planRes.error) throw new Error(planRes.error);
+  if (planRes.plan) return { isAdmin: planRes.plan === "admin", adminClient: null as any };
 
   const { data, error } = await authenticatedSupabase.rpc("is_admin", { uid: userId });
   if (error) throw new Error(error.message);
@@ -94,24 +119,11 @@ export const adminCheck = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     try {
-      // Lê o próprio perfil via cliente autenticado (RLS permite SELECT do próprio row).
-      // Evita dependência de user_roles, service-role envs ou da RPC is_admin.
-      const { data, error } = await (context.supabase as any)
-        .from("profiles")
-        .select("plan")
-        .eq("id", context.userId)
-        .maybeSingle();
-      if (error) {
-        if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
-        return {
-          isAdmin: false,
-          setupError: `Não foi possível validar admin: ${errorMessage(error)}`,
-        };
-      }
-      return { isAdmin: data?.plan === "admin", setupError: null as string | null };
+      const { isAdmin } = await resolveAdmin(context.supabase as any, context.userId);
+      return { isAdmin, setupError: null as string | null };
     } catch (error) {
       if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
-      throw error;
+      return { isAdmin: false, setupError: `Não foi possível validar admin: ${errorMessage(error)}` };
     }
   });
 
