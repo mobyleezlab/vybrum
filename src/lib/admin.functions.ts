@@ -94,8 +94,21 @@ export const adminCheck = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     try {
-      const { isAdmin } = await resolveAdmin(context.supabase as any, context.userId);
-      return { isAdmin, setupError: null as string | null };
+      // Lê o próprio perfil via cliente autenticado (RLS permite SELECT do próprio row).
+      // Evita dependência de user_roles, service-role envs ou da RPC is_admin.
+      const { data, error } = await (context.supabase as any)
+        .from("profiles")
+        .select("plan")
+        .eq("id", context.userId)
+        .maybeSingle();
+      if (error) {
+        if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
+        return {
+          isAdmin: false,
+          setupError: `Não foi possível validar admin: ${errorMessage(error)}`,
+        };
+      }
+      return { isAdmin: data?.plan === "admin", setupError: null as string | null };
     } catch (error) {
       if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
       throw error;
