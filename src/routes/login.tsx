@@ -1,7 +1,14 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { ChevronLeft } from "lucide-react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/auth-errors";
+
+const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Informe um e-mail válido.").max(255),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres.").max(128),
+});
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -20,11 +27,17 @@ function LoginPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (loading) return; // anti double-submit
     setErr(null);
+    const parsed = loginSchema.safeParse({ email, password });
+    if (!parsed.success) {
+      setErr(parsed.error.issues[0]?.message ?? "Verifique os campos.");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword(parsed.data);
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(friendlyAuthError(error));
     navigate({ to: redirect });
   };
 

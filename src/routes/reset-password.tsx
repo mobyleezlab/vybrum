@@ -1,6 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/auth-errors";
+
+const pwSchema = z.string().min(6, "Senha deve ter pelo menos 6 caracteres.").max(128);
 
 export const Route = createFileRoute("/reset-password")({ component: ResetPage });
 
@@ -12,10 +16,17 @@ function ResetPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setErr(null); setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
+    const parsed = pwSchema.safeParse(password);
+    if (!parsed.success) {
+      setLoading(false);
+      setErr(parsed.error.issues[0]?.message ?? "Senha inválida.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: parsed.data });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(friendlyAuthError(error));
     navigate({ to: "/perfil" });
   };
 
