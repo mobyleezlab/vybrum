@@ -4,7 +4,7 @@ import type { ModelRow } from "@/lib/models";
 import type { Pack } from "@/lib/credits";
 
 const MODEL_COLUMNS =
-  "code,name,category,rarity_level,is_limited,is_unlocked,features_level,unlock_cost,buy_cost,svg_frente_url,svg_costas_url,thumbnail_url,available_until,days_remaining,is_expired,drop_name,sort_order,sport";
+  "code,name,category,rarity_level,is_limited,is_unlocked,unlock_cost,buy_cost,svg_frente_url,svg_costas_url,thumbnail_url,available_until,days_remaining,is_expired,drop_name,sort_order,sport";
 
 function getPublicClient() {
   const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
