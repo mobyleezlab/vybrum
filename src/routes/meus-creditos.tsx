@@ -34,7 +34,7 @@ function MeusCreditosPage() {
       ) : (
         <>
           <section className="px-4">
-            <div className="relative overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#68ed00] via-[#a8d109] to-[#0f0f0f] p-5">
+            <div className="relative overflow-hidden rounded-3xl bg-[#68ed00] p-5">
               <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">Saldo atual</div>
               <div className="mt-1 flex items-baseline gap-2">
                 <Diamond className="h-7 w-7 text-black" />

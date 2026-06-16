@@ -67,7 +67,7 @@ function PackCard({ pack }: { pack: Pack }) {
         {pack.thumbnail_url ? (
           <img src={pack.thumbnail_url} alt={pack.name} className="h-full w-full object-cover" />
         ) : (
-          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] text-[#333]">
+          <div className="grid h-full w-full place-items-center bg-[#0f0f0f] text-[#333]">
             <Package className="h-10 w-10" />
           </div>
         )}
@@ -126,15 +126,7 @@ function CreditosPage() {
 
       {/* Balance card */}
       <section className="px-4">
-        <div className="relative overflow-hidden rounded-3xl border border-[#2a2a2a] bg-gradient-to-br from-[#68ed00] via-[#a8d109] to-[#0f0f0f] p-5">
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 20% 20%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 60%, #000 1px, transparent 1px)",
-              backgroundSize: "24px 24px, 32px 32px",
-            }}
-          />
+        <div className="relative overflow-hidden rounded-3xl bg-[#68ed00] p-5">
           <div className="relative">
             <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/70">
               Seu saldo
