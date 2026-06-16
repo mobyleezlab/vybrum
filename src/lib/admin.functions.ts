@@ -119,7 +119,15 @@ export const adminCheck = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     try {
-      const { isAdmin } = await resolveAdmin(context.supabase as any, context.userId);
+      // Caminho primário: RPC SECURITY DEFINER `is_admin()` lê profiles
+      // por auth.uid() ignorando RLS — funciona sem service role.
+      const sb = context.supabase as any;
+      const rpc = await sb.rpc("is_admin");
+      if (!rpc.error && typeof rpc.data === "boolean") {
+        return { isAdmin: rpc.data, setupError: null as string | null };
+      }
+      // Fallback (caso a RPC sem argumentos não exista).
+      const { isAdmin } = await resolveAdmin(sb, context.userId);
       return { isAdmin, setupError: null as string | null };
     } catch (error) {
       if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
