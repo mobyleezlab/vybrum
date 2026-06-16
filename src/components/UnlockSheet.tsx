@@ -31,7 +31,7 @@ export function UnlockSheet({ open, onClose, feature }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-[#2196F3] to-[#8B00E8] text-white">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-[#2196F3] text-white">
             <Sparkles className="h-5 w-5" />
           </div>
           <button

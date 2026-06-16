@@ -25,6 +25,7 @@ export function useProfile() {
     queryKey: ["profile", user?.id ?? "anon"],
     enabled: !loading && !!user,
     staleTime: 60_000,
+    retry: 1,
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("profiles")
@@ -65,13 +66,12 @@ export function useUpdateProfile() {
   return useMutation({
     mutationFn: async (input: { full_name?: string | null; avatar_id?: string | null }) => {
       if (!user) throw new Error("not_authenticated");
-      const patch: Record<string, unknown> = {};
+      const patch: Record<string, unknown> = { id: user.id, email: user.email ?? null };
       if (input.full_name !== undefined) patch.full_name = input.full_name?.trim() || null;
       if (input.avatar_id !== undefined) patch.avatar_id = input.avatar_id;
       const { error } = await (supabase as any)
         .from("profiles")
-        .update(patch)
-        .eq("id", user.id);
+        .upsert(patch, { onConflict: "id" });
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {

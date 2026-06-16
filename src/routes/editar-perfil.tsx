@@ -4,6 +4,7 @@ import { ChevronLeft, Check, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useProfile, useAvatars, useUpdateProfile } from "@/lib/profile";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/editar-perfil")({
   ssr: false,
@@ -15,21 +16,24 @@ const nameSchema = z.string().trim().min(1, "Informe seu nome").max(80, "Nome mu
 
 function EditarPerfilPage() {
   const { ready } = useRequireAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: profile } = useProfile();
+  const { data: profile, isLoading: loadingProfile } = useProfile();
   const { data: avatars, isLoading: loadingAvatars } = useAvatars();
   const update = useUpdateProfile();
 
   const [name, setName] = useState("");
   const [avatarId, setAvatarId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (profile) {
-      setName(profile.full_name ?? "");
-      setAvatarId(profile.avatar_id ?? null);
-    }
-  }, [profile]);
+    if (hydrated) return;
+    if (loadingProfile) return;
+    setName(profile?.full_name ?? (user?.user_metadata?.full_name as string) ?? "");
+    setAvatarId(profile?.avatar_id ?? null);
+    setHydrated(true);
+  }, [profile, loadingProfile, user, hydrated]);
 
   const handleSave = async () => {
     setError(null);
@@ -58,7 +62,7 @@ function EditarPerfilPage() {
         <span className="w-10" />
       </header>
 
-      {!ready || !profile ? (
+      {!ready || loadingProfile ? (
         <div className="mx-4 mt-4 h-40 animate-pulse rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]" />
       ) : (
         <>
@@ -67,7 +71,7 @@ function EditarPerfilPage() {
               {selectedAvatar ? (
                 <img src={selectedAvatar.image_url} alt={selectedAvatar.name} className="h-full w-full object-cover" />
               ) : (
-                <span className="text-2xl font-bold text-[#68ed00]">{(profile.full_name ?? "U")[0]}</span>
+                <span className="text-2xl font-bold text-[#68ed00]">{(name || profile?.full_name || user?.email || "U")[0]?.toUpperCase()}</span>
               )}
             </div>
             <p className="mt-2 text-xs text-[#888]">Escolha um avatar abaixo</p>
