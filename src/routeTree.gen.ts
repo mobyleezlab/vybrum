@@ -14,6 +14,7 @@ import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as MeusCreditosRouteImport } from './routes/meus-creditos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KitsRouteImport } from './routes/kits'
+import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as EditorRouteImport } from './routes/editor'
@@ -55,6 +56,11 @@ const LoginRoute = LoginRouteImport.update({
 const KitsRoute = KitsRouteImport.update({
   id: '/kits',
   path: '/kits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorarRoute = ExplorarRouteImport.update({
@@ -152,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
+  '/historico': typeof HistoricoRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
   '/meus-creditos': typeof MeusCreditosRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
+  '/historico': typeof HistoricoRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
   '/meus-creditos': typeof MeusCreditosRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
+  '/historico': typeof HistoricoRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
   '/meus-creditos': typeof MeusCreditosRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
+    | '/historico'
     | '/kits'
     | '/login'
     | '/meus-creditos'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
+    | '/historico'
     | '/kits'
     | '/login'
     | '/meus-creditos'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
+    | '/historico'
     | '/kits'
     | '/login'
     | '/meus-creditos'
@@ -298,6 +310,7 @@ export interface RootRouteChildren {
   EditorRoute: typeof EditorRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   ExplorarRoute: typeof ExplorarRoute
+  HistoricoRoute: typeof HistoricoRoute
   KitsRoute: typeof KitsRoute
   LoginRoute: typeof LoginRoute
   MeusCreditosRoute: typeof MeusCreditosRoute
@@ -340,6 +353,13 @@ declare module '@tanstack/react-router' {
       path: '/kits'
       fullPath: '/kits'
       preLoaderRoute: typeof KitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explorar': {
@@ -499,6 +519,7 @@ const rootRouteChildren: RootRouteChildren = {
   EditorRoute: EditorRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   ExplorarRoute: ExplorarRoute,
+  HistoricoRoute: HistoricoRoute,
   KitsRoute: KitsRoute,
   LoginRoute: LoginRoute,
   MeusCreditosRoute: MeusCreditosRoute,
