@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as MeusCreditosRouteImport } from './routes/meus-creditos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KitsRouteImport } from './routes/kits'
 import { Route as ExplorarRouteImport } from './routes/explorar'
@@ -38,6 +39,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeusCreditosRoute = MeusCreditosRouteImport.update({
+  id: '/meus-creditos',
+  path: '/meus-creditos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/explorar': typeof ExplorarRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
+  '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/explorar': typeof ExplorarRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
+  '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/explorar': typeof ExplorarRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
+  '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/explorar'
     | '/kits'
     | '/login'
+    | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/explorar'
     | '/kits'
     | '/login'
+    | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/explorar'
     | '/kits'
     | '/login'
+    | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
@@ -275,6 +287,7 @@ export interface RootRouteChildren {
   ExplorarRoute: typeof ExplorarRoute
   KitsRoute: typeof KitsRoute
   LoginRoute: typeof LoginRoute
+  MeusCreditosRoute: typeof MeusCreditosRoute
   PerfilRoute: typeof PerfilRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/meus-creditos': {
+      id: '/meus-creditos'
+      path: '/meus-creditos'
+      fullPath: '/meus-creditos'
+      preLoaderRoute: typeof MeusCreditosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -460,6 +480,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExplorarRoute: ExplorarRoute,
   KitsRoute: KitsRoute,
   LoginRoute: LoginRoute,
+  MeusCreditosRoute: MeusCreditosRoute,
   PerfilRoute: PerfilRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }
