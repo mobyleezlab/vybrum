@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Bell, FileText, ShieldCheck, Info } from "lucide-react";
+import { ChevronLeft, FileText, ShieldCheck, Info } from "lucide-react";
 import { useState } from "react";
 import { useRequireAuth } from "@/lib/use-require-auth";
 
@@ -82,8 +82,6 @@ function ConfiguracoesPage() {
               </a>
             </div>
           </section>
-          {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-          {false && <Bell />}
         </>
       )}
     </div>
