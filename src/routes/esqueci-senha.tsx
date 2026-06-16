@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { ChevronLeft } from "lucide-react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/auth-errors";
+
+const emailSchema = z.string().trim().toLowerCase().email("Informe um e-mail válido.").max(255);
 
 export const Route = createFileRoute("/esqueci-senha")({ component: ForgotPage });
 
@@ -13,13 +17,20 @@ function ForgotPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setErr(null); setMsg(null); setLoading(true);
+    const parsed = emailSchema.safeParse(email);
+    if (!parsed.success) {
+      setLoading(false);
+      setErr(parsed.error.issues[0]?.message ?? "E-mail inválido.");
+      return;
+    }
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
       redirectTo: `${origin}/reset-password`,
     });
     setLoading(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(friendlyAuthError(error));
     setMsg("Se o e-mail existir, enviamos um link para redefinir a senha.");
   };
 
