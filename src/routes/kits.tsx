@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { FolderOpen } from "lucide-react";
-import { useAuth } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/use-require-auth";
 
 export const Route = createFileRoute("/kits")({
   head: () => ({ meta: [{ title: "Meus Kits · Vybrum" }] }),
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/kits")({
 });
 
 function KitsPage() {
-  const { user, loading } = useAuth();
+  const { ready } = useRequireAuth();
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
@@ -16,17 +16,8 @@ function KitsPage() {
         <h1 className="text-[22px] font-extrabold tracking-tight text-white">Meus Kits</h1>
       </header>
 
-      {loading ? null : !user ? (
-        <div className="mx-4 mt-4 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-6 text-center">
-          <FolderOpen className="mx-auto h-8 w-8 text-[#444]" />
-          <p className="mt-3 text-sm font-semibold text-white">Entre para ver seus kits salvos</p>
-          <Link
-            to="/login" search={{ redirect: "/kits" }}
-            className="press mt-4 inline-flex h-[52px] items-center justify-center rounded-2xl bg-[#68ed00] px-6 text-sm font-bold text-black"
-          >
-            Entrar
-          </Link>
-        </div>
+      {!ready ? (
+        <div className="mx-4 mt-4 h-32 animate-pulse rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]" />
       ) : (
         <div className="mx-4 mt-4 rounded-2xl border border-dashed border-[#2a2a2a] bg-[#0f0f0f] p-6 text-center">
           <FolderOpen className="mx-auto h-8 w-8 text-[#444]" />
