@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Diamond, ShoppingBag, History, Settings, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth, getInitials } from "@/lib/auth-context";
+import { useRequireAuth } from "@/lib/use-require-auth";
 import { useEntitlements } from "@/lib/entitlements";
 
 export const Route = createFileRoute("/perfil")({
@@ -21,7 +22,8 @@ function Row({ icon, label, to, onClick }: { icon: React.ReactNode; label: strin
 }
 
 function PerfilPage() {
-  const { user, loading, signOut } = useAuth();
+  const { ready } = useRequireAuth();
+  const { user, signOut } = useAuth();
   const { data: ent } = useEntitlements();
 
   return (
@@ -30,27 +32,8 @@ function PerfilPage() {
         <h1 className="text-[22px] font-extrabold tracking-tight text-white">Perfil</h1>
       </header>
 
-      {loading ? (
+      {!ready || !user ? (
         <div className="mx-4 mt-4 h-32 animate-pulse rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]" />
-      ) : !user ? (
-        <div className="mx-4 mt-4 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-6 text-center">
-          <p className="text-sm font-semibold text-white">Faça login para salvar seus kits</p>
-          <p className="mt-1 text-xs text-[#888]">e acessar recursos premium.</p>
-          <div className="mt-5 flex gap-2">
-            <Link
-              to="/login" search={{ redirect: "/perfil" }}
-              className="press h-[52px] flex-1 rounded-2xl bg-[#68ed00] text-sm font-bold text-black inline-flex items-center justify-center"
-            >
-              Entrar
-            </Link>
-            <Link
-              to="/cadastro" search={{ redirect: "/perfil" }}
-              className="press h-[52px] flex-1 rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] text-sm font-semibold text-white inline-flex items-center justify-center"
-            >
-              Cadastrar
-            </Link>
-          </div>
-        </div>
       ) : (
         <>
           <div className="mx-4 mt-4 flex items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
