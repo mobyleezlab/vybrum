@@ -18,6 +18,7 @@ import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as EditorRouteImport } from './routes/editor'
+import { Route as EditarPerfilRouteImport } from './routes/editar-perfil'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as ComprarCreditosRouteImport } from './routes/comprar-creditos'
 import { Route as CadastroRouteImport } from './routes/cadastro'
@@ -76,6 +77,11 @@ const EsqueciSenhaRoute = EsqueciSenhaRouteImport.update({
 const EditorRoute = EditorRouteImport.update({
   id: '/editor',
   path: '/editor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditarPerfilRoute = EditarPerfilRouteImport.update({
+  id: '/editar-perfil',
+  path: '/editar-perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreditosRoute = CreditosRouteImport.update({
@@ -155,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/comprar-creditos': typeof ComprarCreditosRoute
   '/creditos': typeof CreditosRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/comprar-creditos': typeof ComprarCreditosRoute
   '/creditos': typeof CreditosRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/comprar-creditos': typeof ComprarCreditosRoute
   '/creditos': typeof CreditosRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/comprar-creditos'
     | '/creditos'
+    | '/editar-perfil'
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/comprar-creditos'
     | '/creditos'
+    | '/editar-perfil'
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
@@ -281,6 +292,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/comprar-creditos'
     | '/creditos'
+    | '/editar-perfil'
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
@@ -307,6 +319,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   ComprarCreditosRoute: typeof ComprarCreditosRoute
   CreditosRoute: typeof CreditosRoute
+  EditarPerfilRoute: typeof EditarPerfilRoute
   EditorRoute: typeof EditorRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   ExplorarRoute: typeof ExplorarRoute
@@ -381,6 +394,13 @@ declare module '@tanstack/react-router' {
       path: '/editor'
       fullPath: '/editor'
       preLoaderRoute: typeof EditorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/editar-perfil': {
+      id: '/editar-perfil'
+      path: '/editar-perfil'
+      fullPath: '/editar-perfil'
+      preLoaderRoute: typeof EditarPerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/creditos': {
@@ -516,6 +536,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   ComprarCreditosRoute: ComprarCreditosRoute,
   CreditosRoute: CreditosRoute,
+  EditarPerfilRoute: EditarPerfilRoute,
   EditorRoute: EditorRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   ExplorarRoute: ExplorarRoute,
