@@ -11,12 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as MeusCreditosRouteImport } from './routes/meus-creditos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KitsRouteImport } from './routes/kits'
+import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as ExplorarRouteImport } from './routes/explorar'
 import { Route as EsqueciSenhaRouteImport } from './routes/esqueci-senha'
 import { Route as EditorRouteImport } from './routes/editor'
+import { Route as EditarPerfilRouteImport } from './routes/editar-perfil'
 import { Route as CreditosRouteImport } from './routes/creditos'
+import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
+import { Route as ComprarCreditosRouteImport } from './routes/comprar-creditos'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -40,6 +45,11 @@ const PerfilRoute = PerfilRouteImport.update({
   path: '/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MeusCreditosRoute = MeusCreditosRouteImport.update({
+  id: '/meus-creditos',
+  path: '/meus-creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -48,6 +58,11 @@ const LoginRoute = LoginRouteImport.update({
 const KitsRoute = KitsRouteImport.update({
   id: '/kits',
   path: '/kits',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoricoRoute = HistoricoRouteImport.update({
+  id: '/historico',
+  path: '/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorarRoute = ExplorarRouteImport.update({
@@ -65,9 +80,24 @@ const EditorRoute = EditorRouteImport.update({
   path: '/editor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditarPerfilRoute = EditarPerfilRouteImport.update({
+  id: '/editar-perfil',
+  path: '/editar-perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CreditosRoute = CreditosRouteImport.update({
   id: '/creditos',
   path: '/creditos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
+  id: '/configuracoes',
+  path: '/configuracoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComprarCreditosRoute = ComprarCreditosRouteImport.update({
+  id: '/comprar-creditos',
+  path: '/comprar-creditos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -135,12 +165,17 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/comprar-creditos': typeof ComprarCreditosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
+  '/historico': typeof HistoricoRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
+  '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -156,12 +191,17 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
+  '/comprar-creditos': typeof ComprarCreditosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
+  '/historico': typeof HistoricoRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
+  '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -179,12 +219,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
+  '/comprar-creditos': typeof ComprarCreditosRoute
+  '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
+  '/editar-perfil': typeof EditarPerfilRoute
   '/editor': typeof EditorRoute
   '/esqueci-senha': typeof EsqueciSenhaRoute
   '/explorar': typeof ExplorarRoute
+  '/historico': typeof HistoricoRoute
   '/kits': typeof KitsRoute
   '/login': typeof LoginRoute
+  '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -203,12 +248,17 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
+    | '/comprar-creditos'
+    | '/configuracoes'
     | '/creditos'
+    | '/editar-perfil'
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
+    | '/historico'
     | '/kits'
     | '/login'
+    | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
@@ -224,12 +274,17 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
+    | '/comprar-creditos'
+    | '/configuracoes'
     | '/creditos'
+    | '/editar-perfil'
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
+    | '/historico'
     | '/kits'
     | '/login'
+    | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
@@ -246,12 +301,17 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
+    | '/comprar-creditos'
+    | '/configuracoes'
     | '/creditos'
+    | '/editar-perfil'
     | '/editor'
     | '/esqueci-senha'
     | '/explorar'
+    | '/historico'
     | '/kits'
     | '/login'
+    | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
@@ -269,12 +329,17 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   CadastroRoute: typeof CadastroRoute
+  ComprarCreditosRoute: typeof ComprarCreditosRoute
+  ConfiguracoesRoute: typeof ConfiguracoesRoute
   CreditosRoute: typeof CreditosRoute
+  EditarPerfilRoute: typeof EditarPerfilRoute
   EditorRoute: typeof EditorRoute
   EsqueciSenhaRoute: typeof EsqueciSenhaRoute
   ExplorarRoute: typeof ExplorarRoute
+  HistoricoRoute: typeof HistoricoRoute
   KitsRoute: typeof KitsRoute
   LoginRoute: typeof LoginRoute
+  MeusCreditosRoute: typeof MeusCreditosRoute
   PerfilRoute: typeof PerfilRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
@@ -295,6 +360,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/meus-creditos': {
+      id: '/meus-creditos'
+      path: '/meus-creditos'
+      fullPath: '/meus-creditos'
+      preLoaderRoute: typeof MeusCreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -307,6 +379,13 @@ declare module '@tanstack/react-router' {
       path: '/kits'
       fullPath: '/kits'
       preLoaderRoute: typeof KitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/historico': {
+      id: '/historico'
+      path: '/historico'
+      fullPath: '/historico'
+      preLoaderRoute: typeof HistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explorar': {
@@ -330,11 +409,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EditorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/editar-perfil': {
+      id: '/editar-perfil'
+      path: '/editar-perfil'
+      fullPath: '/editar-perfil'
+      preLoaderRoute: typeof EditarPerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/creditos': {
       id: '/creditos'
       path: '/creditos'
       fullPath: '/creditos'
       preLoaderRoute: typeof CreditosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/configuracoes': {
+      id: '/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof ConfiguracoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comprar-creditos': {
+      id: '/comprar-creditos'
+      path: '/comprar-creditos'
+      fullPath: '/comprar-creditos'
+      preLoaderRoute: typeof ComprarCreditosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -454,12 +554,17 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   CadastroRoute: CadastroRoute,
+  ComprarCreditosRoute: ComprarCreditosRoute,
+  ConfiguracoesRoute: ConfiguracoesRoute,
   CreditosRoute: CreditosRoute,
+  EditarPerfilRoute: EditarPerfilRoute,
   EditorRoute: EditorRoute,
   EsqueciSenhaRoute: EsqueciSenhaRoute,
   ExplorarRoute: ExplorarRoute,
+  HistoricoRoute: HistoricoRoute,
   KitsRoute: KitsRoute,
   LoginRoute: LoginRoute,
+  MeusCreditosRoute: MeusCreditosRoute,
   PerfilRoute: PerfilRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }
