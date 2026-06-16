@@ -1,9 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, LogOut, UserCog, Image as ImageIcon, Bell, Shield } from "lucide-react";
+import { ChevronLeft, Bell, FileText, ShieldCheck, Info } from "lucide-react";
 import { useState } from "react";
 import { useRequireAuth } from "@/lib/use-require-auth";
-import { useAuth } from "@/lib/auth-context";
-import { useProfile } from "@/lib/profile";
 
 export const Route = createFileRoute("/configuracoes")({
   ssr: false,
@@ -31,8 +29,6 @@ function Toggle({ checked, onChange, label, desc }: { checked: boolean; onChange
 
 function ConfiguracoesPage() {
   const { ready } = useRequireAuth();
-  const { user, signOut } = useAuth();
-  const { data: profile } = useProfile();
 
   // Preferências locais (preparadas para persistência futura)
   const [notif, setNotif] = useState(true);
@@ -53,62 +49,41 @@ function ConfiguracoesPage() {
       ) : (
         <>
           <section className="mx-4 mt-4">
-            <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#888]">Conta</h2>
-            <div className="space-y-2">
-              <Link
-                to="/editar-perfil"
-                className="press flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4"
-              >
-                <UserCog className="h-5 w-5 text-[#68ed00]" />
-                <div className="flex-1">
-                  <div className="text-sm font-semibold text-white">Editar nome</div>
-                  <div className="text-[11px] text-[#888]">{profile?.full_name ?? "Definir nome"}</div>
-                </div>
-                <span className="text-[#444]">›</span>
-              </Link>
-              <Link
-                to="/editar-perfil"
-                className="press flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4"
-              >
-                <ImageIcon className="h-5 w-5 text-[#68ed00]" />
-                <div className="flex-1">
-                  <div className="text-sm font-semibold text-white">Alterar avatar</div>
-                  <div className="text-[11px] text-[#888]">Escolha um avatar pré-definido</div>
-                </div>
-                <span className="text-[#444]">›</span>
-              </Link>
-              <div className="flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4">
-                <Shield className="h-5 w-5 text-[#68ed00]" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-white">E-mail</div>
-                  <div className="truncate text-[11px] text-[#888]">{user?.email}</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="mx-4 mt-5">
             <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#888]">Preferências</h2>
             <div className="space-y-2">
               <Toggle checked={notif} onChange={setNotif} label="Notificações" desc="Avisos sobre desbloqueios e drops" />
               <Toggle checked={reduceMotion} onChange={setReduceMotion} label="Reduzir animações" desc="Menos efeitos visuais" />
-              <div className="flex items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4 py-3">
-                <Bell className="h-5 w-5 text-[#888]" />
-                <div className="text-[11px] text-[#666]">As preferências serão sincronizadas em breve.</div>
-              </div>
             </div>
           </section>
 
-          <section className="mx-4 mt-6">
-            <button
-              type="button"
-              onClick={() => { void signOut(); }}
-              className="press inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#ef4444]/40 bg-[#ef4444]/10 text-sm font-bold text-[#ef4444]"
-            >
-              <LogOut className="h-4 w-4" />
-              Sair da conta
-            </button>
+          <section className="mx-4 mt-5">
+            <h2 className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[#888]">Sobre</h2>
+            <div className="space-y-2">
+              <div className="flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4">
+                <Info className="h-5 w-5 text-[#68ed00]" />
+                <div className="flex-1 text-sm font-semibold text-white">Versão</div>
+                <div className="text-[12px] text-[#888]">1.0.0</div>
+              </div>
+              <a
+                href="#"
+                className="press flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4"
+              >
+                <FileText className="h-5 w-5 text-[#68ed00]" />
+                <div className="flex-1 text-sm font-semibold text-white">Termos de uso</div>
+                <span className="text-[#444]">›</span>
+              </a>
+              <a
+                href="#"
+                className="press flex h-14 items-center gap-3 rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] px-4"
+              >
+                <ShieldCheck className="h-5 w-5 text-[#68ed00]" />
+                <div className="flex-1 text-sm font-semibold text-white">Privacidade</div>
+                <span className="text-[#444]">›</span>
+              </a>
+            </div>
           </section>
+          {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
+          {false && <Bell />}
         </>
       )}
     </div>
