@@ -109,6 +109,33 @@ export type Database = {
           },
         ]
       }
+      avatars: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       credit_balances: {
         Row: {
           balance: number
@@ -512,6 +539,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_id: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -523,6 +551,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -534,6 +563,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -544,7 +574,15 @@ export type Database = {
           plan_expires_at?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_avatar_id_fkey"
+            columns: ["avatar_id"]
+            isOneToOne: false
+            referencedRelation: "avatars"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_limits: {
         Row: {
