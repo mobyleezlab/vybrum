@@ -130,6 +130,7 @@ export const adminCheck = createServerFn({ method: "GET" })
       const { isAdmin } = await resolveAdmin(sb, context.userId);
       return { isAdmin, setupError: null as string | null };
     } catch (error) {
+      console.error("[adminCheck] erro:", error);
       if (isRlsRecursionError(error)) return { isAdmin: false, setupError: adminSetupMessage };
       return { isAdmin: false, setupError: `Não foi possível validar admin: ${errorMessage(error)}` };
     }
