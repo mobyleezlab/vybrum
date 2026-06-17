@@ -1,11 +1,10 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { adminCheck } from "@/lib/admin.functions";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -26,51 +25,40 @@ const TABS = [
 
 function AdminLayout() {
   const { user, loading } = useAuth();
-  const checkFn = useServerFn(adminCheck);
   const loc = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [timedOut, setTimedOut] = useState(false);
 
   const check = useQuery({
     queryKey: ["admin", "check", user?.id],
     enabled: !!user,
     retry: false,
+    staleTime: 60_000,
     queryFn: async () => {
       try {
-        // Timeout duro de 3s: em alguns domínios o RPC pode pendurar.
-        const result = await Promise.race([
-          checkFn(),
-          new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("adminCheck timeout")), 3000),
-          ),
-        ]);
-        if (!result || typeof (result as any).isAdmin !== "boolean") {
-          console.error("[adminCheck] resposta inválida:", result);
-          return { isAdmin: false, setupError: "Resposta inválida do servidor." };
+        // Client-side: chama RPC is_admin() direto via Supabase JS.
+        // O token vai automaticamente no header Authorization, RLS + SECURITY DEFINER
+        // garantem a segurança real. O check aqui é só para UX.
+        const { data, error } = await supabase.rpc("is_admin");
+        if (error) {
+          console.error("[adminCheck] rpc error:", error);
+          return { isAdmin: false, setupError: error.message };
         }
-        return result as { isAdmin: boolean; setupError: string | null };
+        return { isAdmin: data === true, setupError: null as string | null };
       } catch (err) {
         console.error("[adminCheck] falhou:", err);
-        return { isAdmin: false, setupError: "Não foi possível validar o admin. Faça login novamente." };
+        return { isAdmin: false, setupError: "Não foi possível validar o admin." };
       }
     },
   });
 
-  // Safety net: se algo travar (auth-context sem resolver), redireciona para login após 4s.
   useEffect(() => {
-    if (!loading && user) return;
-    const t = setTimeout(() => setTimedOut(true), 4000);
-    return () => clearTimeout(t);
-  }, [loading, user]);
-
-  useEffect(() => {
-    if (timedOut && !user) {
+    if (!loading && !user) {
       navigate({ to: "/login", search: { redirect: "/admin" }, replace: true });
     }
-  }, [timedOut, user, navigate]);
+  }, [loading, user, navigate]);
 
-  if ((loading || (user && check.isLoading)) && !timedOut) {
+  if (loading || (user && check.isLoading)) {
     return (
       <div className="grid min-h-dvh place-items-center bg-black text-white">
         <Loader2 className="h-6 w-6 animate-spin" />
@@ -79,15 +67,7 @@ function AdminLayout() {
   }
 
   if (!user) {
-    return (
-      <div className="grid min-h-dvh place-items-center bg-black px-4 text-center">
-        <div>
-          <Lock className="mx-auto h-10 w-10 text-[#666]" />
-          <p className="mt-3 text-sm text-white">Entre para acessar o admin.</p>
-          <Link to="/login" search={{ redirect: "/admin" }} className="mt-4 inline-flex h-11 items-center rounded-xl bg-[#68ed00] px-5 text-sm font-bold text-black">Entrar</Link>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (!check.data?.isAdmin) {
