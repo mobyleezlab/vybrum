@@ -9,8 +9,14 @@ import type { Database } from './types'
 export const requireSupabaseAuth = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
+    // Fallback para os valores públicos do projeto caso as env vars do servidor
+    // não estejam disponíveis (ex.: deploy em domínio custom sem rebuild).
+    // A publishable key é segura para ficar no código (mesma usada no client).
+    const SUPABASE_URL =
+      process.env.SUPABASE_URL || "https://mqcoignezmvnwgeuelmz.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY =
+      process.env.SUPABASE_PUBLISHABLE_KEY ||
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xY29pZ25lem12bndnZXVlbG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDE0OTYsImV4cCI6MjA5NTMxNzQ5Nn0.Si0OmvfqwNiVFcdE1FiFumb3QwY8jM6Fq_A10YwyKcA";
 
     if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
       const missing = [
