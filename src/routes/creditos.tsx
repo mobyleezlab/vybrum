@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft, Diamond, Flame, Star, Shirt, Package, Check, Sparkles } from "lucide-react";
-import { useCreditBalance, useCreditPackages, usePacks, formatBRL, type Pack } from "@/lib/credits";
+import { useCreditBalance, useCreditPackages, usePacks, useUnlockedPacks, formatBRL, type Pack } from "@/lib/credits";
 import { useAuth } from "@/lib/auth-context";
+import { useUnlockPack } from "@/lib/unlock";
 
 export const Route = createFileRoute("/creditos")({
   head: () => ({ meta: [{ title: "Créditos · Vybrum" }] }),
@@ -60,7 +61,9 @@ function PackageCard({
   );
 }
 
-function PackCard({ pack }: { pack: Pack }) {
+function PackCard({ pack, unlocked }: { pack: Pack; unlocked: boolean }) {
+  const unlock = useUnlockPack();
+  const isPending = unlock.isPending;
   return (
     <div className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]">
       <div className="relative" style={{ aspectRatio: "16 / 9" }}>
@@ -90,10 +93,11 @@ function PackCard({ pack }: { pack: Pack }) {
             <Diamond className="h-3.5 w-3.5" /> {pack.cost_credits}
           </div>
           <button
-            onClick={() => alert("Desbloqueio em breve!")}
-            className="press rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-1.5 text-[11px] font-bold text-white"
+            onClick={() => { if (!unlocked && !isPending) unlock.mutate(pack.id); }}
+            disabled={unlocked || isPending}
+            className="press rounded-lg bg-[#1a1a1a] border border-[#2a2a2a] px-3 py-1.5 text-[11px] font-bold text-white disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Desbloquear
+            {unlocked ? "Desbloqueado" : isPending ? "Processando…" : "Desbloquear"}
           </button>
         </div>
       </div>
@@ -106,6 +110,7 @@ function CreditosPage() {
   const { data: balance } = useCreditBalance();
   const { data: packages, isLoading: loadingPackages } = useCreditPackages();
   const { data: packs, isLoading: loadingPacks } = usePacks();
+  const { data: unlockedPackIds } = useUnlockedPacks();
 
   const bestId = packages?.[Math.floor((packages.length - 1) / 2) + 1]?.id;
   const popularId = packages?.[1]?.id;
@@ -231,7 +236,7 @@ function CreditosPage() {
         ) : (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {(packs ?? []).map((p) => (
-              <PackCard key={p.id} pack={p} />
+              <PackCard key={p.id} pack={p} unlocked={(unlockedPackIds ?? []).includes(p.id)} />
             ))}
           </div>
         )}
