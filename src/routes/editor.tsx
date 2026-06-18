@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
@@ -23,7 +23,9 @@ import {
 } from "@/lib/kit-state";
 import { useHistory } from "@/lib/kit-history";
 import { exportComposite, exportCompositePdf, exportCompositeSvg } from "@/lib/kit-export";
-import { saveDesign } from "@/lib/kit-storage";
+import { useSaveKit, useKit, kitStateFromRow } from "@/lib/kits";
+import { useAuth } from "@/lib/auth-context";
+import { toast as sonner } from "sonner";
 import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
 import { useDialogA11y } from "@/hooks/use-dialog-a11y";
@@ -32,6 +34,7 @@ import { useUnlockModel } from "@/lib/unlock";
 export const Route = createFileRoute("/editor")({
   validateSearch: (s: Record<string, unknown>) => ({
     model: typeof s.model === "string" ? s.model : undefined,
+    kit: typeof s.kit === "string" ? s.kit : undefined,
   }),
   component: Index,
 });
@@ -58,8 +61,14 @@ const SHORT_PANEL_TABS = new Set<TabId>(["gola"]);
 
 function Index() {
   const { state, set, undo, redo, canUndo, canRedo } = useHistory<KitState>(INITIAL_STATE);
-  const { model: modelCode } = Route.useSearch();
+  const { model: modelCode, kit: kitId } = Route.useSearch();
   const { data: models } = useModels();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const saveKit = useSaveKit();
+  const { data: loadedKit } = useKit(kitId);
+  const [currentKitId, setCurrentKitId] = useState<string | undefined>(kitId);
+  const hydratedKitRef = useRef<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [savedToast, setSavedToast] = useState<string | null>(null);
@@ -82,6 +91,21 @@ function Index() {
     const m = models.find((x) => x.code === modelCode);
     if (m && m.code !== selectedModel?.code) setSelectedModel(m);
   }, [models, modelCode, selectedModel?.code]);
+
+  // Hidrata o editor a partir do kit salvo (uma única vez por kit)
+  useEffect(() => {
+    if (!loadedKit || hydratedKitRef.current === loadedKit.id) return;
+    const next = kitStateFromRow(loadedKit);
+    if (!next) return;
+    hydratedKitRef.current = loadedKit.id;
+    setCurrentKitId(loadedKit.id);
+    setSaveName(loadedKit.name);
+    set(() => next, true);
+    if (models && loadedKit.model_code) {
+      const m = models.find((x) => x.code === loadedKit.model_code);
+      if (m) setSelectedModel(m);
+    }
+  }, [loadedKit, models, set]);
 
   const frontUrl = selectedModel?.svg_frente_url ?? null;
   const backUrl = selectedModel?.svg_costas_url ?? null;
@@ -125,12 +149,38 @@ function Index() {
 
   const toast = (msg: string) => { setSavedToast(msg); setTimeout(() => setSavedToast(null), 1800); };
 
-  const requireAuth = () => true;
+  const requireAuth = () => {
+    if (!user) {
+      navigate({ to: "/login", search: { redirect: `/editor${modelCode ? `?model=${modelCode}` : ""}` } });
+      return false;
+    }
+    return true;
+  };
 
-  const handleSave = () => {
-    saveDesign(saveName.trim() || "Sem nome", state);
-    setSaveOpen(false);
-    toast("Modelo salvo!");
+  const handleSave = async () => {
+    if (!user || !selectedModel) return;
+    try {
+      const saved = await saveKit.mutateAsync({
+        id: currentKitId,
+        name: saveName.trim() || "Sem nome",
+        model_code: selectedModel.code,
+        state,
+        is_premium_model: (selectedModel.category ?? "free") !== "free",
+      });
+      setCurrentKitId(saved.id);
+      setSaveOpen(false);
+      sonner.success("Kit salvo!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "kit_limit_reached" || msg.includes("kit_limit_exceeded")) {
+        sonner.error("Limite de kits atingido. Exclua um kit para continuar.");
+      } else if (msg === "not_authenticated") {
+        sonner.error("Faça login para salvar.");
+        navigate({ to: "/login", search: { redirect: "/editor" } });
+      } else {
+        sonner.error("Não foi possível salvar o kit. Tente novamente.");
+      }
+    }
   };
 
   const baseName = selectedModel ? `kit-${selectedModel.code}` : "kit";
@@ -264,7 +314,7 @@ function Index() {
               className="press grid h-9 w-9 place-items-center rounded-full text-white transition hover:bg-[#1a1a1a] disabled:opacity-30">
               <Redo2 className="h-4 w-4" />
             </button>
-            <button aria-label="Salvar" onClick={() => { if (requireAuth()) setSaveOpen(true); }} disabled={isLocked}
+            <button aria-label="Salvar" onClick={() => { if (requireAuth()) setSaveOpen(true); }} disabled={isLocked || saveKit.isPending}
               className="press grid h-9 w-9 place-items-center rounded-full text-white transition hover:bg-[#1a1a1a] disabled:opacity-30">
               <Save className="h-4 w-4" />
             </button>
@@ -346,8 +396,10 @@ function Index() {
             <input id="save-name" autoFocus value={saveName} onChange={(e) => setSaveName(e.target.value)}
               className="mt-4 w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-sm text-white outline-none focus:border-[#68ed00]" />
             <div className="mt-5 flex justify-end gap-2">
-              <button onClick={() => setSaveOpen(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-[#888] hover:bg-[#1a1a1a]">Cancelar</button>
-              <button onClick={handleSave} className="rounded-lg bg-[#68ed00] px-4 py-2 text-sm font-bold text-black hover:opacity-90">Salvar</button>
+              <button onClick={() => setSaveOpen(false)} disabled={saveKit.isPending} className="rounded-lg px-4 py-2 text-sm font-medium text-[#888] hover:bg-[#1a1a1a] disabled:opacity-50">Cancelar</button>
+              <button onClick={handleSave} disabled={saveKit.isPending} className="rounded-lg bg-[#68ed00] px-4 py-2 text-sm font-bold text-black hover:opacity-90 disabled:opacity-60">
+                {saveKit.isPending ? "Salvando…" : "Salvar"}
+              </button>
             </div>
           </div>
         </div>
