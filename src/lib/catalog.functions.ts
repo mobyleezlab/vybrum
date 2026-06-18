@@ -13,7 +13,8 @@ function withPublicModelStatus(rows: Array<Record<string, unknown>>): ModelRow[]
     const availableUntil = typeof row.available_until === "string" ? row.available_until : null;
     const untilTime = availableUntil ? new Date(availableUntil).getTime() : null;
     const isExpired = untilTime !== null ? untilTime < now : false;
-    const daysRemaining = untilTime !== null && !isExpired ? Math.ceil((untilTime - now) / 86_400_000) : null;
+    const daysRemaining =
+      untilTime !== null && !isExpired ? Math.ceil((untilTime - now) / 86_400_000) : null;
 
     return {
       ...row,
