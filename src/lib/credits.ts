@@ -97,6 +97,22 @@ export function usePacks() {
   });
 }
 
+export function useUnlockedPacks() {
+  const { user, loading } = useAuth();
+  return useQuery<string[]>({
+    queryKey: ["unlocked-packs", user?.id ?? "anon"],
+    enabled: !loading && !!user,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("unlocked_packs")
+        .select("pack_id");
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((u: { pack_id: string }) => u.pack_id);
+    },
+  });
+}
+
 export function formatBRL(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
