@@ -27,6 +27,7 @@ import { saveDesign } from "@/lib/kit-storage";
 import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
 import { useDialogA11y } from "@/hooks/use-dialog-a11y";
+import { useUnlockModel } from "@/lib/unlock";
 
 export const Route = createFileRoute("/editor")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -242,6 +243,7 @@ function Index() {
 
   const isLocked = selectedModel ? !canUseModel(selectedModel) : false;
   const unlockCost = selectedModel?.unlock_cost ?? 0;
+  const unlockModel = useUnlockModel();
 
   return (
     <div className="h-[100dvh] overflow-hidden bg-black pt-safe">
@@ -317,12 +319,14 @@ function Index() {
             >
               Ver planos
             </Link>
-            <Link
-              to="/creditos"
-              className="press shrink-0 rounded-full bg-[#68ed00] px-4 py-2 text-[12px] font-bold text-black"
+            <button
+              type="button"
+              disabled={unlockModel.isPending || !selectedModel}
+              onClick={() => { if (selectedModel) unlockModel.mutate(selectedModel.code); }}
+              className="press shrink-0 rounded-full bg-[#68ed00] px-4 py-2 text-[12px] font-bold text-black disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Desbloquear · {unlockCost} cr
-            </Link>
+              {unlockModel.isPending ? "Processando…" : `Desbloquear · ${unlockCost} cr`}
+            </button>
           </div>
         </div>
       )}
