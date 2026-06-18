@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth-context";
 import { SITE_URL } from "@/lib/site";
 import { TabBar } from "@/components/TabBar";
+import { Toaster } from "@/components/ui/sonner";
 
 const APP_DESCRIPTION =
   "Vybrum é o app para criar, personalizar e exportar uniformes esportivos direto do celular.";
@@ -133,6 +134,7 @@ function RootComponent() {
           <Outlet />
         </div>
         <TabBar />
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );
