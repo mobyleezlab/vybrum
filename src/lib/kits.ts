@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import type { KitState } from "@/lib/kit-state";
+import type { Database } from "@/integrations/supabase/types";
+type Json = Database["public"]["Tables"]["kits"]["Insert"]["colors"];
 
 export interface KitRow {
   id: string;
@@ -85,7 +87,7 @@ export function useSaveKit() {
         user_id: user.id,
         name: input.name,
         model_code: input.model_code,
-        colors: input.state as unknown as Record<string, unknown>,
+        colors: input.state as unknown as Json,
         player_name: input.state.texts.nome.value,
         player_number: input.state.texts.numero.value,
         font_selected: input.state.texts.nome.font,
