@@ -30,6 +30,7 @@ import { CreditBadge } from "@/components/CreditBadge";
 import { UnlockSheet } from "@/components/UnlockSheet";
 import { useDialogA11y } from "@/hooks/use-dialog-a11y";
 import { useUnlockModel } from "@/lib/unlock";
+import { useCurrentUserShield } from "@/lib/shields";
 
 export const Route = createFileRoute("/editor")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -67,6 +68,7 @@ function Index() {
   const navigate = useNavigate();
   const saveKit = useSaveKit();
   const { data: loadedKit } = useKit(kitId);
+  const { data: currentShield } = useCurrentUserShield();
   const [currentKitId, setCurrentKitId] = useState<string | undefined>(kitId);
   const hydratedKitRef = useRef<string | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -106,6 +108,19 @@ function Index() {
       if (m) setSelectedModel(m);
     }
   }, [loadedKit, models, set]);
+
+  // Pre-load the user's global custom shield into any model they open.
+  // Only applies when the kit hasn't explicitly touched the badge layer —
+  // a saved kit with a customized shield keeps its own value.
+  useEffect(() => {
+    if (!currentShield?.image_url) return;
+    if (state.escudo.touched) return;
+    if (state.escudo.src === currentShield.image_url) return;
+    set(
+      (s) => ({ ...s, escudo: { ...s.escudo, src: currentShield.image_url, touched: true } }),
+      true,
+    );
+  }, [currentShield?.image_url, state.escudo.touched, state.escudo.src, set]);
 
   const frontUrl = selectedModel?.svg_frente_url ?? null;
   const backUrl = selectedModel?.svg_costas_url ?? null;
