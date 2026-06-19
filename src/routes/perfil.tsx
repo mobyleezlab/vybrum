@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Diamond, ShoppingBag, History, Settings, LogOut, ShieldCheck, ChevronRight } from "lucide-react";
+import { Diamond, ShoppingBag, History, Settings, ShieldCheck, ChevronRight } from "lucide-react";
 import { useAuth, getInitials } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useEntitlements } from "@/lib/entitlements";
@@ -11,7 +11,7 @@ export const Route = createFileRoute("/perfil")({
   component: PerfilPage,
 });
 
-type RowTo = "/meus-creditos" | "/comprar-creditos" | "/historico" | "/configuracoes" | "/admin";
+type RowTo = "/meus-creditos" | "/creditos" | "/historico" | "/configuracoes" | "/admin";
 function Row({
   icon,
   label,
@@ -68,7 +68,7 @@ function Section({ title, children }: { title?: string; children: React.ReactNod
 
 function PerfilPage() {
   const { ready } = useRequireAuth();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { data: ent } = useEntitlements();
   const { data: profile } = useProfile();
   const { data: balance } = useCreditBalance();
@@ -126,7 +126,7 @@ function PerfilPage() {
             <Row
               icon={<ShoppingBag className="h-[18px] w-[18px]" />}
               label="Comprar créditos"
-              to="/comprar-creditos"
+              to="/creditos"
             />
             <Row
               icon={<History className="h-[18px] w-[18px]" />}
@@ -153,18 +153,7 @@ function PerfilPage() {
             )}
           </Section>
 
-          <div className="mt-10 flex justify-center px-5">
-            <button
-              type="button"
-              onClick={() => { void signOut(); }}
-              className="press inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-semibold text-[#888] transition hover:text-white"
-            >
-              <LogOut className="h-4 w-4" />
-              Sair da conta
-            </button>
-          </div>
-
-          <p className="mt-3 text-center text-[11px] font-medium tracking-[0.2em] text-[#3a3a3a]">
+          <p className="mt-10 text-center text-[11px] font-medium tracking-[0.2em] text-[#3a3a3a]">
             VYBRUM · v1.0.0
           </p>
         </>
