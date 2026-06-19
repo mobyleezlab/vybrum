@@ -2,7 +2,13 @@ import { useRef, useState } from "react";
 import { Upload, Trash2, Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { type BadgeLayer } from "@/lib/kit-state";
-import { useUploadShield, MAX_SHIELD_BYTES, ACCEPTED_SHIELD_MIME } from "@/lib/shields";
+import {
+  useUploadShield,
+  useDeleteCurrentShield,
+  useCurrentUserShield,
+  MAX_SHIELD_BYTES,
+  ACCEPTED_SHIELD_MIME,
+} from "@/lib/shields";
 
 export function BadgePanel({
   layer, onChange, label,
@@ -12,6 +18,8 @@ export function BadgePanel({
   label: string;
 }) {
   const upload = useUploadShield();
+  const remove = useDeleteCurrentShield();
+  const { data: currentShield } = useCurrentUserShield();
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,10 +29,23 @@ export function BadgePanel({
     if (!ACCEPTED_SHIELD_MIME.includes(f.type)) { setError("Use PNG, JPG ou SVG."); return; }
     if (f.size > MAX_SHIELD_BYTES) { setError("Máximo 2MB."); return; }
     upload.mutate(f, {
-      onSuccess: (s) => onChange({ ...layer, src: s.image_url }),
+      onSuccess: (s) => onChange({ ...layer, src: s.image_url, touched: true }),
       onError: (e) => setError(e instanceof Error ? e.message : "Falha no upload."),
     });
   };
+
+  const onRemove = () => {
+    setError(null);
+    remove.mutate(undefined, {
+      // Reset the layer to its untouched state so the SVG falls back to the
+      // baked-in default shield for the model.
+      onSuccess: () => onChange({ ...layer, src: null, touched: false }),
+      onError: (e) => setError(e instanceof Error ? e.message : "Falha ao remover."),
+    });
+  };
+
+  const busy = upload.isPending || remove.isPending;
+  const hasCustom = !!currentShield;
 
   return (
     <div className="space-y-3">
@@ -40,7 +61,7 @@ export function BadgePanel({
         <div className="mt-3 flex gap-2">
           <button
             onClick={() => fileRef.current?.click()}
-            disabled={upload.isPending}
+            disabled={busy}
             className="press flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#68ed00] px-3 py-2 text-xs font-bold text-black disabled:opacity-50"
           >
             {upload.isPending
@@ -48,12 +69,14 @@ export function BadgePanel({
               : <Upload className="h-4 w-4" />} Carregar imagem
           </button>
           <button
-            onClick={() => onChange({ ...layer, src: null })}
-            disabled={!layer.src}
+            onClick={onRemove}
+            disabled={!hasCustom || busy}
             className="press flex items-center justify-center gap-2 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-3 py-2 text-xs font-medium text-[#bbb] transition hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label="Remover do uniforme"
+            aria-label="Remover escudo customizado"
           >
-            <Trash2 className="h-4 w-4" />
+            {remove.isPending
+              ? <Loader2 className="h-4 w-4 animate-spin" />
+              : <Trash2 className="h-4 w-4" />}
           </button>
           <input
             ref={fileRef}
