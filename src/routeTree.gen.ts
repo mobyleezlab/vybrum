@@ -21,7 +21,6 @@ import { Route as EditorRouteImport } from './routes/editor'
 import { Route as EditarPerfilRouteImport } from './routes/editar-perfil'
 import { Route as CreditosRouteImport } from './routes/creditos'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
-import { Route as ComprarCreditosRouteImport } from './routes/comprar-creditos'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -95,11 +94,6 @@ const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
   path: '/configuracoes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ComprarCreditosRoute = ComprarCreditosRouteImport.update({
-  id: '/comprar-creditos',
-  path: '/comprar-creditos',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CadastroRoute = CadastroRouteImport.update({
   id: '/cadastro',
   path: '/cadastro',
@@ -165,7 +159,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
-  '/comprar-creditos': typeof ComprarCreditosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/editar-perfil': typeof EditarPerfilRoute
@@ -191,7 +184,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
-  '/comprar-creditos': typeof ComprarCreditosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/editar-perfil': typeof EditarPerfilRoute
@@ -219,7 +211,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
-  '/comprar-creditos': typeof ComprarCreditosRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/creditos': typeof CreditosRoute
   '/editar-perfil': typeof EditarPerfilRoute
@@ -248,7 +239,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
-    | '/comprar-creditos'
     | '/configuracoes'
     | '/creditos'
     | '/editar-perfil'
@@ -274,7 +264,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cadastro'
-    | '/comprar-creditos'
     | '/configuracoes'
     | '/creditos'
     | '/editar-perfil'
@@ -301,7 +290,6 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/cadastro'
-    | '/comprar-creditos'
     | '/configuracoes'
     | '/creditos'
     | '/editar-perfil'
@@ -329,7 +317,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   CadastroRoute: typeof CadastroRoute
-  ComprarCreditosRoute: typeof ComprarCreditosRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   CreditosRoute: typeof CreditosRoute
   EditarPerfilRoute: typeof EditarPerfilRoute
@@ -428,13 +415,6 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof ConfiguracoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/comprar-creditos': {
-      id: '/comprar-creditos'
-      path: '/comprar-creditos'
-      fullPath: '/comprar-creditos'
-      preLoaderRoute: typeof ComprarCreditosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -554,7 +534,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   CadastroRoute: CadastroRoute,
-  ComprarCreditosRoute: ComprarCreditosRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   CreditosRoute: CreditosRoute,
   EditarPerfilRoute: EditarPerfilRoute,

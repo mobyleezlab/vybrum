@@ -63,7 +63,7 @@ function MeusCreditosPage() {
 
           <section className="mx-4 mt-4">
             <Link
-              to="/comprar-creditos"
+              to="/creditos"
               className="press flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#68ed00] text-sm font-bold text-black hover:opacity-90"
             >
               <Plus className="h-5 w-5" /> Comprar mais créditos
