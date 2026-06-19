@@ -200,32 +200,24 @@ function EditarPerfilPage() {
             </div>
           </section>
 
-          {/* Sessão */}
-          <section className="mt-7 px-5">
-            <div className="overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0c0c0c]">
-              <button
-                type="button"
-                onClick={() => { void signOut(); }}
-                className="press flex w-full items-center gap-4 px-5 py-3.5 text-left border-b border-white/[0.06]"
-              >
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/[0.06] text-white">
-                  <LogOut className="h-[18px] w-[18px]" />
-                </span>
-                <span className="flex-1 text-[15px] font-medium text-white">Sair da conta</span>
-                <ChevronRight className="h-4 w-4 text-[#3a3a3a]" />
-              </button>
-              <button
-                type="button"
-                onClick={() => alert("Para excluir sua conta entre em contato com o suporte.")}
-                className="press flex w-full items-center gap-4 px-5 py-3.5 text-left"
-              >
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#ef4444]/10 text-[#ef4444]">
-                  <Trash2 className="h-[18px] w-[18px]" />
-                </span>
-                <span className="flex-1 text-[15px] font-medium text-[#ef4444]">Excluir conta</span>
-                <ChevronRight className="h-4 w-4 text-[#3a3a3a]" />
-              </button>
-            </div>
+          {/* Sessão — ações destrutivas em baixo destaque */}
+          <section className="mt-10 mb-2 flex flex-col items-center gap-3 px-5">
+            <button
+              type="button"
+              onClick={() => { void signOut(); }}
+              className="press inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium text-[#888] transition hover:text-white"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair da conta
+            </button>
+            <button
+              type="button"
+              onClick={() => alert("Para excluir sua conta entre em contato com o suporte.")}
+              className="press inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-medium text-[#666] underline-offset-4 transition hover:text-[#ef4444] hover:underline"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Excluir conta
+            </button>
           </section>
 
           {error && <p className="mx-5 mt-4 text-[12px] font-medium text-[#ef4444]">{error}</p>}
