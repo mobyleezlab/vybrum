@@ -587,3 +587,85 @@ export const adminBillingSummary = createServerFn({ method: "POST" })
       recent,
     };
   });
+
+// ===== Avatars (predefined profile avatars) =====
+
+export type AdminAvatarRow = {
+  id: string;
+  name: string;
+  image_url: string;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+};
+
+export const adminListAvatars = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<AdminAvatarRow[]> => {
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
+    const { data, error } = await sb
+      .from("avatars")
+      .select("id, name, image_url, active, sort_order, created_at")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data ?? []) as AdminAvatarRow[];
+  });
+
+const avatarUpsertSchema = z.object({
+  id: z.string().uuid().nullable().optional(),
+  name: z.string().trim().min(1).max(60),
+  image_url: z.string().url(),
+  active: z.boolean().default(true),
+  sort_order: z.number().int().min(0).default(0),
+});
+export type AdminAvatarInput = z.infer<typeof avatarUpsertSchema>;
+
+export const adminUpsertAvatar = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => avatarUpsertSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
+    const payload: Record<string, unknown> = {
+      name: data.name,
+      image_url: data.image_url,
+      active: data.active,
+      sort_order: data.sort_order,
+    };
+    if (data.id) payload.id = data.id;
+    const { error } = await sb.from("avatars").upsert(payload, { onConflict: "id" });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminDeleteAvatar = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => z.object({ id: z.string().uuid() }).parse(i))
+  .handler(async ({ data, context }) => {
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
+    const { error } = await sb.from("avatars").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const avatarUploadSchema = z.object({
+  base64: z.string().min(8).max(8_000_000),
+  contentType: z.string().min(3).max(80),
+  filename: z.string().min(1).max(120),
+});
+
+export const adminUploadAvatarImage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => avatarUploadSchema.parse(i))
+  .handler(async ({ data, context }) => {
+    const sb = await getAdminDataClient(context.supabase as any, context.userId);
+    const ext = (data.filename.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = `predefined/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
+    const { error: upErr } = await sb.storage
+      .from("avatars")
+      .upload(path, bytes, { contentType: data.contentType, upsert: true });
+    if (upErr) throw new Error(upErr.message);
+    const { data: pub } = sb.storage.from("avatars").getPublicUrl(path);
+    return { url: pub.publicUrl, path };
+  });
