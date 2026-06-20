@@ -37,6 +37,14 @@ export const Route = createFileRoute("/editor")({
     model: typeof s.model === "string" ? s.model : undefined,
     kit: typeof s.kit === "string" ? s.kit : undefined,
   }),
+  head: () => ({
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Teko:wght@400;600;700&family=Oswald:wght@400;600;700&family=Russo+One&family=Rajdhani:wght@500;600;700&family=Orbitron:wght@500;700&family=Michroma&family=Black+Ops+One&family=Bowlby+One&family=Audiowide&family=Barlow+Condensed:wght@500;700&family=Saira+Condensed:wght@500;700&family=Staatliches&family=Monoton&display=swap",
+      },
+    ],
+  }),
   component: Index,
 });
 
