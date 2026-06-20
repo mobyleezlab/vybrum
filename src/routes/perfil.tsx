@@ -120,7 +120,6 @@ function PerfilPage() {
             <Row
               icon={<Diamond className="h-[18px] w-[18px]" />}
               label="Meus créditos"
-              hint={String(balance?.balance ?? 0)}
               to="/meus-creditos"
             />
             <Row
