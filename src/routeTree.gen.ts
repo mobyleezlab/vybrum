@@ -32,6 +32,7 @@ import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento
 import { Route as AdminDropsRouteImport } from './routes/admin.drops'
 import { Route as AdminCreditosRouteImport } from './routes/admin.creditos'
 import { Route as AdminConfigRouteImport } from './routes/admin.config'
+import { Route as AdminAvataresRouteImport } from './routes/admin.avatares'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -149,6 +150,11 @@ const AdminConfigRoute = AdminConfigRouteImport.update({
   path: '/config',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAvataresRoute = AdminAvataresRouteImport.update({
+  id: '/avatares',
+  path: '/avatares',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
   '/admin/creditos': typeof AdminCreditosRoute
   '/admin/drops': typeof AdminDropsRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
   '/admin/creditos': typeof AdminCreditosRoute
   '/admin/drops': typeof AdminDropsRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
   '/admin/creditos': typeof AdminCreditosRoute
   '/admin/drops': typeof AdminDropsRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
+    | '/admin/avatares'
     | '/admin/config'
     | '/admin/creditos'
     | '/admin/drops'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
+    | '/admin/avatares'
     | '/admin/config'
     | '/admin/creditos'
     | '/admin/drops'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/admin/analytics'
+    | '/admin/avatares'
     | '/admin/config'
     | '/admin/creditos'
     | '/admin/drops'
@@ -494,6 +506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConfigRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/avatares': {
+      id: '/admin/avatares'
+      path: '/avatares'
+      fullPath: '/admin/avatares'
+      preLoaderRoute: typeof AdminAvataresRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/analytics': {
       id: '/admin/analytics'
       path: '/analytics'
@@ -506,6 +525,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminAvataresRoute: typeof AdminAvataresRoute
   AdminConfigRoute: typeof AdminConfigRoute
   AdminCreditosRoute: typeof AdminCreditosRoute
   AdminDropsRoute: typeof AdminDropsRoute
@@ -518,6 +538,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminAvataresRoute: AdminAvataresRoute,
   AdminConfigRoute: AdminConfigRoute,
   AdminCreditosRoute: AdminCreditosRoute,
   AdminDropsRoute: AdminDropsRoute,
