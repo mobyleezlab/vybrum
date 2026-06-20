@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings, Menu } from "lucide-react";
+import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings, Menu, Smile } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/admin")({
 
 const TABS = [
   { to: "/admin/modelos", label: "Modelos", icon: Shirt },
+  { to: "/admin/avatares", label: "Avatares", icon: Smile },
   { to: "/admin/usuarios", label: "Usuários", icon: Users },
   { to: "/admin/faturamento", label: "Faturamento", icon: DollarSign },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
