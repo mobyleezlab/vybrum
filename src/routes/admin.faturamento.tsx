@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Loader2, TrendingUp, TrendingDown, DollarSign, Users, ShoppingBag, Coins, Receipt } from "lucide-react";
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar,
 } from "recharts";
-import { adminBillingSummary, type AdminBillingSummary } from "@/lib/admin.functions";
+import { adminBillingSummary, adminListRecentPurchases, type AdminBillingSummary } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/faturamento")({
   ssr: false,
@@ -42,12 +42,21 @@ function emptySummary(range: number): AdminBillingSummary {
 
 function FaturamentoPage() {
   const fn = useServerFn(adminBillingSummary);
+  const recentFn = useServerFn(adminListRecentPurchases);
   const [range, setRange] = useState<number>(30);
   const q = useQuery({
     queryKey: ["admin", "billing", range],
     queryFn: () => fn({ data: { rangeDays: range } }),
     placeholderData: (prev) => prev,
   });
+  const recentQ = useInfiniteQuery({
+    queryKey: ["admin", "billing", "recent"],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => recentFn({ data: { offset: pageParam as number, limit: 50 } }),
+    getNextPageParam: (last) => (last.hasMore ? last.nextOffset : undefined),
+    staleTime: 60_000,
+  });
+  const recentRows = (recentQ.data?.pages ?? []).flatMap((p) => p.rows);
 
   if (q.isLoading && !q.data) {
     return <div className="grid min-h-[40vh] place-items-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
@@ -132,15 +141,15 @@ function FaturamentoPage() {
 
         <div className="rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-4">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-[#888]">Compras recentes</h2>
-          <div className="max-h-56 overflow-y-auto">
+          <div className="max-h-72 overflow-y-auto">
             <table className="w-full text-left text-xs">
               <thead className="sticky top-0 bg-[#0f0f0f] text-[10px] uppercase text-[#666]">
                 <tr><th className="py-1.5">Usuário</th><th className="py-1.5">Pacote</th><th className="py-1.5 text-right">Valor</th><th className="py-1.5">Status</th></tr>
               </thead>
               <tbody>
-                {d.recent.length === 0 ? (
+                {recentRows.length === 0 && !recentQ.isLoading ? (
                   <tr><td colSpan={4} className="py-8 text-center text-[#666]">Nenhuma compra ainda.</td></tr>
-                ) : d.recent.map((r) => (
+                ) : recentRows.map((r) => (
                   <tr key={r.id} className="border-t border-[#1a1a1a]">
                     <td className="py-1.5 text-white">
                       <div className="font-semibold">{r.user_name || r.user_email || r.user_id.slice(0, 8)}</div>
@@ -154,6 +163,15 @@ function FaturamentoPage() {
               </tbody>
             </table>
           </div>
+          {recentQ.hasNextPage && (
+            <button
+              onClick={() => recentQ.fetchNextPage()}
+              disabled={recentQ.isFetchingNextPage}
+              className="press mt-3 w-full rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] py-2 text-[11px] font-semibold text-white disabled:opacity-50"
+            >
+              {recentQ.isFetchingNextPage ? "Carregando…" : "Carregar mais"}
+            </button>
+          )}
         </div>
       </div>
     </div>
