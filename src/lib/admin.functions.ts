@@ -480,7 +480,7 @@ export const adminBillingSummary = createServerFn({ method: "POST" })
       sb.from("credit_purchases")
         .select("id,user_id,package_id,price_brl,credits_granted,status,created_at,completed_at")
         .order("created_at", { ascending: false })
-        .limit(25),
+        .limit(50),
     ]);
     if (allRes.error) throw new Error(allRes.error.message);
     if (packagesRes.error) throw new Error(packagesRes.error.message);
