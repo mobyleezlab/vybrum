@@ -94,7 +94,7 @@ function PerfilPage() {
               <div className="flex items-center gap-4">
                 <div className="relative grid h-20 w-20 place-items-center overflow-hidden rounded-full bg-[#68ed00] text-xl font-black text-black ring-2 ring-[#68ed00]/30 ring-offset-4 ring-offset-[#0c0c0c]">
                   {avatar ? (
-                    <img src={avatar.image_url} alt={avatar.name} className="h-full w-full object-cover" />
+                    <img src={avatar.image_url} alt={avatar.name} loading="lazy" className="h-full w-full object-cover" />
                   ) : (
                     getInitials(user)
                   )}

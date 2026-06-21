@@ -126,7 +126,7 @@ function AvatarCard({
   return (
     <div className="overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#0f0f0f]">
       <div className="aspect-square overflow-hidden bg-[#1a1a1a]">
-        <img src={avatar.image_url} alt={avatar.name} className="h-full w-full object-cover" />
+        <img src={avatar.image_url} alt={avatar.name} loading="lazy" className="h-full w-full object-cover" />
       </div>
       <div className="p-2">
         <div className="flex items-center justify-between gap-2">

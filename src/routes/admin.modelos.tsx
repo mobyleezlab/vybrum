@@ -81,7 +81,7 @@ function AdminModelosPage() {
             >
               <div className="grid aspect-[4/5] place-items-center bg-[#161616]">
                 {m.thumbnail_url
-                  ? <img src={m.thumbnail_url} alt={m.name} className="h-full w-full object-contain p-2" />
+                  ? <img src={m.thumbnail_url} alt={m.name} loading="lazy" className="h-full w-full object-contain p-2" />
                   : <span className="text-[#333]">—</span>}
               </div>
               <div className="border-t border-[#2a2a2a] px-2 py-2">

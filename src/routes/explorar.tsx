@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
-import { useModels, categoryBadge, type ModelRow } from "@/lib/models";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Search } from "lucide-react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { categoryBadge } from "@/lib/models";
+import { listModelsPaginated } from "@/lib/catalog.functions";
 
 export const Route = createFileRoute("/explorar")({
   head: () => ({ meta: [{ title: "Explorar · Vybrum" }] }),
@@ -13,17 +16,46 @@ const FILTERS = ["todos", "free", "pro", "premium", "elite", "rare"] as const;
 function ExplorarPage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("todos");
-  const { data: models, isLoading } = useModels();
+  const [debouncedQ, setDebouncedQ] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q.trim()), 300);
+    return () => clearTimeout(t);
+  }, [q]);
 
-  const list = useMemo<ModelRow[]>(() => {
-    let xs = models ?? [];
-    if (filter !== "todos") xs = xs.filter((m) => (m.category ?? "free").toLowerCase() === filter);
-    if (q.trim()) {
-      const t = q.toLowerCase();
-      xs = xs.filter((m) => m.name.toLowerCase().includes(t) || m.code.toLowerCase().includes(t));
-    }
-    return xs;
-  }, [models, filter, q]);
+  const fetchPage = useServerFn(listModelsPaginated);
+  const PAGE_SIZE = 24;
+  const query = useInfiniteQuery({
+    queryKey: ["models", "paginated", filter, debouncedQ],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
+      fetchPage({
+        data: {
+          offset: pageParam as number,
+          limit: PAGE_SIZE,
+          category: filter === "todos" ? null : filter,
+          search: debouncedQ || null,
+        },
+      }),
+    getNextPageParam: (last) => (last.hasMore ? last.nextOffset : undefined),
+    staleTime: 60_000,
+  });
+
+  const list = (query.data?.pages ?? []).flatMap((p) => p.rows);
+  const isLoading = query.isLoading;
+
+  // Infinite scroll sentinel
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && query.hasNextPage && !query.isFetchingNextPage) {
+        query.fetchNextPage();
+      }
+    }, { rootMargin: "400px" });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [query.hasNextPage, query.isFetchingNextPage, query.fetchNextPage]);
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
@@ -88,6 +120,21 @@ function ExplorarPage() {
 
       {!isLoading && list.length === 0 && (
         <p className="mt-10 text-center text-sm text-[#888]">Nenhum modelo encontrado.</p>
+      )}
+
+      {query.hasNextPage && (
+        <div ref={sentinelRef} className="mt-6 flex justify-center">
+          {query.isFetchingNextPage ? (
+            <Loader2 className="h-5 w-5 animate-spin text-[#666]" />
+          ) : (
+            <button
+              onClick={() => query.fetchNextPage()}
+              className="press rounded-full border border-[#2a2a2a] bg-[#1a1a1a] px-4 py-2 text-xs font-semibold text-white"
+            >
+              Carregar mais
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
