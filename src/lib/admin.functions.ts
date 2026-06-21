@@ -669,3 +669,58 @@ export const adminUploadAvatarImage = createServerFn({ method: "POST" })
     const { data: pub } = sb.storage.from("avatars").getPublicUrl(path);
     return { url: pub.publicUrl, path };
   });
+
+// ===== Recent purchases (paginated) =====
+
+const recentPurchasesSchema = z.object({
+  offset: z.number().int().min(0).default(0),
+  limit: z.number().int().min(1).max(100).default(50),
+});
+
+export type AdminRecentPurchase = AdminBillingSummary["recent"][number];
+
+export const adminListRecentPurchases = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: unknown) => recentPurchasesSchema.parse(i))
+  .handler(async ({ data, context }): Promise<{ rows: AdminRecentPurchase[]; hasMore: boolean; nextOffset: number }> => {
+    await assertAdmin(context.supabase as any, context.userId);
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return { rows: [], hasMore: false, nextOffset: data.offset };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sb = supabaseAdmin as any;
+
+    const { offset, limit } = data;
+    const { data: rows, error } = await sb
+      .from("credit_purchases")
+      .select("id,user_id,package_id,price_brl,credits_granted,status,created_at,completed_at")
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit);
+    if (error) throw new Error(error.message);
+
+    const list: any[] = rows ?? [];
+    const hasMore = list.length > limit;
+    const trimmed = hasMore ? list.slice(0, limit) : list;
+
+    const userIds = Array.from(new Set(trimmed.map((r) => r.user_id)));
+    const packageIds = Array.from(new Set(trimmed.map((r) => r.package_id).filter(Boolean)));
+    const [profilesRes, packagesRes] = await Promise.all([
+      userIds.length ? sb.from("profiles").select("id,email,full_name").in("id", userIds) : Promise.resolve({ data: [] as any[] }),
+      packageIds.length ? sb.from("credit_packages").select("id,name").in("id", packageIds) : Promise.resolve({ data: [] as any[] }),
+    ]);
+    const profMap = new Map<string, any>((profilesRes.data ?? []).map((p: any) => [p.id, p]));
+    const pkgMap = new Map<string, string>((packagesRes.data ?? []).map((p: any) => [p.id, p.name]));
+
+    const mapped: AdminRecentPurchase[] = trimmed.map((r) => ({
+      id: r.id,
+      created_at: r.created_at,
+      completed_at: r.completed_at,
+      status: r.status,
+      price_brl: Number(r.price_brl ?? 0),
+      credits_granted: Number(r.credits_granted ?? 0),
+      user_id: r.user_id,
+      user_email: profMap.get(r.user_id)?.email ?? null,
+      user_name: profMap.get(r.user_id)?.full_name ?? null,
+      package_name: pkgMap.get(r.package_id) ?? null,
+    }));
+
+    return { rows: mapped, hasMore, nextOffset: offset + trimmed.length };
+  });
