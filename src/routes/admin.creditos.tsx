@@ -460,7 +460,7 @@ function PackEditor({ value, onChange, onSave, onClose, saving }: {
                         >
                           <input type="checkbox" readOnly checked={checked} />
                           {m.thumbnail_url ? (
-                            <img src={m.thumbnail_url} alt="" className="h-7 w-7 rounded object-cover" />
+                            <img src={m.thumbnail_url} alt="" loading="lazy" className="h-7 w-7 rounded object-cover" />
                           ) : (
                             <div className="h-7 w-7 rounded bg-[#1a1a1a]" />
                           )}

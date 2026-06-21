@@ -68,7 +68,7 @@ function PackCard({ pack, unlocked }: { pack: Pack; unlocked: boolean }) {
     <div className="overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]">
       <div className="relative" style={{ aspectRatio: "16 / 9" }}>
         {pack.thumbnail_url ? (
-          <img src={pack.thumbnail_url} alt={pack.name} className="h-full w-full object-cover" />
+          <img src={pack.thumbnail_url} alt={pack.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
           <div className="grid h-full w-full place-items-center bg-[#0f0f0f] text-[#333]">
             <Package className="h-10 w-10" />
