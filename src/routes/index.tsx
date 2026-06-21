@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
 import { Bell, Diamond, Flame, Package, Sparkles, ArrowRight, Shirt } from "lucide-react";
-import { useModels, categoryBadge, type ModelRow } from "@/lib/models";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { categoryBadge, type ModelRow } from "@/lib/models";
+import { listModelsHomeSections, type HomeSectionKey } from "@/lib/catalog.functions";
 import { usePacks, type Pack } from "@/lib/credits";
 import { SITE_URL } from "@/lib/site";
 
@@ -22,7 +24,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-type SectionKey = "free" | "pro" | "premium" | "elite" | "rare";
+type SectionKey = HomeSectionKey;
 
 const SECTIONS: { key: SectionKey; label: string; isRare?: boolean }[] = [
   { key: "free", label: "Free" },
@@ -232,20 +234,19 @@ function FeaturedHero() {
 }
 
 function HomeContent() {
-  const { data: models, isLoading: loadingModels } = useModels();
+  const fetchSections = useServerFn(listModelsHomeSections);
+  const { data: grouped, isLoading: loadingModels } = useQuery({
+    queryKey: ["models", "home-sections"],
+    queryFn: () => fetchSections({ data: { perSection: MAX_PER_SECTION } }),
+    staleTime: 60_000,
+  });
   const { data: packs, isLoading: loadingPacks } = usePacks();
-
-  const grouped = useMemo(() => {
-    const map: Record<SectionKey, ModelRow[]> = {
-      free: [], pro: [], premium: [], elite: [], rare: [],
-    };
-    for (const m of models ?? []) {
-      let cat = (m.category ?? "free").toLowerCase();
-      if (cat === "limited" || m.is_limited) cat = "rare";
-      if (cat in map) map[cat as SectionKey].push(m);
-    }
-    return map;
-  }, [models]);
+  const totalModels =
+    (grouped?.free.length ?? 0) +
+    (grouped?.pro.length ?? 0) +
+    (grouped?.premium.length ?? 0) +
+    (grouped?.elite.length ?? 0) +
+    (grouped?.rare.length ?? 0);
 
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+12px)]">
@@ -277,14 +278,14 @@ function HomeContent() {
           key={s.key}
           label={s.label}
           isRare={s.isRare}
-          items={grouped[s.key]}
+          items={grouped?.[s.key] ?? []}
           loading={loadingModels}
         />
       ))}
 
       <PacksRow packs={packs ?? []} loading={loadingPacks} />
 
-      {!loadingModels && (models?.length ?? 0) === 0 && (
+      {!loadingModels && totalModels === 0 && (
         <div className="mx-4 mt-10 rounded-2xl border border-dashed border-[#2a2a2a] bg-[#0f0f0f] p-6 text-center">
           <p className="text-sm font-semibold text-white">Nenhum modelo disponível ainda</p>
           <p className="mt-1 text-xs text-[#888]">
