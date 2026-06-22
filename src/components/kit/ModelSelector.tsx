@@ -42,7 +42,7 @@ export function ModelSelector({ selectedCode, onSelect }: Props) {
                 {m.thumbnail_url ? (
                   <img src={m.thumbnail_url} alt={m.name} loading="lazy" className="h-full w-full object-contain" />
                 ) : (
-                  <Sparkles className="h-5 w-5 text-neutral-400" />
+                  <Shirt className="h-5 w-5 text-neutral-400" />
                 )}
                 {locked && (
                   <div className="absolute inset-0 grid place-items-center bg-black/40">
