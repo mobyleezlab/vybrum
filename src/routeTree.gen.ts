@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SegurancaEPrivacidadeRouteImport } from './routes/seguranca-e-privacidade'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as MeusCreditosRouteImport } from './routes/meus-creditos'
@@ -35,6 +36,11 @@ import { Route as AdminConfigRouteImport } from './routes/admin.config'
 import { Route as AdminAvataresRouteImport } from './routes/admin.avatares'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
+const SegurancaEPrivacidadeRoute = SegurancaEPrivacidadeRouteImport.update({
+  id: '/seguranca-e-privacidade',
+  path: '/seguranca-e-privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/seguranca-e-privacidade': typeof SegurancaEPrivacidadeRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/seguranca-e-privacidade': typeof SegurancaEPrivacidadeRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/meus-creditos': typeof MeusCreditosRoute
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/seguranca-e-privacidade': typeof SegurancaEPrivacidadeRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
@@ -260,6 +269,7 @@ export interface FileRouteTypes {
     | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
+    | '/seguranca-e-privacidade'
     | '/admin/analytics'
     | '/admin/avatares'
     | '/admin/config'
@@ -286,6 +296,7 @@ export interface FileRouteTypes {
     | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
+    | '/seguranca-e-privacidade'
     | '/admin/analytics'
     | '/admin/avatares'
     | '/admin/config'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/meus-creditos'
     | '/perfil'
     | '/reset-password'
+    | '/seguranca-e-privacidade'
     | '/admin/analytics'
     | '/admin/avatares'
     | '/admin/config'
@@ -341,10 +353,18 @@ export interface RootRouteChildren {
   MeusCreditosRoute: typeof MeusCreditosRoute
   PerfilRoute: typeof PerfilRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SegurancaEPrivacidadeRoute: typeof SegurancaEPrivacidadeRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/seguranca-e-privacidade': {
+      id: '/seguranca-e-privacidade'
+      path: '/seguranca-e-privacidade'
+      fullPath: '/seguranca-e-privacidade'
+      preLoaderRoute: typeof SegurancaEPrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
@@ -567,6 +587,7 @@ const rootRouteChildren: RootRouteChildren = {
   MeusCreditosRoute: MeusCreditosRoute,
   PerfilRoute: PerfilRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SegurancaEPrivacidadeRoute: SegurancaEPrivacidadeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
