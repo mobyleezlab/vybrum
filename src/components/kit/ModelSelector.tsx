@@ -1,4 +1,4 @@
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Shirt } from "lucide-react";
 import { useModels, categoryBadge, canUseModel, type ModelRow } from "@/lib/models";
 
 interface Props {
