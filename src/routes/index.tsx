@@ -58,8 +58,8 @@ function ModelCard({ m }: { m: ModelRow }) {
               className="h-full w-full object-contain p-3"
             />
           ) : (
-            <div className="grid h-full w-full place-items-center text-[#222]">
-              <Diamond className="h-8 w-8" />
+            <div className="grid h-full w-full place-items-center bg-[#0a0a0a]">
+              <Shirt className="h-10 w-10 text-[#333]" />
             </div>
           )}
           <span
