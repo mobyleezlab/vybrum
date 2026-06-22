@@ -253,7 +253,7 @@ function HomeContent() {
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+12px)]">
       <header className="sticky top-0 z-30 flex items-center justify-between bg-black/90 px-4 pt-2 pb-3 backdrop-blur supports-[backdrop-filter]:bg-black/70">
         <Link to="/" aria-label="Vybrum" className="flex items-center">
-          <img src={logoVybrum} alt="Vybrum" className="h-8 w-auto" />
+          <img src={logoVybrum} alt="Vybrum" className="h-5 w-auto" />
         </Link>
         <div className="flex items-center gap-2">
           <Link
