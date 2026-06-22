@@ -6,6 +6,7 @@ import { categoryBadge, type ModelRow } from "@/lib/models";
 import { listModelsHomeSections, type HomeSectionKey } from "@/lib/catalog.functions";
 import { usePacks, type Pack } from "@/lib/credits";
 import { SITE_URL } from "@/lib/site";
+import logoVybrum from "@/assets/logo-vybrum.svg";
 
 const HOME_DESCRIPTION =
   "Vybrum é o app para criar, personalizar e exportar uniformes esportivos direto do celular.";
