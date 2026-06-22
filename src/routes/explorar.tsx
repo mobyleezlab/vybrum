@@ -105,7 +105,9 @@ function ExplorarPage() {
                     {m.thumbnail_url ? (
                       <img src={m.thumbnail_url} alt={m.name} className="h-full w-full object-contain p-3" loading="lazy" />
                     ) : (
-                      <div className="grid h-full w-full place-items-center text-[#222]">—</div>
+                      <div className="grid h-full w-full place-items-center bg-[#0a0a0a]">
+                        <Shirt className="h-10 w-10 text-[#333]" />
+                      </div>
                     )}
                     <span className={`absolute right-2 top-2 rounded-md px-1.5 py-0.5 text-[9px] font-bold tracking-wider ${badge.className}`}>{badge.label}</span>
                   </div>
