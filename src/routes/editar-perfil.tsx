@@ -210,14 +210,6 @@ function EditarPerfilPage() {
               <LogOut className="h-4 w-4" />
               Sair da conta
             </button>
-            <button
-              type="button"
-              onClick={() => alert("Para excluir sua conta entre em contato com o suporte.")}
-              className="press inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-medium text-[#666] underline-offset-4 transition hover:text-[#ef4444] hover:underline"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Excluir conta
-            </button>
           </section>
 
           {error && <p className="mx-5 mt-4 text-[12px] font-medium text-[#ef4444]">{error}</p>}
