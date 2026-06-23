@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SegurancaEPrivacidadeRouteImport } from './routes/seguranca-e-privacidade'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PerfilRouteImport } from './routes/perfil'
@@ -36,6 +37,11 @@ import { Route as AdminConfigRouteImport } from './routes/admin.config'
 import { Route as AdminAvataresRouteImport } from './routes/admin.avatares'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SegurancaEPrivacidadeRoute = SegurancaEPrivacidadeRouteImport.update({
   id: '/seguranca-e-privacidade',
   path: '/seguranca-e-privacidade',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/seguranca-e-privacidade': typeof SegurancaEPrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/seguranca-e-privacidade': typeof SegurancaEPrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/perfil': typeof PerfilRoute
   '/reset-password': typeof ResetPasswordRoute
   '/seguranca-e-privacidade': typeof SegurancaEPrivacidadeRoute
+  '/termos': typeof TermosRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/avatares': typeof AdminAvataresRoute
   '/admin/config': typeof AdminConfigRoute
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/seguranca-e-privacidade'
+    | '/termos'
     | '/admin/analytics'
     | '/admin/avatares'
     | '/admin/config'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/seguranca-e-privacidade'
+    | '/termos'
     | '/admin/analytics'
     | '/admin/avatares'
     | '/admin/config'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/reset-password'
     | '/seguranca-e-privacidade'
+    | '/termos'
     | '/admin/analytics'
     | '/admin/avatares'
     | '/admin/config'
@@ -354,10 +366,18 @@ export interface RootRouteChildren {
   PerfilRoute: typeof PerfilRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SegurancaEPrivacidadeRoute: typeof SegurancaEPrivacidadeRoute
+  TermosRoute: typeof TermosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seguranca-e-privacidade': {
       id: '/seguranca-e-privacidade'
       path: '/seguranca-e-privacidade'
@@ -588,6 +608,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilRoute: PerfilRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SegurancaEPrivacidadeRoute: SegurancaEPrivacidadeRoute,
+  TermosRoute: TermosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
