@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Check, Loader2, KeyRound, Mail, LogOut, Trash2, ChevronRight } from "lucide-react";
+import { ChevronLeft, Check, Loader2, KeyRound, Mail, LogOut, ChevronRight } from "lucide-react";
 import { z } from "zod";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useProfile, useAvatars, useUpdateProfile } from "@/lib/profile";
@@ -209,14 +209,6 @@ function EditarPerfilPage() {
             >
               <LogOut className="h-4 w-4" />
               Sair da conta
-            </button>
-            <button
-              type="button"
-              onClick={() => alert("Para excluir sua conta entre em contato com o suporte.")}
-              className="press inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-medium text-[#666] underline-offset-4 transition hover:text-[#ef4444] hover:underline"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Excluir conta
             </button>
           </section>
 
