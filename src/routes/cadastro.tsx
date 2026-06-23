@@ -5,6 +5,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { friendlyAuthError } from "@/lib/auth-errors";
 
+const TERMS_VERSION = "1.0";
+
 const signupSchema = z.object({
   email: z.string().trim().toLowerCase().email("Informe um e-mail válido.").max(255),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres.").max(128),
@@ -22,6 +24,7 @@ function SignupPage() {
   const { redirect } = useSearch({ from: "/cadastro" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,6 +33,10 @@ function SignupPage() {
     e.preventDefault();
     if (loading) return;
     setErr(null); setMsg(null);
+    if (!acceptedTerms) {
+      setErr("Você precisa aceitar os Termos de Uso e a Política de Privacidade.");
+      return;
+    }
     const parsed = signupSchema.safeParse({ email, password });
     if (!parsed.success) {
       setErr(parsed.error.issues[0]?.message ?? "Verifique os campos.");
@@ -37,12 +44,34 @@ function SignupPage() {
     }
     setLoading(true);
     const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const acceptedAt = new Date().toISOString();
     const { error } = await supabase.auth.signUp({
       ...parsed.data,
-      options: { emailRedirectTo: origin },
+      options: {
+        emailRedirectTo: origin,
+        data: { terms_accepted_at: acceptedAt, terms_version: TERMS_VERSION },
+      },
     });
+    if (error) { setLoading(false); return setErr(friendlyAuthError(error)); }
+
+    // Se a sessão já está ativa (sem confirmação de e-mail), persiste no perfil.
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session?.user) {
+      try {
+        await (supabase as any)
+          .from("profiles")
+          .upsert(
+            {
+              id: sessionData.session.user.id,
+              email: sessionData.session.user.email ?? parsed.data.email,
+              terms_accepted_at: acceptedAt,
+              terms_version: TERMS_VERSION,
+            },
+            { onConflict: "id" },
+          );
+      } catch { /* noop — metadata fica salvo no auth.users */ }
+    }
     setLoading(false);
-    if (error) return setErr(friendlyAuthError(error));
     setMsg("Conta criada! Verifique seu e-mail para confirmar e depois faça login.");
     setTimeout(() => navigate({ to: "/login", search: { redirect } }), 1800);
   };
@@ -71,8 +100,22 @@ function SignupPage() {
           />
           {err && <p className="text-xs text-red-400">{err}</p>}
           {msg && <p className="text-xs text-[#68ed00]">{msg}</p>}
+          <label className="flex items-start gap-3 pt-1 text-xs text-[#aaa]">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 accent-[#68ed00]"
+            />
+            <span>
+              Li e aceito os{" "}
+              <Link to="/termos" className="font-semibold text-[#68ed00] underline">Termos de Uso</Link>
+              {" "}e a{" "}
+              <Link to="/privacidade" className="font-semibold text-[#68ed00] underline">Política de Privacidade</Link>.
+            </span>
+          </label>
           <button
-            type="submit" disabled={loading}
+            type="submit" disabled={loading || !acceptedTerms}
             className="press h-[52px] w-full rounded-2xl bg-[#68ed00] text-sm font-bold text-black disabled:opacity-60"
           >
             {loading ? "Criando..." : "Criar conta"}
