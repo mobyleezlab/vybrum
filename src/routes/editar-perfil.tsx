@@ -17,7 +17,7 @@ const nameSchema = z.string().trim().min(1, "Informe seu nome").max(80, "Nome mu
 
 function EditarPerfilPage() {
   const { ready } = useRequireAuth();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { data: profile, isLoading: loadingProfile } = useProfile();
   const { data: avatars, isLoading: loadingAvatars } = useAvatars();
@@ -200,17 +200,6 @@ function EditarPerfilPage() {
             </div>
           </section>
 
-          {/* Sessão — ações destrutivas em baixo destaque */}
-          <section className="mt-10 mb-2 flex flex-col items-center gap-3 px-5">
-            <button
-              type="button"
-              onClick={() => { void signOut(); }}
-              className="press inline-flex items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium text-[#888] transition hover:text-white"
-            >
-              <LogOut className="h-4 w-4" />
-              Sair da conta
-            </button>
-          </section>
 
           {error && <p className="mx-5 mt-4 text-[12px] font-medium text-[#ef4444]">{error}</p>}
         </>
