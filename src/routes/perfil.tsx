@@ -68,7 +68,7 @@ function Section({ title, children }: { title?: string; children: React.ReactNod
 
 function PerfilPage() {
   const { ready } = useRequireAuth();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { data: ent } = useEntitlements();
   const { data: profile } = useProfile();
   const { data: balance } = useCreditBalance();
