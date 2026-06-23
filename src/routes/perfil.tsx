@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Diamond, ShoppingBag, History, Settings, ShieldCheck, ChevronRight } from "lucide-react";
+import { Diamond, ShoppingBag, History, Settings, ShieldCheck, ChevronRight, LogOut } from "lucide-react";
 import { useAuth, getInitials } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useEntitlements } from "@/lib/entitlements";

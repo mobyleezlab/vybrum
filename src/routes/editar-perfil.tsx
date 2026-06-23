@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Check, Loader2, KeyRound, Mail, LogOut, ChevronRight } from "lucide-react";
+import { ChevronLeft, Check, Loader2, KeyRound, Mail, ChevronRight } from "lucide-react";
 import { z } from "zod";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useProfile, useAvatars, useUpdateProfile } from "@/lib/profile";
