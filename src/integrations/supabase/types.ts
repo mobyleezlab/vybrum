@@ -383,6 +383,68 @@ export type Database = {
           },
         ]
       }
+      lgpd_requests: {
+        Row: {
+          admin_id: string | null
+          completed_at: string | null
+          id: string
+          notes: string | null
+          requested_at: string
+          status: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          status?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          requested_at?: string
+          status?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lgpd_requests_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profile_with_plan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lgpd_requests_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lgpd_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profile_with_plan"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lgpd_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       models: {
         Row: {
           available_until: string | null
@@ -541,6 +603,7 @@ export type Database = {
         Row: {
           avatar_id: string | null
           created_at: string
+          data_deletion_requested_at: string | null
           email: string | null
           full_name: string | null
           id: string
@@ -548,11 +611,15 @@ export type Database = {
           last_seen_at: string | null
           plan: string
           plan_expires_at: string | null
+          privacy_accepted_at: string | null
+          terms_accepted_at: string | null
+          terms_version: string | null
           updated_at: string
         }
         Insert: {
           avatar_id?: string | null
           created_at?: string
+          data_deletion_requested_at?: string | null
           email?: string | null
           full_name?: string | null
           id: string
@@ -560,11 +627,15 @@ export type Database = {
           last_seen_at?: string | null
           plan?: string
           plan_expires_at?: string | null
+          privacy_accepted_at?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Update: {
           avatar_id?: string | null
           created_at?: string
+          data_deletion_requested_at?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
@@ -572,6 +643,9 @@ export type Database = {
           last_seen_at?: string | null
           plan?: string
           plan_expires_at?: string | null
+          privacy_accepted_at?: string | null
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -857,6 +931,8 @@ export type Database = {
       }
     }
     Functions: {
+      delete_user_account: { Args: never; Returns: Json }
+      export_user_data: { Args: never; Returns: Json }
       is_active_user: { Args: never; Returns: boolean }
       is_admin:
         | { Args: never; Returns: boolean }
