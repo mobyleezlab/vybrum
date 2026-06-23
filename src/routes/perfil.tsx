@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Diamond, ShoppingBag, History, Settings, ShieldCheck, ChevronRight } from "lucide-react";
+import { Diamond, ShoppingBag, History, Settings, ShieldCheck, ChevronRight, LogOut } from "lucide-react";
 import { useAuth, getInitials } from "@/lib/auth-context";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useEntitlements } from "@/lib/entitlements";
@@ -68,7 +68,7 @@ function Section({ title, children }: { title?: string; children: React.ReactNod
 
 function PerfilPage() {
   const { ready } = useRequireAuth();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { data: ent } = useEntitlements();
   const { data: profile } = useProfile();
   const { data: balance } = useCreditBalance();
@@ -140,16 +140,22 @@ function PerfilPage() {
               icon={<Settings className="h-[18px] w-[18px]" />}
               label="Configurações"
               to="/configuracoes"
-              last={!ent?.isAdmin}
+              last={false}
             />
             {ent?.isAdmin && (
               <Row
                 icon={<ShieldCheck className="h-[18px] w-[18px]" />}
                 label="Admin · Modelos"
                 to="/admin"
-                last
+                last={false}
               />
             )}
+            <Row
+              icon={<LogOut className="h-[18px] w-[18px]" />}
+              label="Sair da conta"
+              onClick={() => { void signOut(); }}
+              last
+            />
           </Section>
 
           <p className="mt-10 text-center text-[11px] font-medium tracking-[0.2em] text-[#3a3a3a]">
