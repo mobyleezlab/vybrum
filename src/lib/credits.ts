@@ -45,7 +45,7 @@ export function useCreditBalance() {
   useEffect(() => {
     if (!user) return;
     const ch = supabase
-      .channel(`credits-${user.id}`)
+      .channel(`credits-${user.id}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "credit_balances", filter: `user_id=eq.${user.id}` },
