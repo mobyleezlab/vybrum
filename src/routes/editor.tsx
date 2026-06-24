@@ -34,6 +34,8 @@ import { useCurrentUserShield } from "@/lib/shields";
 import { useExportUnlocked } from "@/lib/export-unlock";
 import { ExportUnlockModal } from "@/components/ExportUnlockModal";
 
+type ExportKind = "png-low" | "png-hd" | "pdf" | "svg";
+
 export const Route = createFileRoute("/editor")({
   validateSearch: (s: Record<string, unknown>) => ({
     model: typeof s.model === "string" ? s.model : undefined,
@@ -596,5 +598,34 @@ function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: b
         {children}
       </div>
     </div>
+  );
+}
+
+function ExportTile({
+  title,
+  subtitle,
+  locked,
+  disabled,
+  onClick,
+}: {
+  title: string;
+  subtitle: string;
+  locked: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="relative rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50"
+    >
+      <div className="flex items-center gap-1.5">
+        <div className="text-sm font-semibold text-white">{title}</div>
+        {locked && <Lock className="h-3 w-3 text-[#68ed00]" aria-label="Bloqueado" />}
+      </div>
+      <div className="mt-1 text-xs text-[#888]">{subtitle}</div>
+    </button>
   );
 }
