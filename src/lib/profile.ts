@@ -49,9 +49,34 @@ export function useAvatars() {
         .eq("active", true)
         .order("sort_order", { ascending: true });
       if (error) throw new Error(error.message);
-      return (data ?? []) as Avatar[];
+      const rows = (data ?? []) as Avatar[];
+      // Avatars bucket is private — refresh signed URLs for each row.
+      return Promise.all(rows.map(async (r) => ({ ...r, image_url: await signAvatarUrl(r.image_url) })));
     },
   });
+}
+
+/** Convert a stored avatar image_url (bucket path or legacy public URL) to a fresh signed URL. */
+export async function signAvatarUrl(value: string): Promise<string> {
+  const path = extractAvatarPath(value);
+  if (!path) return value;
+  const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60);
+  return data?.signedUrl ?? value;
+}
+
+/** Accepts either a stored bucket path or a legacy public/signed URL. */
+export function extractAvatarPath(value: string): string | null {
+  if (!value) return null;
+  if (!/^https?:\/\//i.test(value)) return value.replace(/^\/+/, "");
+  try {
+    const url = new URL(value);
+    const marker = "/avatars/";
+    const idx = url.pathname.lastIndexOf(marker);
+    if (idx === -1) return null;
+    return url.pathname.slice(idx + marker.length);
+  } catch {
+    return null;
+  }
 }
 
 export function useAvatarById(id: string | null | undefined) {

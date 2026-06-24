@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, Upload, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -12,6 +12,7 @@ import {
   type AdminAvatarRow,
   type AdminAvatarInput,
 } from "@/lib/admin.functions";
+import { signAvatarUrl } from "@/lib/profile";
 
 export const Route = createFileRoute("/admin/avatares")({
   ssr: false,
@@ -31,7 +32,13 @@ function AdminAvataresPage() {
   const qc = useQueryClient();
   const avatars = useQuery({
     queryKey: ["admin", "avatars"],
-    queryFn: () => listFn(),
+    queryFn: async () => {
+      const rows = await listFn();
+      // Bucket is private — sign each URL for display.
+      return Promise.all(
+        rows.map(async (r) => ({ ...r, image_url: await signAvatarUrl(r.image_url) })),
+      );
+    },
   });
   const [editing, setEditing] = useState<AdminAvatarInput | null>(null);
 
@@ -169,6 +176,7 @@ function AvatarEditor({
 }) {
   const [form, setForm] = useState<AdminAvatarInput>(value);
   const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadFn = useServerFn(adminUploadAvatarImage);
 
@@ -196,7 +204,9 @@ function AvatarEditor({
       const res = await uploadFn({
         data: { base64, contentType: file.type, filename: file.name },
       });
-      setForm((f) => ({ ...f, image_url: res.url }));
+      // Persist the stable storage path; preview uses the signed URL.
+      setForm((f) => ({ ...f, image_url: res.path }));
+      setPreviewUrl(res.url);
       toast.success("Imagem enviada");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : String(e));
@@ -206,7 +216,22 @@ function AvatarEditor({
     }
   }
 
-  const canSave = form.name.trim().length > 0 && /^https?:\/\//.test(form.image_url);
+  const canSave = form.name.trim().length > 0 && form.image_url.trim().length > 0;
+
+  // Resolve preview for the current form.image_url (path or URL).
+  useEffect(() => {
+    let cancelled = false;
+    if (!form.image_url) {
+      setPreviewUrl("");
+      return;
+    }
+    void signAvatarUrl(form.image_url).then((u) => {
+      if (!cancelled) setPreviewUrl(u);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.image_url]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4">
@@ -222,8 +247,8 @@ function AvatarEditor({
 
         <div className="flex gap-3">
           <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#1a1a1a]">
-            {form.image_url ? (
-              <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+            {previewUrl ? (
+              <img src={previewUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="text-[10px] text-[#666]">sem imagem</span>
             )}

@@ -615,7 +615,8 @@ export const adminListAvatars = createServerFn({ method: "GET" })
 const avatarUpsertSchema = z.object({
   id: z.string().uuid().nullable().optional(),
   name: z.string().trim().min(1).max(60),
-  image_url: z.string().url(),
+  // Accepts either a stored bucket path (e.g. "predefined/abc.png") or a full URL.
+  image_url: z.string().min(1).max(2048),
   active: z.boolean().default(true),
   sort_order: z.number().int().min(0).default(0),
 });
@@ -666,8 +667,10 @@ export const adminUploadAvatarImage = createServerFn({ method: "POST" })
       .from("avatars")
       .upload(path, bytes, { contentType: data.contentType, upsert: true });
     if (upErr) throw new Error(upErr.message);
-    const { data: pub } = sb.storage.from("avatars").getPublicUrl(path);
-    return { url: pub.publicUrl, path };
+    // Bucket is private — return a signed URL for immediate preview, and the
+    // storage path so the caller persists a stable reference.
+    const { data: signed } = await sb.storage.from("avatars").createSignedUrl(path, 60 * 60);
+    return { url: signed?.signedUrl ?? "", path };
   });
 
 // ===== Recent purchases (paginated) =====
