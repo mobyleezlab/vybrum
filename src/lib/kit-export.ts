@@ -64,7 +64,7 @@ async function buildCompositeSvg(
 export async function exportComposite(
   node: HTMLElement,
   format: "png" | "jpg",
-  resolution: 720 | 1080,
+  resolution: number,
   filename: string,
 ) {
   const height = resolution;
