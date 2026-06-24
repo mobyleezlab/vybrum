@@ -777,6 +777,9 @@ export type Database = {
         Row: {
           created_at: string
           credits_spent: number
+          export_credits_spent: number
+          export_unlocked: boolean
+          export_unlocked_at: string | null
           id: string
           model_code: string
           unlock_type: string
@@ -785,6 +788,9 @@ export type Database = {
         Insert: {
           created_at?: string
           credits_spent?: number
+          export_credits_spent?: number
+          export_unlocked?: boolean
+          export_unlocked_at?: string | null
           id?: string
           model_code: string
           unlock_type: string
@@ -793,6 +799,9 @@ export type Database = {
         Update: {
           created_at?: string
           credits_spent?: number
+          export_credits_spent?: number
+          export_unlocked?: boolean
+          export_unlocked_at?: string | null
           id?: string
           model_code?: string
           unlock_type?: string
@@ -881,6 +890,9 @@ export type Database = {
           code: string | null
           days_remaining: number | null
           drop_name: string | null
+          export_cost: number | null
+          export_unlocked: boolean | null
+          export_unlocked_at: string | null
           is_expired: boolean | null
           is_limited: boolean | null
           is_premium: boolean | null
@@ -938,6 +950,7 @@ export type Database = {
         | { Args: never; Returns: boolean }
         | { Args: { uid: string }; Returns: boolean }
       is_premium_active: { Args: never; Returns: boolean }
+      unlock_export: { Args: { p_model_code: string }; Returns: Json }
       unlock_pack: { Args: { p_pack_id: string }; Returns: Json }
       unlock_template: { Args: { p_model_code: string }; Returns: Json }
     }
