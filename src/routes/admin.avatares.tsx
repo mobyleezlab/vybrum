@@ -247,8 +247,8 @@ function AvatarEditor({
 
         <div className="flex gap-3">
           <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-xl border border-[#2a2a2a] bg-[#1a1a1a]">
-            {form.image_url ? (
-              <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+            {previewUrl ? (
+              <img src={previewUrl} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="text-[10px] text-[#666]">sem imagem</span>
             )}
