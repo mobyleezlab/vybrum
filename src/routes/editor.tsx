@@ -31,6 +31,10 @@ import { UnlockSheet } from "@/components/UnlockSheet";
 import { useDialogA11y } from "@/hooks/use-dialog-a11y";
 import { useUnlockModel } from "@/lib/unlock";
 import { useCurrentUserShield } from "@/lib/shields";
+import { useExportUnlocked } from "@/lib/export-unlock";
+import { ExportUnlockModal } from "@/components/ExportUnlockModal";
+
+type ExportKind = "png-low" | "png-hd" | "pdf" | "svg";
 
 export const Route = createFileRoute("/editor")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -87,6 +91,8 @@ function Index() {
   const [saveName, setSaveName] = useState("Modelo VY001");
   const [selectedModel, setSelectedModel] = useState<ModelRow | null>(null);
   const [sponsorUnlockOpen, setSponsorUnlockOpen] = useState(false);
+  const [exportUnlockOpen, setExportUnlockOpen] = useState(false);
+  const [pendingExport, setPendingExport] = useState<ExportKind | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const composeRef = useRef<HTMLDivElement>(null);
@@ -207,16 +213,19 @@ function Index() {
   };
 
   const baseName = selectedModel ? `kit-${selectedModel.code}` : "kit";
-  const runExport = async (kind: "jpg720" | "jpg1080" | "pdf" | "svg") => {
+  const { data: exportStatus } = useExportUnlocked(selectedModel?.code, selectedModel?.category);
+  const exportUnlocked = exportStatus?.exportUnlocked ?? false;
+
+  const runExport = async (kind: ExportKind) => {
     if (!composeRef.current) return;
     setExporting(true);
     // aguarda o KitSvg compor (dois rAF para garantir layout)
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     try {
-      if (kind === "jpg720") {
-        await exportComposite(composeRef.current, "jpg", 720, `${baseName}-720p.jpg`);
-      } else if (kind === "jpg1080") {
-        await exportComposite(composeRef.current, "jpg", 1080, `${baseName}-1080p.jpg`);
+      if (kind === "png-low") {
+        await exportComposite(composeRef.current, "png", 720, `${baseName}-720p.png`);
+      } else if (kind === "png-hd") {
+        await exportComposite(composeRef.current, "png", 2160, `${baseName}-4k.png`);
       } else if (kind === "pdf") {
         if (composeFrontRef.current && composeBackRef.current) {
           await exportCompositePdf(composeFrontRef.current, composeBackRef.current, `${baseName}.pdf`);
@@ -230,6 +239,21 @@ function Index() {
       setExporting(false);
       setDownloadOpen(false);
     }
+  };
+
+  const handleExportClick = (kind: ExportKind) => {
+    if (kind !== "png-low" && !exportUnlocked) {
+      setPendingExport(kind);
+      setExportUnlockOpen(true);
+      return;
+    }
+    void runExport(kind);
+  };
+
+  const handleExportUnlocked = () => {
+    const k = pendingExport;
+    setPendingExport(null);
+    if (k) void runExport(k);
   };
 
   const renderPanel = () => {
@@ -440,23 +464,40 @@ function Index() {
             <h2 id="download-dialog-title" className="text-base font-semibold text-white">Baixar uniforme</h2>
             <p className="mt-1 text-sm text-[#888]">Frente e verso lado a lado · 16:9</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
-              <button disabled={exporting} onClick={() => runExport("jpg720")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
-                <div className="text-sm font-semibold text-white">JPG · 720p</div>
-                <div className="mt-1 text-xs text-[#888]">HD 1280×720</div>
-              </button>
-              <button disabled={exporting} onClick={() => runExport("jpg1080")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
-                <div className="text-sm font-semibold text-white">JPG · 1080p</div>
-                <div className="mt-1 text-xs text-[#888]">Full HD 1920×1080</div>
-              </button>
-              <button disabled={exporting} onClick={() => runExport("pdf")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
-                <div className="text-sm font-semibold text-white">PDF</div>
-                <div className="mt-1 text-xs text-[#888]">Página única 16:9</div>
-              </button>
-              <button disabled={exporting} onClick={() => runExport("svg")} className="rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50">
-                <div className="text-sm font-semibold text-white">SVG</div>
-                <div className="mt-1 text-xs text-[#888]">Vetor editável</div>
-              </button>
+              <ExportTile
+                disabled={exporting}
+                onClick={() => handleExportClick("png-low")}
+                title="PNG"
+                subtitle="1280×720"
+                locked={false}
+              />
+              <ExportTile
+                disabled={exporting}
+                onClick={() => handleExportClick("png-hd")}
+                title="PNG HD"
+                subtitle="4K · 3840×2160"
+                locked={!exportUnlocked}
+              />
+              <ExportTile
+                disabled={exporting}
+                onClick={() => handleExportClick("svg")}
+                title="SVG"
+                subtitle="Vetor editável"
+                locked={!exportUnlocked}
+              />
+              <ExportTile
+                disabled={exporting}
+                onClick={() => handleExportClick("pdf")}
+                title="PDF"
+                subtitle="A4 paisagem · 300dpi"
+                locked={!exportUnlocked}
+              />
             </div>
+            {!exportUnlocked && (
+              <p className="mt-3 text-center text-[11px] text-[#888]">
+                Desbloqueie HD, SVG e PDF por 5 créditos · válido para sempre neste modelo.
+              </p>
+            )}
             {exporting && <p role="status" aria-live="polite" className="mt-3 text-center text-xs text-[#68ed00]">Gerando arquivo…</p>}
           </div>
         </div>
@@ -469,6 +510,12 @@ function Index() {
       )}
 
       <UnlockSheet open={sponsorUnlockOpen} onClose={() => setSponsorUnlockOpen(false)} feature="sponsors" />
+      <ExportUnlockModal
+        open={exportUnlockOpen}
+        onClose={() => { setExportUnlockOpen(false); setPendingExport(null); }}
+        modelCode={selectedModel?.code}
+        onUnlocked={handleExportUnlocked}
+      />
 
       {/* Composição oculta para exportar frente + verso lado a lado em 16:9 */}
       <div
@@ -551,5 +598,34 @@ function ScrollPanel({ children, fixed }: { children: React.ReactNode; fixed?: b
         {children}
       </div>
     </div>
+  );
+}
+
+function ExportTile({
+  title,
+  subtitle,
+  locked,
+  disabled,
+  onClick,
+}: {
+  title: string;
+  subtitle: string;
+  locked: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="relative rounded-xl border border-[#2a2a2a] bg-[#1a1a1a] p-4 text-left transition hover:border-[#68ed00] disabled:opacity-50"
+    >
+      <div className="flex items-center gap-1.5">
+        <div className="text-sm font-semibold text-white">{title}</div>
+        {locked && <Lock className="h-3 w-3 text-[#68ed00]" aria-label="Bloqueado" />}
+      </div>
+      <div className="mt-1 text-xs text-[#888]">{subtitle}</div>
+    </button>
   );
 }
