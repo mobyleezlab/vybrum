@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2, Upload, Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -176,6 +176,7 @@ function AvatarEditor({
 }) {
   const [form, setForm] = useState<AdminAvatarInput>(value);
   const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const fileRef = useRef<HTMLInputElement>(null);
   const uploadFn = useServerFn(adminUploadAvatarImage);
 
@@ -216,16 +217,21 @@ function AvatarEditor({
   }
 
   const canSave = form.name.trim().length > 0 && form.image_url.trim().length > 0;
-  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   // Resolve preview for the current form.image_url (path or URL).
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useState(() => {
-    void (async () => {
-      if (!form.image_url) return setPreviewUrl("");
-      setPreviewUrl(await signAvatarUrl(form.image_url));
-    })();
-  });
+  useEffect(() => {
+    let cancelled = false;
+    if (!form.image_url) {
+      setPreviewUrl("");
+      return;
+    }
+    void signAvatarUrl(form.image_url).then((u) => {
+      if (!cancelled) setPreviewUrl(u);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [form.image_url]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4">
