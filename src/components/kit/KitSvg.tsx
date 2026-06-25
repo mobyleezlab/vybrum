@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import DOMPurify from "dompurify";
 import frontRawDefault from "@/assets/kit-front.svg?raw";
 import backRawDefault from "@/assets/kit-back.svg?raw";
 import {
@@ -20,6 +21,15 @@ function applyFill(root: SVGElement, id: string, color: string) {
   shapes.forEach((s) => {
     if (s.getAttribute("fill") === "none") return;
     s.setAttribute("fill", color);
+  });
+}
+
+// Sanitiza SVGs vindos do Storage para remover event handlers (onload, onerror, etc.)
+// e elementos perigosos (<script>, <foreignObject>) antes de injetar via innerHTML.
+// Sem isso, um admin malicioso poderia subir SVG com `<svg onload="...">` causando XSS.
+function sanitizeSvg(raw: string): string {
+  return DOMPurify.sanitize(raw, {
+    USE_PROFILES: { svg: true, svgFilters: true },
   });
 }
 
@@ -184,7 +194,7 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
       state.view === "front"
         ? (frontRaw ?? frontRawDefault)
         : (backRaw ?? backRawDefault);
-    host.innerHTML = raw;
+    host.innerHTML = sanitizeSvg(raw);
     const svg = host.querySelector("svg") as SVGSVGElement | null;
     if (!svg) return;
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
