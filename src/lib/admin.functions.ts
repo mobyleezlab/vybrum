@@ -188,11 +188,21 @@ export const adminDeleteModel = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const ALLOWED_UPLOAD_CONTENT_TYPES = [
+  "image/svg+xml",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+] as const;
+
 const uploadSchema = z.object({
   code: z.string().trim().min(1).max(32).regex(/^[A-Za-z0-9_-]+$/),
   kind: z.enum(["thumb", "frente", "costas"]),
   base64: z.string().min(8).max(8_000_000),
-  contentType: z.string().min(3).max(80),
+  contentType: z.string().refine(
+    (v) => (ALLOWED_UPLOAD_CONTENT_TYPES as readonly string[]).includes(v),
+    { message: "Unsupported content type" },
+  ),
   filename: z.string().min(1).max(120),
 });
 
