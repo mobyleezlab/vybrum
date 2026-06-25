@@ -16,13 +16,20 @@ const analyticsSetupMessage =
   "As policies de admin no Supabase precisam ser atualizadas. Aplique a migration de Analytics para liberar a leitura.";
 
 async function resolveAdminClient(authSb: any, userId: string) {
+  // Verify the caller is an admin BEFORE returning the service-role client.
+  const { data: profile, error: profileError } = await authSb
+    .from("profiles")
+    .select("plan")
+    .eq("id", userId)
+    .maybeSingle();
+  if (profileError) throw new Error(errorMessage(profileError));
+  if (!profile || profile.plan !== "admin") {
+    throw new Error("Forbidden: admin only");
+  }
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     return supabaseAdmin as any;
   }
-  const { data, error } = await authSb.rpc("is_admin", { uid: userId });
-  if (error) throw new Error(errorMessage(error));
-  if (!data) throw new Error("Forbidden: admin only");
   return authSb;
 }
 
