@@ -184,7 +184,7 @@ export const KitSvg = forwardRef<SVGSVGElement, Props>(({ state, frontRaw, backR
       state.view === "front"
         ? (frontRaw ?? frontRawDefault)
         : (backRaw ?? backRawDefault);
-    host.innerHTML = raw;
+    host.innerHTML = sanitizeSvg(raw);
     const svg = host.querySelector("svg") as SVGSVGElement | null;
     if (!svg) return;
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
