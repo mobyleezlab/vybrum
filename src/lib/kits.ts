@@ -103,8 +103,10 @@ export function useSaveKit() {
       if (error) throw error;
       return data as KitRow;
     },
-    onSuccess: () => {
+    onSuccess: (saved) => {
       qc.invalidateQueries({ queryKey: ["kits", user?.id] });
+      qc.invalidateQueries({ queryKey: ["kit", saved.id] });
+      qc.setQueryData(["kit", saved.id], saved);
     },
   });
 }
