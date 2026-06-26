@@ -27,14 +27,24 @@ function withPublicModelStatus(rows: Array<Record<string, unknown>>): ModelRow[]
 }
 
 function getPublicClient() {
-  const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+  const url =
+    process.env.SUPABASE_URL ??
+    process.env.VITE_SUPABASE_URL ??
+    "https://mqcoignezmvnwgeuelmz.supabase.co";
   const key =
     process.env.SUPABASE_PUBLISHABLE_KEY ??
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
     process.env.SUPABASE_ANON_KEY ??
-    process.env.VITE_SUPABASE_ANON_KEY;
-  if (!url || !key) throw new Error("Missing Supabase public env vars");
-  return createClient<Database>(url, key, { auth: { persistSession: false } });
+    process.env.VITE_SUPABASE_ANON_KEY ??
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xY29pZ25lem12bndnZXVlbG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDE0OTYsImV4cCI6MjA5NTMxNzQ5Nn0.Si0OmvfqwNiVFcdE1FiFumb3QwY8jM6Fq_A10YwyKcA";
+  // Ensure we use a JWT-format key (Data API rejects sb_secret_* tokens with
+  // "Expected 3 parts in JWT"). If env injected a non-JWT key, fall back to the
+  // bundled publishable key.
+  const looksJwt = typeof key === "string" && key.split(".").length === 3;
+  const finalKey = looksJwt
+    ? key
+    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1xY29pZ25lem12bndnZXVlbG16Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3NDE0OTYsImV4cCI6MjA5NTMxNzQ5Nn0.Si0OmvfqwNiVFcdE1FiFumb3QwY8jM6Fq_A10YwyKcA";
+  return createClient<Database>(url, finalKey, { auth: { persistSession: false } });
 }
 
 export const listModelsPublic = createServerFn({ method: "GET" }).handler(
