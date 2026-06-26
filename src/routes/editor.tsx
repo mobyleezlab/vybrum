@@ -211,7 +211,6 @@ function Index() {
       });
       setCurrentKitId(saved.id);
       setSaveOpen(false);
-      skipDirtyRef.current = true;
       setIsDirty(false);
       sonner.success("Kit salvo!");
     } catch (err) {
