@@ -83,6 +83,8 @@ function Index() {
   const { data: currentShield } = useCurrentUserShield();
   const [currentKitId, setCurrentKitId] = useState<string | undefined>(kitId);
   const hydratedKitRef = useRef<string | null>(null);
+  const skipDirtyRef = useRef(true);
+  const [isDirty, setIsDirty] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [savedToast, setSavedToast] = useState<string | null>(null);
@@ -116,12 +118,23 @@ function Index() {
     hydratedKitRef.current = loadedKit.id;
     setCurrentKitId(loadedKit.id);
     setSaveName(loadedKit.name);
+    skipDirtyRef.current = true;
     set(() => next, true);
     if (models && loadedKit.model_code) {
       const m = models.find((x) => x.code === loadedKit.model_code);
       if (m) setSelectedModel(m);
     }
   }, [loadedKit, models, set]);
+
+  // Marca dirty em qualquer mudança de state, exceto logo após hidratação/salvamento.
+  useEffect(() => {
+    if (skipDirtyRef.current) {
+      skipDirtyRef.current = false;
+      setIsDirty(false);
+      return;
+    }
+    setIsDirty(true);
+  }, [state]);
 
   // Pre-load the user's global custom shield into any model they open.
   // Only applies when the kit hasn't explicitly touched the badge layer —
@@ -198,6 +211,8 @@ function Index() {
       });
       setCurrentKitId(saved.id);
       setSaveOpen(false);
+      skipDirtyRef.current = true;
+      setIsDirty(false);
       sonner.success("Kit salvo!");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
@@ -361,7 +376,17 @@ function Index() {
               className="press grid h-9 w-9 place-items-center rounded-full text-white transition hover:bg-[#1a1a1a] disabled:opacity-30">
               <Redo2 className="h-4 w-4" />
             </button>
-            <button aria-label="Salvar" onClick={() => { if (requireAuth()) setSaveOpen(true); }} disabled={isLocked || saveKit.isPending}
+            <button
+              aria-label="Salvar"
+              onClick={() => {
+                if (!requireAuth()) return;
+                if (currentKitId) {
+                  handleSave();
+                } else {
+                  setSaveOpen(true);
+                }
+              }}
+              disabled={isLocked || saveKit.isPending || !isDirty}
               className="press grid h-9 w-9 place-items-center rounded-full text-white transition hover:bg-[#1a1a1a] disabled:opacity-30">
               <Save className="h-4 w-4" />
             </button>
