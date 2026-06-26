@@ -163,10 +163,8 @@ function CreditosPage() {
           </div>
           <ul className="mt-3 grid gap-2 text-[13px] text-white">
             {[
-              "Modelos Pro, Premium, Elite e Rare",
-              "Exportar SVG / PDF / PNG HD",
-              "Patrocinadores e fontes premium",
-              "Goleiro separado e kit de time",
+              "Exportar SVG / PDF / PNG HD (modelos free)",
+              "Desbloquear modelos Pro, Premium, Elite e Rare",
             ].map((t) => (
               <li key={t} className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-[#68ed00]" /> {t}
