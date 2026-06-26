@@ -376,7 +376,17 @@ function Index() {
               className="press grid h-9 w-9 place-items-center rounded-full text-white transition hover:bg-[#1a1a1a] disabled:opacity-30">
               <Redo2 className="h-4 w-4" />
             </button>
-            <button aria-label="Salvar" onClick={() => { if (requireAuth()) setSaveOpen(true); }} disabled={isLocked || saveKit.isPending}
+            <button
+              aria-label="Salvar"
+              onClick={() => {
+                if (!requireAuth()) return;
+                if (currentKitId) {
+                  handleSave();
+                } else {
+                  setSaveOpen(true);
+                }
+              }}
+              disabled={isLocked || saveKit.isPending || !isDirty}
               className="press grid h-9 w-9 place-items-center rounded-full text-white transition hover:bg-[#1a1a1a] disabled:opacity-30">
               <Save className="h-4 w-4" />
             </button>
