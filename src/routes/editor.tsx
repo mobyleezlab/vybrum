@@ -105,7 +105,6 @@ function Index() {
   useDialogA11y(saveOpen, () => setSaveOpen(false));
   useDialogA11y(downloadOpen, () => setDownloadOpen(false));
   const [unsavedOpen, setUnsavedOpen] = useState(false);
-  const proceedRef = useRef<(() => void) | null>(null);
 
   // Bloqueia navegação interna do router quando há alterações não salvas.
   const blocker = useBlocker({
@@ -568,7 +567,7 @@ function Index() {
           aria-modal="true"
           aria-labelledby="unsaved-dialog-title"
           className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6"
-          onClick={() => { setUnsavedOpen(false); blocker.reset?.(); proceedRef.current = null; }}
+          onClick={() => { setUnsavedOpen(false); blocker.reset?.(); }}
         >
           <div className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <h2 id="unsaved-dialog-title" className="text-base font-semibold text-white">Alterações não salvas</h2>
@@ -579,10 +578,11 @@ function Index() {
                   if (currentKitId) {
                     await handleSave();
                     setUnsavedOpen(false);
-                    const go = proceedRef.current; proceedRef.current = null;
-                    if (go) go(); else blocker.proceed?.();
+                    blocker.proceed?.();
                   } else {
+                    // Kit novo: precisa de nome. Cancela bloqueio e abre modal de nome.
                     setUnsavedOpen(false);
+                    blocker.reset?.();
                     setSaveOpen(true);
                   }
                 }}
@@ -595,16 +595,14 @@ function Index() {
                 onClick={() => {
                   setUnsavedOpen(false);
                   setIsDirty(false);
-                  const go = proceedRef.current; proceedRef.current = null;
-                  // Defer to next tick so isDirty=false is committed before navigation.
-                  setTimeout(() => { if (go) go(); else blocker.proceed?.(); }, 0);
+                  blocker.proceed?.();
                 }}
                 className="press rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white"
               >
                 Sair sem salvar
               </button>
               <button
-                onClick={() => { setUnsavedOpen(false); blocker.reset?.(); proceedRef.current = null; }}
+                onClick={() => { setUnsavedOpen(false); blocker.reset?.(); }}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-[#888] hover:bg-[#1a1a1a]"
               >
                 Cancelar
