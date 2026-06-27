@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Check, Loader2, KeyRound, Mail, ChevronRight } from "lucide-react";
+import { Check, Loader2, KeyRound, Mail, ChevronRight } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { z } from "zod";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useProfile, useAvatars, useUpdateProfile } from "@/lib/profile";
@@ -75,9 +76,7 @@ function EditarPerfilPage() {
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+32px)]">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-black/85 px-3 pt-1 backdrop-blur supports-[backdrop-filter]:bg-black/65">
-        <Link to="/perfil" aria-label="Voltar" className="press grid h-10 w-10 place-items-center rounded-full text-white">
-          <ChevronLeft className="h-6 w-6" />
-        </Link>
+        <BackButton fallback="/perfil" />
         <h1 className="text-[13px] font-semibold tracking-[0.18em] text-white/80">EDITAR PERFIL</h1>
         <button
           type="button"
