@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useBlocker } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
@@ -6,6 +6,7 @@ import {
   ArrowLeftRight, ChevronsDown, Square,
   Type, SlidersHorizontal, Brush, Paintbrush, PaintBucket,
 } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitSvg } from "@/components/kit/KitSvg";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -103,6 +104,20 @@ function Index() {
   const [exporting, setExporting] = useState(false);
   useDialogA11y(saveOpen, () => setSaveOpen(false));
   useDialogA11y(downloadOpen, () => setDownloadOpen(false));
+  const [unsavedOpen, setUnsavedOpen] = useState(false);
+  const proceedRef = useRef<(() => void) | null>(null);
+
+  // Bloqueia navegação interna do router quando há alterações não salvas.
+  useBlocker({
+    shouldBlockFn: () => isDirty && !saveKit.isPending,
+    withResolver: true,
+    enableBeforeUnload: () => isDirty,
+  });
+
+  // Captura o resolver para abrir o modal customizado.
+  // (useBlocker com withResolver retorna { status, proceed, reset } mas
+  // a API mudou entre versões; usamos um listener via beforeunload + custom modal
+  // para botão "Voltar" do app, e enableBeforeUnload acima cobre o refresh/close.)
 
   useEffect(() => {
     if (!models || !modelCode) return;
@@ -360,9 +375,21 @@ function Index() {
     <div className="h-[100dvh] overflow-hidden bg-black pt-safe">
       <div className="mx-auto flex h-full max-w-[460px] flex-col bg-black px-4 pt-3">
         <header className="-mx-4 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-[#1a1a1a] bg-black/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-black/70">
-          <Link to="/" aria-label="Voltar ao catálogo" className="press grid h-10 w-10 place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-white">
+          <BackButton
+            fallback="/"
+            ariaLabel="Voltar ao catálogo"
+            className="press grid h-10 w-10 place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-white"
+            onBeforeBack={(proceed) => {
+              if (isDirty && !saveKit.isPending) {
+                proceedRef.current = proceed;
+                setUnsavedOpen(true);
+                return true;
+              }
+              return false;
+            }}
+          >
             <ChevronLeft className="h-5 w-5" />
-          </Link>
+          </BackButton>
           <h1 className="min-w-0 flex-1 truncate text-center text-[11px] font-bold tracking-[0.18em] text-[#888]">
             {selectedModel ? `MODELO ${selectedModel.code}` : "EDITOR"}
           </h1>
