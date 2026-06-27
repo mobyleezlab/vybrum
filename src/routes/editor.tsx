@@ -381,14 +381,6 @@ function Index() {
             fallback="/"
             ariaLabel="Voltar ao catálogo"
             className="press grid h-10 w-10 place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-white"
-            onBeforeBack={(proceed) => {
-              if (isDirty && !saveKit.isPending) {
-                proceedRef.current = proceed;
-                setUnsavedOpen(true);
-                return true;
-              }
-              return false;
-            }}
           >
             <ChevronLeft className="h-5 w-5" />
           </BackButton>
