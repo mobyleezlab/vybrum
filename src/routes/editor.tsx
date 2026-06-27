@@ -115,7 +115,6 @@ function Index() {
 
   useEffect(() => {
     if (blocker.status === "blocked") {
-      proceedRef.current = blocker.proceed;
       setUnsavedOpen(true);
     }
   }, [blocker.status, blocker.proceed]);
