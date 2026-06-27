@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useBlocker } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChevronLeft, Save, Download, Undo2, Redo2,
@@ -6,6 +6,7 @@ import {
   ArrowLeftRight, ChevronsDown, Square,
   Type, SlidersHorizontal, Brush, Paintbrush, PaintBucket,
 } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { KitCanvas } from "@/components/kit/KitCanvas";
 import { KitSvg } from "@/components/kit/KitSvg";
 import { KitTabs } from "@/components/kit/KitTabs";
@@ -103,6 +104,20 @@ function Index() {
   const [exporting, setExporting] = useState(false);
   useDialogA11y(saveOpen, () => setSaveOpen(false));
   useDialogA11y(downloadOpen, () => setDownloadOpen(false));
+  const [unsavedOpen, setUnsavedOpen] = useState(false);
+
+  // Bloqueia navegação interna do router quando há alterações não salvas.
+  const blocker = useBlocker({
+    shouldBlockFn: () => isDirty && !saveKit.isPending,
+    withResolver: true,
+    enableBeforeUnload: () => isDirty,
+  });
+
+  useEffect(() => {
+    if (blocker.status === "blocked") {
+      setUnsavedOpen(true);
+    }
+  }, [blocker.status, blocker.proceed]);
 
   useEffect(() => {
     if (!models || !modelCode) return;
@@ -360,9 +375,13 @@ function Index() {
     <div className="h-[100dvh] overflow-hidden bg-black pt-safe">
       <div className="mx-auto flex h-full max-w-[460px] flex-col bg-black px-4 pt-3">
         <header className="-mx-4 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-[#1a1a1a] bg-black/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-black/70">
-          <Link to="/" aria-label="Voltar ao catálogo" className="press grid h-10 w-10 place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-white">
+          <BackButton
+            fallback="/"
+            ariaLabel="Voltar ao catálogo"
+            className="press grid h-10 w-10 place-items-center rounded-full border border-[#2a2a2a] bg-[#1a1a1a] text-white"
+          >
             <ChevronLeft className="h-5 w-5" />
-          </Link>
+          </BackButton>
           <h1 className="min-w-0 flex-1 truncate text-center text-[11px] font-bold tracking-[0.18em] text-[#888]">
             {selectedModel ? `MODELO ${selectedModel.code}` : "EDITOR"}
           </h1>
@@ -540,6 +559,57 @@ function Index() {
         modelCode={selectedModel?.code}
         onUnlocked={handleExportUnlocked}
       />
+
+      {unsavedOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="unsaved-dialog-title"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6"
+          onClick={() => { setUnsavedOpen(false); blocker.reset?.(); }}
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 id="unsaved-dialog-title" className="text-base font-semibold text-white">Alterações não salvas</h2>
+            <p className="mt-1 text-sm text-[#888]">Você fez alterações neste kit. Deseja salvar antes de sair?</p>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                onClick={async () => {
+                  if (currentKitId) {
+                    await handleSave();
+                    setUnsavedOpen(false);
+                    blocker.proceed?.();
+                  } else {
+                    // Kit novo: precisa de nome. Cancela bloqueio e abre modal de nome.
+                    setUnsavedOpen(false);
+                    blocker.reset?.();
+                    setSaveOpen(true);
+                  }
+                }}
+                disabled={saveKit.isPending}
+                className="press rounded-lg bg-[#68ed00] px-4 py-3 text-sm font-bold text-black disabled:opacity-60"
+              >
+                {saveKit.isPending ? "Salvando…" : "Salvar e sair"}
+              </button>
+              <button
+                onClick={() => {
+                  setUnsavedOpen(false);
+                  setIsDirty(false);
+                  blocker.proceed?.();
+                }}
+                className="press rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white"
+              >
+                Sair sem salvar
+              </button>
+              <button
+                onClick={() => { setUnsavedOpen(false); blocker.reset?.(); }}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-[#888] hover:bg-[#1a1a1a]"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Composição oculta para exportar frente + verso lado a lado em 16:9 */}
       <div

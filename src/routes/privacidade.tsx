@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
@@ -16,10 +17,13 @@ function PrivacidadePage() {
     <div className="min-h-dvh bg-black pt-safe">
       <div className="mx-auto max-w-[720px] px-5 pb-16 pt-3">
         <header className="flex h-12 items-center">
-          <Link to="/" className="press flex h-10 items-center gap-1 rounded-full pl-1 pr-3 text-sm font-semibold text-white hover:bg-[#1a1a1a]">
+          <BackButton
+            fallback="/"
+            className="press flex h-10 items-center gap-1 rounded-full pl-1 pr-3 text-sm font-semibold text-white hover:bg-[#1a1a1a]"
+          >
             <ChevronLeft className="h-5 w-5" />
             Voltar
-          </Link>
+          </BackButton>
           <h1 className="ml-2 text-base font-semibold text-white">Política de Privacidade</h1>
         </header>
         <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white">Política de Privacidade</h2>

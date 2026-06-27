@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { FolderOpen, Trash2, Shirt } from "lucide-react";
-import { useState } from "react";
+import { FolderOpen, Trash2, Shirt, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast as sonner } from "sonner";
 import { useRequireAuth } from "@/lib/use-require-auth";
 import { useKits, useDeleteKit, type KitRow } from "@/lib/kits";
@@ -11,6 +11,8 @@ export const Route = createFileRoute("/kits")({
   component: KitsPage,
 });
 
+const FILTERS = ["todos", "free", "pro", "premium", "elite", "rare"] as const;
+
 function KitsPage() {
   const { ready } = useRequireAuth();
   const { data: kits, isLoading } = useKits();
@@ -18,6 +20,33 @@ function KitsPage() {
   const deleteKit = useDeleteKit();
   const navigate = useNavigate();
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("todos");
+  const [debouncedQ, setDebouncedQ] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q.trim().toLowerCase()), 250);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  const modelByCode = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof Object>>();
+    (models ?? []).forEach((m) => map.set(m.code, m));
+    return map as Map<string, NonNullable<typeof models>[number]>;
+  }, [models]);
+
+  const filteredKits = useMemo(() => {
+    if (!kits) return kits;
+    return kits.filter((k) => {
+      const model = modelByCode.get(k.model_code);
+      const category = (model?.category ?? (k.is_premium_model ? "premium" : "free")) as string;
+      if (filter !== "todos" && category !== filter) return false;
+      if (debouncedQ) {
+        const hay = `${k.name} ${k.model_code} ${model?.name ?? ""}`.toLowerCase();
+        if (!hay.includes(debouncedQ)) return false;
+      }
+      return true;
+    });
+  }, [kits, filter, debouncedQ, modelByCode]);
 
   const handleOpen = (k: KitRow) => {
     navigate({ to: "/editor", search: { model: k.model_code, kit: k.id } });
@@ -40,6 +69,36 @@ function KitsPage() {
         <h1 className="text-[22px] font-extrabold tracking-tight text-white">Meus Kits</h1>
       </header>
 
+      <div className="mx-4 mt-2 flex h-12 items-center gap-2 rounded-2xl border border-[#2a2a2a] bg-[#1a1a1a] px-4">
+        <Search className="h-4 w-4 text-[#666]" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar kit..."
+          className="flex-1 bg-transparent text-sm text-white placeholder:text-[#444] outline-none"
+        />
+      </div>
+
+      <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto px-4">
+        {FILTERS.map((f) => {
+          const active = filter === f;
+          return (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className="press shrink-0 h-9 rounded-full px-4 text-[12px] font-semibold capitalize"
+              style={{
+                background: active ? "#68ed00" : "#1a1a1a",
+                color: active ? "#000" : "#888",
+                border: active ? "none" : "1px solid #2a2a2a",
+              }}
+            >
+              {f}
+            </button>
+          );
+        })}
+      </div>
+
       {!ready ? (
         <div className="mx-4 mt-4 h-32 animate-pulse rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]" />
       ) : isLoading ? (
@@ -57,9 +116,11 @@ function KitsPage() {
             Explorar modelos
           </Link>
         </div>
+      ) : !filteredKits || filteredKits.length === 0 ? (
+        <p className="mt-10 text-center text-sm text-[#888]">Nenhum kit encontrado.</p>
       ) : (
         <div className="mt-4 grid grid-cols-2 gap-3 px-4">
-          {kits.map((k) => {
+          {filteredKits.map((k) => {
             const model = models?.find((m) => m.code === k.model_code);
             const badge = categoryBadge(model?.category ?? (k.is_premium_model ? "premium" : "free"));
             return (
