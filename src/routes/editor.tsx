@@ -570,6 +570,58 @@ function Index() {
         onUnlocked={handleExportUnlocked}
       />
 
+      {unsavedOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="unsaved-dialog-title"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-6"
+          onClick={() => { setUnsavedOpen(false); blocker.reset?.(); proceedRef.current = null; }}
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f] p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h2 id="unsaved-dialog-title" className="text-base font-semibold text-white">Alterações não salvas</h2>
+            <p className="mt-1 text-sm text-[#888]">Você fez alterações neste kit. Deseja salvar antes de sair?</p>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                onClick={async () => {
+                  if (currentKitId) {
+                    await handleSave();
+                    setUnsavedOpen(false);
+                    const go = proceedRef.current; proceedRef.current = null;
+                    if (go) go(); else blocker.proceed?.();
+                  } else {
+                    setUnsavedOpen(false);
+                    setSaveOpen(true);
+                  }
+                }}
+                disabled={saveKit.isPending}
+                className="press rounded-lg bg-[#68ed00] px-4 py-3 text-sm font-bold text-black disabled:opacity-60"
+              >
+                {saveKit.isPending ? "Salvando…" : "Salvar e sair"}
+              </button>
+              <button
+                onClick={() => {
+                  setUnsavedOpen(false);
+                  setIsDirty(false);
+                  const go = proceedRef.current; proceedRef.current = null;
+                  // Defer to next tick so isDirty=false is committed before navigation.
+                  setTimeout(() => { if (go) go(); else blocker.proceed?.(); }, 0);
+                }}
+                className="press rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white"
+              >
+                Sair sem salvar
+              </button>
+              <button
+                onClick={() => { setUnsavedOpen(false); blocker.reset?.(); proceedRef.current = null; }}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-[#888] hover:bg-[#1a1a1a]"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Composição oculta para exportar frente + verso lado a lado em 16:9 */}
       <div
         aria-hidden
