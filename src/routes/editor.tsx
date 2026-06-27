@@ -108,16 +108,18 @@ function Index() {
   const proceedRef = useRef<(() => void) | null>(null);
 
   // Bloqueia navegação interna do router quando há alterações não salvas.
-  useBlocker({
+  const blocker = useBlocker({
     shouldBlockFn: () => isDirty && !saveKit.isPending,
     withResolver: true,
     enableBeforeUnload: () => isDirty,
   });
 
-  // Captura o resolver para abrir o modal customizado.
-  // (useBlocker com withResolver retorna { status, proceed, reset } mas
-  // a API mudou entre versões; usamos um listener via beforeunload + custom modal
-  // para botão "Voltar" do app, e enableBeforeUnload acima cobre o refresh/close.)
+  useEffect(() => {
+    if (blocker.status === "blocked") {
+      proceedRef.current = blocker.proceed;
+      setUnsavedOpen(true);
+    }
+  }, [blocker.status, blocker.proceed]);
 
   useEffect(() => {
     if (!models || !modelCode) return;
