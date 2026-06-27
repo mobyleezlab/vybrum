@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, FileText, ShieldCheck, Info, Download, Trash2 } from "lucide-react";
+import { FileText, ShieldCheck, Info, Download, Trash2 } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,9 +101,7 @@ function ConfiguracoesPage() {
   return (
     <div className="pt-safe pb-[calc(64px+env(safe-area-inset-bottom)+24px)]">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-black/90 px-2 pt-1 backdrop-blur supports-[backdrop-filter]:bg-black/70">
-        <Link to="/perfil" aria-label="Voltar" className="press grid h-10 w-10 place-items-center rounded-full text-white hover:bg-[#1a1a1a]">
-          <ChevronLeft className="h-6 w-6" />
-        </Link>
+        <BackButton fallback="/perfil" />
         <h1 className="text-[12px] font-bold tracking-[0.22em] text-[#888]">CONFIGURAÇÕES</h1>
         <span className="w-10" />
       </header>
