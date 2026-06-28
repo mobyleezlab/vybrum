@@ -597,7 +597,7 @@ function Index() {
               <button
                 onClick={() => {
                   setUnsavedOpen(false);
-                  setIsDirty(false);
+                  baselineRef.current = JSON.stringify(state);
                   blocker.proceed?.();
                 }}
                 className="press rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white"
