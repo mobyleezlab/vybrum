@@ -84,8 +84,12 @@ function Index() {
   const { data: currentShield } = useCurrentUserShield();
   const [currentKitId, setCurrentKitId] = useState<string | undefined>(kitId);
   const hydratedKitRef = useRef<string | null>(null);
-  const skipDirtyRef = useRef(true);
-  const [isDirty, setIsDirty] = useState(false);
+  const baselineRef = useRef<string>(JSON.stringify(INITIAL_STATE));
+  const pendingPristineRef = useRef(false);
+  const isDirty = useMemo(
+    () => JSON.stringify(state) !== baselineRef.current,
+    [state],
+  );
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [savedToast, setSavedToast] = useState<string | null>(null);
@@ -133,7 +137,7 @@ function Index() {
     hydratedKitRef.current = loadedKit.id;
     setCurrentKitId(loadedKit.id);
     setSaveName(loadedKit.name);
-    skipDirtyRef.current = true;
+    pendingPristineRef.current = true;
     set(() => next, true);
     if (models && loadedKit.model_code) {
       const m = models.find((x) => x.code === loadedKit.model_code);
@@ -141,14 +145,13 @@ function Index() {
     }
   }, [loadedKit, models, set]);
 
-  // Marca dirty em qualquer mudança de state, exceto logo após hidratação/salvamento.
+  // Após aplicações automáticas (hidratação, auto-escudo, save), atualiza a baseline
+  // para que o `isDirty` derivado volte a `false` sem precisar de ação do usuário.
   useEffect(() => {
-    if (skipDirtyRef.current) {
-      skipDirtyRef.current = false;
-      setIsDirty(false);
-      return;
+    if (pendingPristineRef.current) {
+      pendingPristineRef.current = false;
+      baselineRef.current = JSON.stringify(state);
     }
-    setIsDirty(true);
   }, [state]);
 
   // Pre-load the user's global custom shield into any model they open.
@@ -158,6 +161,7 @@ function Index() {
     if (!currentShield?.image_url) return;
     if (state.escudo.touched) return;
     if (state.escudo.src === currentShield.image_url) return;
+    pendingPristineRef.current = true;
     set(
       (s) => ({ ...s, escudo: { ...s.escudo, src: currentShield.image_url, touched: true } }),
       true,
@@ -226,7 +230,7 @@ function Index() {
       });
       setCurrentKitId(saved.id);
       setSaveOpen(false);
-      setIsDirty(false);
+      baselineRef.current = JSON.stringify(state);
       sonner.success("Kit salvo!");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
