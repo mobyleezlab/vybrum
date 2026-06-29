@@ -145,7 +145,11 @@ function SectionRow({
           )}
           {label}
         </h2>
-        <Link to="/explorar" className="text-[12px] font-semibold text-[#68ed00] press">
+        <Link
+          to="/explorar"
+          search={{ cat: isRare ? "rare" : (label.toLowerCase() as "free" | "pro" | "premium" | "elite" | "rare") }}
+          className="text-[12px] font-semibold text-[#68ed00] press"
+        >
           Ver todos
         </Link>
       </div>
