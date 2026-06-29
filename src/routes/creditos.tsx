@@ -16,7 +16,7 @@ function PackageCard({
   pkg: { id: string; name: string; credits: number; bonus_credits: number; total_credits: number | null; price_brl: number };
   highlight?: "best" | "popular";
 }) {
-  const total = pkg.total_credits ?? pkg.credits + pkg.bonus_credits;
+  const total = pkg.credits + pkg.bonus_credits;
   const perCredit = pkg.price_brl / Math.max(1, total);
   return (
     <div

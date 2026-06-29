@@ -71,11 +71,12 @@ export function useCreditBalance() {
 }
 
 export function useCreditPackages() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   return useQuery<CreditPackage[]>({
-    queryKey: ["credit-packages", user?.id ?? "anon"],
-    enabled: !loading && !!user,
-    staleTime: 5 * 60_000,
+    queryKey: ["credit-packages"],
+    enabled: !loading,
+    staleTime: 0,
+    refetchOnMount: "always",
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("credit_packages")
@@ -83,7 +84,10 @@ export function useCreditPackages() {
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
       if (error) throw new Error(error.message);
-      return (data ?? []) as CreditPackage[];
+      return (data ?? []).map((pkg: CreditPackage) => ({
+        ...pkg,
+        total_credits: pkg.credits + pkg.bonus_credits,
+      })) as CreditPackage[];
     },
   });
 }
