@@ -44,7 +44,7 @@ function PackageCard({
       <h3 className="text-sm font-semibold text-white">{pkg.name}</h3>
       <div className="mt-2 flex items-baseline gap-1.5">
         <Diamond className="h-5 w-5 text-[#68ed00]" />
-        <span className="text-2xl font-extrabold text-white tabular-nums">{total}</span>
+        <span className="text-2xl font-extrabold text-white tabular-nums">{pkg.credits}</span>
         <span className="text-xs text-[#888]">créditos</span>
       </div>
       {pkg.bonus_credits > 0 && (
