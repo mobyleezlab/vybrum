@@ -92,7 +92,11 @@ function PackagesPanel() {
 
   const del = useMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
-    onSuccess: () => { toast.success("Pacote removido"); qc.invalidateQueries({ queryKey: ["admin", "credit_packages"] }); },
+    onSuccess: () => {
+      toast.success("Pacote removido");
+      qc.invalidateQueries({ queryKey: ["admin", "credit_packages"] });
+      qc.invalidateQueries({ queryKey: ["credit-packages"] });
+    },
     onError: (e) => toast.error((e as Error).message),
   });
 
@@ -101,6 +105,7 @@ function PackagesPanel() {
     onSuccess: () => {
       toast.success("Pacote salvo");
       qc.invalidateQueries({ queryKey: ["admin", "credit_packages"] });
+      qc.invalidateQueries({ queryKey: ["credit-packages"] });
       setEditing(null);
     },
     onError: (e) => toast.error((e as Error).message),
@@ -287,13 +292,22 @@ function PacksPanel() {
 
   const del = useMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
-    onSuccess: () => { toast.success("Pack removido"); qc.invalidateQueries({ queryKey: ["admin", "packs"] }); },
+    onSuccess: () => {
+      toast.success("Pack removido");
+      qc.invalidateQueries({ queryKey: ["admin", "packs"] });
+      qc.invalidateQueries({ queryKey: ["packs", "public"] });
+    },
     onError: (e) => toast.error((e as Error).message),
   });
 
   const save = useMutation({
     mutationFn: (input: AdminPackInput) => upsertFn({ data: input }),
-    onSuccess: () => { toast.success("Pack salvo"); qc.invalidateQueries({ queryKey: ["admin", "packs"] }); setEditing(null); },
+    onSuccess: () => {
+      toast.success("Pack salvo");
+      qc.invalidateQueries({ queryKey: ["admin", "packs"] });
+      qc.invalidateQueries({ queryKey: ["packs", "public"] });
+      setEditing(null);
+    },
     onError: (e) => toast.error((e as Error).message),
   });
 
