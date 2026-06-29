@@ -73,6 +73,7 @@ export const adminUpsertCreditPackage = createServerFn({ method: "POST" })
       name: data.name,
       credits: data.credits,
       bonus_credits: data.bonus_credits,
+      total_credits: data.credits + data.bonus_credits,
       price_brl: data.price_brl,
       sort_order: data.sort_order,
       is_active: data.is_active,
