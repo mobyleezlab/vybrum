@@ -6,16 +6,25 @@ import { useServerFn } from "@tanstack/react-start";
 import { categoryBadge } from "@/lib/models";
 import { listModelsPaginated } from "@/lib/catalog.functions";
 
+const FILTERS = ["todos", "free", "pro", "premium", "elite", "rare"] as const;
+type FilterKey = (typeof FILTERS)[number];
+
 export const Route = createFileRoute("/explorar")({
   head: () => ({ meta: [{ title: "Explorar · Vybrum" }] }),
+  validateSearch: (s: Record<string, unknown>): { cat?: FilterKey } => {
+    const cat = typeof s.cat === "string" ? s.cat.toLowerCase() : undefined;
+    return cat && (FILTERS as readonly string[]).includes(cat) ? { cat: cat as FilterKey } : {};
+  },
   component: ExplorarPage,
 });
 
-const FILTERS = ["todos", "free", "pro", "premium", "elite", "rare"] as const;
-
 function ExplorarPage() {
+  const { cat } = Route.useSearch();
   const [q, setQ] = useState("");
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("todos");
+  const [filter, setFilter] = useState<FilterKey>(cat ?? "todos");
+  useEffect(() => {
+    if (cat) setFilter(cat);
+  }, [cat]);
   const [debouncedQ, setDebouncedQ] = useState("");
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q.trim()), 300);
