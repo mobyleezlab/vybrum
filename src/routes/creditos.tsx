@@ -4,6 +4,7 @@ import { BackButton } from "@/components/BackButton";
 import { useCreditBalance, useCreditPackages, usePacks, useUnlockedPacks, formatBRL, type Pack } from "@/lib/credits";
 import { useAuth } from "@/lib/auth-context";
 import { useUnlockPack } from "@/lib/unlock";
+import { useStartPurchase, usePendingPurchases, splitCredits } from "@/lib/purchase";
 
 export const Route = createFileRoute("/creditos")({
   head: () => ({ meta: [{ title: "Créditos · Vybrum" }] }),
@@ -16,8 +17,17 @@ function PackageCard({
   pkg: { id: string; name: string; credits: number; bonus_credits: number; total_credits: number | null; price_brl: number };
   highlight?: "best" | "popular";
 }) {
-  const total = pkg.credits + pkg.bonus_credits;
+  const { user } = useAuth();
+  const { total } = splitCredits(pkg);
   const perCredit = pkg.price_brl / Math.max(1, total);
+  const purchase = useStartPurchase();
+  const handleBuy = () => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+    purchase.mutate({ package_id: pkg.id });
+  };
   return (
     <div
       className={[
@@ -53,10 +63,11 @@ function PackageCard({
       <div className="mt-3 text-lg font-extrabold text-white">{formatBRL(Number(pkg.price_brl))}</div>
       <div className="text-[11px] text-[#666]">{formatBRL(perCredit)} / crédito</div>
       <button
-        onClick={() => alert("Compra em breve!")}
-        className="press mt-4 w-full rounded-xl bg-[#68ed00] py-2.5 text-sm font-bold text-black hover:opacity-90"
+        onClick={handleBuy}
+        disabled={purchase.isPending}
+        className="press mt-4 w-full rounded-xl bg-[#68ed00] py-2.5 text-sm font-bold text-black hover:opacity-90 disabled:opacity-60"
       >
-        Comprar
+        {purchase.isPending ? "Processando…" : "Comprar"}
       </button>
     </div>
   );
