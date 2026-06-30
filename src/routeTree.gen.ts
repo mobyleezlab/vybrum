@@ -37,6 +37,7 @@ import { Route as AdminCreditosRouteImport } from './routes/admin.creditos'
 import { Route as AdminConfigRouteImport } from './routes/admin.config'
 import { Route as AdminAvataresRouteImport } from './routes/admin.avatares'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as ApiPublicGooglePlayWebhookRouteImport } from './routes/api/public/google-play-webhook'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -178,6 +179,12 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicGooglePlayWebhookRoute =
+  ApiPublicGooglePlayWebhookRouteImport.update({
+    id: '/api/public/google-play-webhook',
+    path: '/api/public/google-play-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/admin/moderacao': typeof AdminModeracaoRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/google-play-webhook': typeof ApiPublicGooglePlayWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesByTo {
   '/admin/moderacao': typeof AdminModeracaoRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/google-play-webhook': typeof ApiPublicGooglePlayWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -268,6 +277,7 @@ export interface FileRoutesById {
   '/admin/moderacao': typeof AdminModeracaoRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/google-play-webhook': typeof ApiPublicGooglePlayWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/admin/moderacao'
     | '/admin/usuarios'
     | '/admin/'
+    | '/api/public/google-play-webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/admin/moderacao'
     | '/admin/usuarios'
     | '/admin'
+    | '/api/public/google-play-webhook'
   id:
     | '__root__'
     | '/'
@@ -359,6 +371,7 @@ export interface FileRouteTypes {
     | '/admin/moderacao'
     | '/admin/usuarios'
     | '/admin/'
+    | '/api/public/google-play-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -380,6 +393,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SegurancaEPrivacidadeRoute: typeof SegurancaEPrivacidadeRoute
   TermosRoute: typeof TermosRoute
+  ApiPublicGooglePlayWebhookRoute: typeof ApiPublicGooglePlayWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -580,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/google-play-webhook': {
+      id: '/api/public/google-play-webhook'
+      path: '/api/public/google-play-webhook'
+      fullPath: '/api/public/google-play-webhook'
+      preLoaderRoute: typeof ApiPublicGooglePlayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -630,6 +651,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SegurancaEPrivacidadeRoute: SegurancaEPrivacidadeRoute,
   TermosRoute: TermosRoute,
+  ApiPublicGooglePlayWebhookRoute: ApiPublicGooglePlayWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

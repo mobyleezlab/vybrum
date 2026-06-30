@@ -133,6 +133,7 @@ function PackagesPanel() {
                 <th className="px-3 py-2 text-left">Nome</th>
                 <th className="px-3 py-2 text-right">Créditos</th>
                 <th className="px-3 py-2 text-right">Bônus</th>
+                <th className="px-3 py-2 text-right">Total</th>
                 <th className="px-3 py-2 text-right">Preço</th>
                 <th className="px-3 py-2 text-right">Ordem</th>
                 <th className="px-3 py-2 text-center">Ativo</th>
@@ -146,7 +147,7 @@ function PackagesPanel() {
                 }} />
               ))}
               {!list.data?.length && (
-                <tr><td colSpan={7} className="px-3 py-6 text-center text-[#666]">Nenhum pacote cadastrado.</td></tr>
+                <tr><td colSpan={8} className="px-3 py-6 text-center text-[#666]">Nenhum pacote cadastrado.</td></tr>
               )}
             </tbody>
           </table>
@@ -185,6 +186,7 @@ function PackageRow({ pkg, onEdit, onDelete }: { pkg: AdminCreditPackage; onEdit
       <td className="px-3 py-2 font-semibold text-white">{pkg.name}</td>
       <td className="px-3 py-2 text-right tabular-nums">{pkg.credits}</td>
       <td className="px-3 py-2 text-right tabular-nums text-[#68ed00]">+{pkg.bonus_credits}</td>
+      <td className="px-3 py-2 text-right tabular-nums font-semibold text-white">{pkg.credits + pkg.bonus_credits}</td>
       <td className="px-3 py-2 text-right tabular-nums">{fmtBRL(Number(pkg.price_brl))}</td>
       <td className="px-3 py-2 text-right tabular-nums text-[#888]">{pkg.sort_order}</td>
       <td className="px-3 py-2 text-center">

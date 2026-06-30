@@ -4,6 +4,7 @@ import { BackButton } from "@/components/BackButton";
 import { useCreditBalance, useCreditPackages, usePacks, useUnlockedPacks, formatBRL, type Pack } from "@/lib/credits";
 import { useAuth } from "@/lib/auth-context";
 import { useUnlockPack } from "@/lib/unlock";
+import { useStartPurchase, usePendingPurchases, splitCredits } from "@/lib/purchase";
 
 export const Route = createFileRoute("/creditos")({
   head: () => ({ meta: [{ title: "Créditos · Vybrum" }] }),
@@ -16,8 +17,17 @@ function PackageCard({
   pkg: { id: string; name: string; credits: number; bonus_credits: number; total_credits: number | null; price_brl: number };
   highlight?: "best" | "popular";
 }) {
-  const total = pkg.credits + pkg.bonus_credits;
+  const { user } = useAuth();
+  const { total } = splitCredits(pkg);
   const perCredit = pkg.price_brl / Math.max(1, total);
+  const purchase = useStartPurchase();
+  const handleBuy = () => {
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+    purchase.mutate({ package_id: pkg.id });
+  };
   return (
     <div
       className={[
@@ -53,10 +63,11 @@ function PackageCard({
       <div className="mt-3 text-lg font-extrabold text-white">{formatBRL(Number(pkg.price_brl))}</div>
       <div className="text-[11px] text-[#666]">{formatBRL(perCredit)} / crédito</div>
       <button
-        onClick={() => alert("Compra em breve!")}
-        className="press mt-4 w-full rounded-xl bg-[#68ed00] py-2.5 text-sm font-bold text-black hover:opacity-90"
+        onClick={handleBuy}
+        disabled={purchase.isPending}
+        className="press mt-4 w-full rounded-xl bg-[#68ed00] py-2.5 text-sm font-bold text-black hover:opacity-90 disabled:opacity-60"
       >
-        Comprar
+        {purchase.isPending ? "Processando…" : "Comprar"}
       </button>
     </div>
   );
@@ -112,6 +123,8 @@ function CreditosPage() {
   const { data: packages, isLoading: loadingPackages } = useCreditPackages();
   const { data: packs, isLoading: loadingPacks } = usePacks();
   const { data: unlockedPackIds } = useUnlockedPacks();
+  const { data: pending } = usePendingPurchases();
+  const pendingCount = pending?.length ?? 0;
 
   const bestId = packages?.[Math.floor((packages.length - 1) / 2) + 1]?.id;
   const popularId = packages?.[1]?.id;
@@ -138,6 +151,12 @@ function CreditosPage() {
               </span>
               <span className="text-sm font-semibold text-black/70">créditos</span>
             </div>
+            {pendingCount > 0 && (
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-black/15 px-3 py-1 text-[11px] font-bold text-black">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black" />
+                {pendingCount} compra{pendingCount > 1 ? "s" : ""} pendente{pendingCount > 1 ? "s" : ""} · saldo só atualiza após confirmação
+              </div>
+            )}
             {!user && (
               <Link
                 to="/login"
