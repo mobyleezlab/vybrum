@@ -123,6 +123,8 @@ function CreditosPage() {
   const { data: packages, isLoading: loadingPackages } = useCreditPackages();
   const { data: packs, isLoading: loadingPacks } = usePacks();
   const { data: unlockedPackIds } = useUnlockedPacks();
+  const { data: pending } = usePendingPurchases();
+  const pendingCount = pending?.length ?? 0;
 
   const bestId = packages?.[Math.floor((packages.length - 1) / 2) + 1]?.id;
   const popularId = packages?.[1]?.id;
@@ -149,6 +151,12 @@ function CreditosPage() {
               </span>
               <span className="text-sm font-semibold text-black/70">créditos</span>
             </div>
+            {pendingCount > 0 && (
+              <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-black/15 px-3 py-1 text-[11px] font-bold text-black">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-black" />
+                {pendingCount} compra{pendingCount > 1 ? "s" : ""} pendente{pendingCount > 1 ? "s" : ""} · saldo só atualiza após confirmação
+              </div>
+            )}
             {!user && (
               <Link
                 to="/login"
