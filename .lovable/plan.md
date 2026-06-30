@@ -1,42 +1,77 @@
-## Problema
+## Escopo
 
-O modal "Salvar alterações?" abre mesmo sem o usuário ter editado nada. Causa: o tracking de `isDirty` em `src/routes/editor.tsx` marca qualquer mudança de `state` como suja, e existem `set()` automáticos no carregamento que disparam após o "skip" inicial:
+Conectar checkout Google Play Billing aos pacotes, separar bônus do valor comprado no registro, e garantir saldo só atualiza após a transação concluída.
 
-1. **Auto-aplicação do escudo global** (linhas 157–165): se o usuário tem um escudo cadastrado e o estado tem `escudo.touched === false`, o effect chama `set(...)`. Em um kit salvo sem escudo personalizado, isso roda *depois* da hidratação e marca dirty.
-2. **Ordem de effects na abertura de kit salvo**: o `skipDirtyRef` só absorve a primeira mudança após hidratação; qualquer `set()` subsequente automático (ex.: shield) vira "dirty".
-3. **Kit novo (sem `?kit=`)**: o auto-escudo aplica na primeira renderização e já marca dirty antes de qualquer ação do usuário.
+## 1. Migration de schema (`supabase/migrations/20260630120000_purchase_state_machine.sql`)
 
-## Solução
+- Adicionar colunas em `credit_purchases`:
+  - `base_credits int not null default 0` (snapshot do `credit_packages.credits` na hora da compra)
+  - `bonus_credits int not null default 0` (snapshot do bônus)
+  - `failure_reason text`
+  - `updated_at timestamptz default now()`
+- Manter `status text` com `CHECK (status in ('pending','completed','failed','refunded'))`.
+- Manter `credits_granted` (total = base + bonus) para compatibilidade com queries existentes.
+- Índice `(user_id, status)` para listar pendentes.
 
-Substituir o esquema `skipDirtyRef` + `useEffect([state])` por uma **baseline serializada** comparada com o estado atual. Só marca dirty quando o `state` realmente diverge da última baseline registrada — qualquer aplicação automática feita pelo próprio editor é capturada como nova baseline.
+### RPCs
+- `start_purchase(p_package_id uuid, p_google_purchase_token text)` SECURITY DEFINER, chamado pelo usuário autenticado:
+  - Lê pacote ativo, faz snapshot de `credits`/`bonus_credits`/`price_brl`.
+  - Insere `credit_purchases` com `status='pending'`. NÃO mexe em `credit_balances`.
+  - Retorna `purchase_id`.
+- `complete_purchase(p_purchase_id uuid, p_google_order_id text)` SECURITY DEFINER, executado **só pelo service_role** (webhook):
+  - Trava com `FOR UPDATE`; se já estiver `completed`, é idempotente.
+  - Atualiza `status='completed'`, `completed_at=now()`, grava `google_order_id`.
+  - Credita `credit_balances.balance += base + bonus`, atualiza `total_earned`.
+  - Insere `credit_ledger` (`type='purchase'`, `amount=total`, `ref_id=purchase_id`).
+- `fail_purchase(p_purchase_id uuid, p_reason text)` SECURITY DEFINER, service_role:
+  - Marca `status='failed'`, salva razão. Não altera saldo.
+- REVOKE EXECUTE de complete/fail para `authenticated` e `anon`.
 
-### Mudanças em `src/routes/editor.tsx`
+## 2. Server functions
 
-1. **Remover** `skipDirtyRef`, `isDirty` (state) e o `useEffect([state])` que seta dirty.
-2. **Adicionar** `baselineRef = useRef<string>(JSON.stringify(INITIAL_STATE))` e derivar:
-   ```ts
-   const isDirty = useMemo(
-     () => JSON.stringify(state) !== baselineRef.current,
-     [state],
-   );
-   ```
-3. **Helper** `const markPristine = () => { baselineRef.current = JSON.stringify(state); };` — definido com `useEvent`-like via `useRef` para sempre usar o `state` mais recente, ou via `useEffect` que reage à flag `pendingPristineRef`.
+### `src/lib/purchase.functions.ts`
+- `startPurchase` (`requireSupabaseAuth`): valida package_id, chama `start_purchase`.
+- `listMyPendingPurchases` (auth): lista compras `pending` do usuário.
 
-   Implementação simples: ao invés de helper que captura `state` por closure, usar um `pendingPristineRef = useRef(false)` e um `useEffect([state])` que, se `pendingPristineRef.current === true`, escreve `baselineRef.current = JSON.stringify(state)` e zera o flag. Quem precisa "limpar" só seta `pendingPristineRef.current = true` antes/depois de aplicar o `set()` automático.
+### Server route `src/routes/api/public/google-play-webhook.ts`
+- POST handler para Realtime Developer Notifications.
+- Verifica header `Authorization: Bearer <GOOGLE_PLAY_WEBHOOK_SECRET>` (secret a adicionar).
+- Decodifica `message.data` base64 → JSON; extrai `purchaseToken`, `orderId`.
+- Busca `credit_purchases` por `google_purchase_token` e chama `complete_purchase` ou `fail_purchase` via `supabaseAdmin`.
 
-4. **Pontos onde marcar pristine** (setar `pendingPristineRef.current = true`):
-   - Logo após `set(() => next, true)` na hidratação do `loadedKit` (linha 137).
-   - Dentro do effect de auto-escudo (linha 157) antes do `set(...)`.
-   - Após `saveKit.mutateAsync` bem-sucedido (no `handleSave`).
-5. **Botão Salvar**: continua usando `disabled={isLocked || saveKit.isPending || !isDirty}` — agora isDirty reflete só mudanças reais do usuário.
-6. **`useBlocker`**: continua com `shouldBlockFn: () => isDirty && !saveKit.isPending` — o modal de "sair sem salvar" só aparece quando há diferença real.
+## 3. Frontend unificado
 
-### Validação
+### `src/lib/credits.ts` (única fonte de verdade)
+- Manter `useCreditBalance`, `useCreditPackages`. 
+- Adicionar `usePendingPurchases` (lista de pendentes).
+- Adicionar helper `splitCredits(pkg) → { base, bonus, total }` exportado.
 
-- Abrir kit salvo → nenhuma alteração → voltar: **sem modal**.
-- Abrir kit salvo com escudo global aplicado automaticamente → voltar: **sem modal**.
-- Abrir kit novo, sem mexer em nada → voltar: **sem modal**.
-- Mudar uma cor → voltar: **modal aparece**.
-- Salvar e voltar a editar sem mexer: **sem modal**; mexer de novo: **modal aparece**.
+### `/creditos` (`src/routes/creditos.tsx`)
+- Botão "Comprar" agora chama `useStartPurchase` (mutation) → cria pendente e exibe toast "Compra pendente. Aguardando confirmação do Google Play."
+- Card de saldo: badge "X compra(s) pendente(s)" se houver, sem somar ao saldo.
+- Manter exibição base + `+bônus` separados (já está).
 
-Sem mudanças em `src/lib/kits.ts` ou outros arquivos.
+### `/admin/creditos`
+- Já mostra créditos e bônus separados (✓).
+- Adicionar coluna "Total" exibida como `base + bônus` para clareza, mesma fórmula.
+
+### `/admin/faturamento`
+- Já agrega por `status='completed'`. Garantir que pending/failed não entram em receita (✓ já filtrado).
+
+## 4. Secret
+- Adicionar `GOOGLE_PLAY_WEBHOOK_SECRET` via `secrets--add_secret`.
+
+## Arquivos a criar
+- `supabase/migrations/20260630120000_purchase_state_machine.sql`
+- `src/lib/purchase.functions.ts`
+- `src/lib/purchase.ts` (hooks de UI)
+- `src/routes/api/public/google-play-webhook.ts`
+
+## Arquivos a alterar
+- `src/routes/creditos.tsx` — botão Comprar → mutation, badge pendente
+- `src/lib/credits.ts` — exportar `splitCredits` + `usePendingPurchases`
+- `src/routes/admin.creditos.tsx` — coluna Total (visualização)
+
+## Observações
+- Compras criadas ficam visíveis em `/admin/faturamento` na contagem `pending` e não somam receita.
+- Como ainda não há SDK Play no app web/PWA, o fluxo real só fechará quando o app Android nativo enviar o `purchaseToken` para `startPurchase` e o webhook for configurado no Play Console. Por enquanto o botão na web cria a compra pendente que pode ser concluída via webhook de teste.
