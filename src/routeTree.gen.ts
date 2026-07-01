@@ -29,6 +29,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
+import { Route as AdminNotificacoesRouteImport } from './routes/admin.notificacoes'
 import { Route as AdminModeracaoRouteImport } from './routes/admin.moderacao'
 import { Route as AdminModelosRouteImport } from './routes/admin.modelos'
 import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento'
@@ -139,6 +140,11 @@ const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminNotificacoesRoute = AdminNotificacoesRouteImport.update({
+  id: '/notificacoes',
+  path: '/notificacoes',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminModeracaoRoute = AdminModeracaoRouteImport.update({
   id: '/moderacao',
   path: '/moderacao',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/modelos': typeof AdminModelosRoute
   '/admin/moderacao': typeof AdminModeracaoRoute
+  '/admin/notificacoes': typeof AdminNotificacoesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/google-play-webhook': typeof ApiPublicGooglePlayWebhookRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/modelos': typeof AdminModelosRoute
   '/admin/moderacao': typeof AdminModeracaoRoute
+  '/admin/notificacoes': typeof AdminNotificacoesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin': typeof AdminIndexRoute
   '/api/public/google-play-webhook': typeof ApiPublicGooglePlayWebhookRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/modelos': typeof AdminModelosRoute
   '/admin/moderacao': typeof AdminModeracaoRoute
+  '/admin/notificacoes': typeof AdminNotificacoesRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/': typeof AdminIndexRoute
   '/api/public/google-play-webhook': typeof ApiPublicGooglePlayWebhookRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/admin/faturamento'
     | '/admin/modelos'
     | '/admin/moderacao'
+    | '/admin/notificacoes'
     | '/admin/usuarios'
     | '/admin/'
     | '/api/public/google-play-webhook'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/admin/faturamento'
     | '/admin/modelos'
     | '/admin/moderacao'
+    | '/admin/notificacoes'
     | '/admin/usuarios'
     | '/admin'
     | '/api/public/google-play-webhook'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/faturamento'
     | '/admin/modelos'
     | '/admin/moderacao'
+    | '/admin/notificacoes'
     | '/admin/usuarios'
     | '/admin/'
     | '/api/public/google-play-webhook'
@@ -538,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsuariosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/notificacoes': {
+      id: '/admin/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/admin/notificacoes'
+      preLoaderRoute: typeof AdminNotificacoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/moderacao': {
       id: '/admin/moderacao'
       path: '/moderacao'
@@ -613,6 +632,7 @@ interface AdminRouteChildren {
   AdminFaturamentoRoute: typeof AdminFaturamentoRoute
   AdminModelosRoute: typeof AdminModelosRoute
   AdminModeracaoRoute: typeof AdminModeracaoRoute
+  AdminNotificacoesRoute: typeof AdminNotificacoesRoute
   AdminUsuariosRoute: typeof AdminUsuariosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -626,6 +646,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminFaturamentoRoute: AdminFaturamentoRoute,
   AdminModelosRoute: AdminModelosRoute,
   AdminModeracaoRoute: AdminModeracaoRoute,
+  AdminNotificacoesRoute: AdminNotificacoesRoute,
   AdminUsuariosRoute: AdminUsuariosRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
