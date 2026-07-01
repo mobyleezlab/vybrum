@@ -520,6 +520,65 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_reads: {
+        Row: {
+          notification_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          notification_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          notification_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_reads_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string
+          id: string
+          target: string
+          target_user_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by: string
+          id?: string
+          target?: string
+          target_user_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          target?: string
+          target_user_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       pack_items: {
         Row: {
           id: string
@@ -970,6 +1029,21 @@ export type Database = {
         | { Args: never; Returns: boolean }
         | { Args: { uid: string }; Returns: boolean }
       is_premium_active: { Args: never; Returns: boolean }
+      mark_all_notifications_read: { Args: never; Returns: undefined }
+      mark_notification_read: {
+        Args: { p_notification_id: string }
+        Returns: undefined
+      }
+      send_notification: {
+        Args: {
+          p_body: string
+          p_target?: string
+          p_title: string
+          p_type: string
+          p_user_id?: string
+        }
+        Returns: Json
+      }
       start_purchase: {
         Args: { p_google_purchase_token?: string; p_package_id: string }
         Returns: Json

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Diamond, Flame, Package, Sparkles, ArrowRight, Shirt } from "lucide-react";
+import { Diamond, Flame, Package, Sparkles, ArrowRight, Shirt } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { categoryBadge, type ModelRow } from "@/lib/models";
@@ -7,6 +7,7 @@ import { listModelsHomeSections, type HomeSectionKey } from "@/lib/catalog.funct
 import { usePacks, type Pack } from "@/lib/credits";
 import { SITE_URL } from "@/lib/site";
 import logoVybrum from "@/assets/logo-vybrum.svg";
+import { NotificationsBell } from "@/components/NotificationsSheet";
 
 const HOME_DESCRIPTION =
   "Vybrum é o app para criar, personalizar e exportar uniformes esportivos direto do celular.";
@@ -267,12 +268,7 @@ function HomeContent() {
           >
             <Diamond aria-hidden="true" className="h-3.5 w-3.5 text-[#68ed00]" /> 0
           </Link>
-          <button
-            aria-label="Notificações"
-            className="press grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] border border-[#2a2a2a] text-white"
-          >
-            <Bell className="h-4 w-4" />
-          </button>
+          <NotificationsBell />
         </div>
       </header>
 

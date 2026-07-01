@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
 import { redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings, Menu, Smile } from "lucide-react";
+import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings, Menu, Smile, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
@@ -41,6 +41,7 @@ const TABS = [
   { to: "/admin/creditos", label: "Créditos & Pacotes", icon: Package },
   { to: "/admin/drops", label: "Drops", icon: Sparkles },
   { to: "/admin/moderacao", label: "Moderação", icon: ShieldAlert },
+  { to: "/admin/notificacoes", label: "Notificações", icon: Bell },
   { to: "/admin/config", label: "Configurações", icon: Settings },
 ] as const;
 
