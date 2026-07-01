@@ -264,39 +264,51 @@ export type Database = {
       }
       credit_purchases: {
         Row: {
+          base_credits: number
+          bonus_credits: number
           completed_at: string | null
           created_at: string
           credits_granted: number
+          failure_reason: string | null
           google_order_id: string | null
           google_purchase_token: string | null
           id: string
           package_id: string
           price_brl: number
           status: string
+          updated_at: string
           user_id: string
         }
         Insert: {
+          base_credits?: number
+          bonus_credits?: number
           completed_at?: string | null
           created_at?: string
           credits_granted: number
+          failure_reason?: string | null
           google_order_id?: string | null
           google_purchase_token?: string | null
           id?: string
           package_id: string
           price_brl: number
           status?: string
+          updated_at?: string
           user_id: string
         }
         Update: {
+          base_credits?: number
+          bonus_credits?: number
           completed_at?: string | null
           created_at?: string
           credits_granted?: number
+          failure_reason?: string | null
           google_order_id?: string | null
           google_purchase_token?: string | null
           id?: string
           package_id?: string
           price_brl?: number
           status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -943,13 +955,25 @@ export type Database = {
       }
     }
     Functions: {
+      complete_purchase: {
+        Args: { p_google_order_id?: string; p_purchase_id: string }
+        Returns: Json
+      }
       delete_user_account: { Args: never; Returns: Json }
       export_user_data: { Args: never; Returns: Json }
+      fail_purchase: {
+        Args: { p_purchase_id: string; p_reason?: string }
+        Returns: Json
+      }
       is_active_user: { Args: never; Returns: boolean }
       is_admin:
         | { Args: never; Returns: boolean }
         | { Args: { uid: string }; Returns: boolean }
       is_premium_active: { Args: never; Returns: boolean }
+      start_purchase: {
+        Args: { p_google_purchase_token?: string; p_package_id: string }
+        Returns: Json
+      }
       unlock_export: { Args: { p_model_code: string }; Returns: Json }
       unlock_pack: { Args: { p_pack_id: string }; Returns: Json }
       unlock_template: { Args: { p_model_code: string }; Returns: Json }
