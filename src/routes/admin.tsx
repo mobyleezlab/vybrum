@@ -1,14 +1,34 @@
 import { createFileRoute, Link, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { redirect } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Lock, Loader2, Shirt, Users, DollarSign, BarChart3, Package, Sparkles, ShieldAlert, Settings, Menu, Smile } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { adminCheck } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
   head: () => ({ meta: [{ title: "Admin · Vybrum" }] }),
+  beforeLoad: async () => {
+    try {
+      const result = await adminCheck();
+      if (!result?.isAdmin) {
+        throw redirect({ to: "/login", search: { redirect: "/admin" } });
+      }
+    } catch (err) {
+      // Rethrow router redirects; convert auth/other failures into a login redirect.
+      if (err && typeof err === "object" && "isRedirect" in (err as Record<string, unknown>)) {
+        throw err;
+      }
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.toLowerCase().includes("unauthorized")) {
+        throw redirect({ to: "/login", search: { redirect: "/admin" } });
+      }
+      throw err;
+    }
+  },
   component: AdminLayout,
 });
 
