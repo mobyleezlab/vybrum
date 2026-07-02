@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Sparkles, Package, Megaphone, Diamond, Inbox } from "lucide-react";
 import {
   Sheet,
@@ -59,36 +59,84 @@ export function NotificationsBell() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [onlyUnread, setOnlyUnread] = useState(false);
 
-  const query = useQuery({
-    queryKey: ["notifications", user?.id ?? "anon"],
+  const PAGE_SIZE = 30;
+  const queryKey = ["notifications", user?.id ?? "anon"];
+
+  const query = useInfiniteQuery({
+    queryKey,
     enabled: !!user,
     staleTime: 30_000,
-    queryFn: async (): Promise<NotificationRow[]> => {
+    initialPageParam: 0,
+    getNextPageParam: (last: NotificationRow[], all) =>
+      last.length < PAGE_SIZE ? undefined : all.length * PAGE_SIZE,
+    queryFn: async ({ pageParam }): Promise<NotificationRow[]> => {
+      const from = pageParam as number;
       const { data, error } = await supabase
         .from("notifications")
         .select("*, notification_reads!left(read_at)")
         .or(`target.eq.all,target_user_id.eq.${user!.id}`)
         .order("created_at", { ascending: false })
-        .limit(30);
+        .range(from, from + PAGE_SIZE - 1);
       if (error) throw error;
       return (data ?? []) as unknown as NotificationRow[];
     },
   });
 
-  const notifications = query.data ?? [];
+  const notifications = useMemo(
+    () => (query.data?.pages ?? []).flat(),
+    [query.data],
+  );
   const unread = useMemo(
     () => notifications.filter((n) => !n.notification_reads?.length).length,
     [notifications],
+  );
+  const visible = useMemo(
+    () => (onlyUnread ? notifications.filter((n) => !n.notification_reads?.length) : notifications),
+    [notifications, onlyUnread],
   );
 
   useEffect(() => {
     if (!open || !user || unread === 0) return;
     (async () => {
       await supabase.rpc("mark_all_notifications_read");
-      qc.invalidateQueries({ queryKey: ["notifications", user.id] });
+      qc.invalidateQueries({ queryKey });
     })();
-  }, [open, user, unread, qc]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, user, unread]);
+
+  // Realtime: novas notificações destinadas ao usuário (all ou user).
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`notif-${user.id}-${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications" },
+        (payload) => {
+          const n = payload.new as NotificationRow;
+          if (n.target === "all" || (n.target === "user" && n.target_user_id === user.id)) {
+            qc.invalidateQueries({ queryKey });
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notification_reads", filter: `user_id=eq.${user.id}` },
+        () => qc.invalidateQueries({ queryKey }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const markOneRead = async (id: string) => {
+    await supabase.rpc("mark_notification_read", { p_notification_id: id });
+    qc.invalidateQueries({ queryKey });
+  };
 
   if (!user) {
     return (
@@ -123,27 +171,46 @@ export function NotificationsBell() {
       >
         <SheetHeader className="border-b border-[#1a1a1a] p-4">
           <SheetTitle className="text-white">Notificações</SheetTitle>
+          <div className="mt-3 inline-flex self-start rounded-full border border-[#2a2a2a] bg-[#0f0f0f] p-0.5 text-[11px] font-semibold">
+            <button
+              onClick={() => setOnlyUnread(false)}
+              className={`press rounded-full px-3 py-1 ${!onlyUnread ? "bg-[#68ed00] text-black" : "text-[#aaa]"}`}
+            >
+              Todas
+            </button>
+            <button
+              onClick={() => setOnlyUnread(true)}
+              className={`press rounded-full px-3 py-1 ${onlyUnread ? "bg-[#68ed00] text-black" : "text-[#aaa]"}`}
+            >
+              Não lidas{unread > 0 ? ` (${unread > 9 ? "9+" : unread})` : ""}
+            </button>
+          </div>
         </SheetHeader>
         <div className="max-h-[70dvh] overflow-y-auto">
           {query.isLoading ? (
             <div className="p-6 text-center text-sm text-[#888]">Carregando…</div>
-          ) : notifications.length === 0 ? (
+          ) : visible.length === 0 ? (
             <div className="grid place-items-center gap-2 p-10 text-center">
               <Inbox className="h-10 w-10 text-[#333]" />
-              <p className="text-sm text-[#888]">Nenhuma notificação por enquanto</p>
+              <p className="text-sm text-[#888]">
+                {onlyUnread ? "Nenhuma notificação não lida" : "Nenhuma notificação por enquanto"}
+              </p>
             </div>
           ) : (
+            <>
             <ul className="divide-y divide-[#1a1a1a]">
-              {notifications.map((n) => {
+              {visible.map((n) => {
                 const Icon = iconFor(n.type);
                 const isRead = n.notification_reads?.length > 0;
                 return (
-                  <li
-                    key={n.id}
-                    className={`flex gap-3 px-4 py-3 ${
-                      isRead ? "bg-transparent" : "bg-[#68ed00]/5"
-                    }`}
-                  >
+                  <li key={n.id}>
+                    <button
+                      type="button"
+                      onClick={() => !isRead && markOneRead(n.id)}
+                      className={`press flex w-full gap-3 px-4 py-3 text-left ${
+                        isRead ? "bg-transparent" : "bg-[#68ed00]/5"
+                      }`}
+                    >
                     <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#1a1a1a] text-[#68ed00]">
                       <Icon className="h-4 w-4" />
                     </div>
@@ -161,10 +228,23 @@ export function NotificationsBell() {
                         {relativeTime(n.created_at)}
                       </p>
                     </div>
+                    </button>
                   </li>
                 );
               })}
             </ul>
+            {query.hasNextPage && (
+              <div className="p-4">
+                <button
+                  onClick={() => query.fetchNextPage()}
+                  disabled={query.isFetchingNextPage}
+                  className="press w-full rounded-full border border-[#2a2a2a] bg-[#0f0f0f] py-2 text-[12px] font-semibold text-white disabled:opacity-50"
+                >
+                  {query.isFetchingNextPage ? "Carregando…" : "Ver mais"}
+                </button>
+              </div>
+            )}
+            </>
           )}
         </div>
       </SheetContent>
