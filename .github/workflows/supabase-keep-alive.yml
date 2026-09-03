@@ -11,21 +11,41 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
       - name: Consulta de leitura no Supabase (SELECT id LIMIT 1)
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # Fallback opcional: só é usado se o .env do repositório não tiver os valores.
+          SUPABASE_URL_SECRET: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY_SECRET: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           set -euo pipefail
 
-          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
-            echo "::error::Secrets SUPABASE_URL e/ou SUPABASE_ANON_KEY não configurados."
+          read_env() {
+            # Lê uma chave do .env versionado, removendo aspas.
+            grep -m1 -E "^$1=" .env 2>/dev/null | cut -d= -f2- | tr -d '"' | tr -d "'" || true
+          }
+
+          SUPABASE_URL="$(read_env VITE_SUPABASE_URL)"
+          [ -z "$SUPABASE_URL" ] && SUPABASE_URL="$(read_env SUPABASE_URL)"
+          [ -z "$SUPABASE_URL" ] && SUPABASE_URL="${SUPABASE_URL_SECRET:-}"
+
+          SUPABASE_ANON_KEY="$(read_env VITE_SUPABASE_PUBLISHABLE_KEY)"
+          [ -z "$SUPABASE_ANON_KEY" ] && SUPABASE_ANON_KEY="$(read_env SUPABASE_PUBLISHABLE_KEY)"
+          [ -z "$SUPABASE_ANON_KEY" ] && SUPABASE_ANON_KEY="${SUPABASE_ANON_KEY_SECRET:-}"
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Não foi possível obter a URL/chave pública do Supabase (.env ausente e secrets não configurados)."
             exit 1
           fi
 
+          # Nunca imprimimos a chave; apenas mascaramos por segurança.
+          echo "::add-mask::$SUPABASE_ANON_KEY"
+
           ENDPOINT="${SUPABASE_URL%/}/rest/v1/_keep_alive_heartbeat?select=id&limit=1"
           echo "Execução: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          echo "Endpoint: ${SUPABASE_URL%/}/rest/v1/_keep_alive_heartbeat?select=id&limit=1"
+          echo "Endpoint: ${ENDPOINT}"
 
           STATUS=$(curl -sS -o /tmp/keepalive.json -w '%{http_code}' \
             --max-time 20 --connect-timeout 10 --retry 2 --retry-delay 5 \
