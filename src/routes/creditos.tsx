@@ -160,6 +160,7 @@ function CreditosPage() {
             {!user && (
               <Link
                 to="/login"
+                search={{ redirect: "/creditos" }}
                 className="press mt-3 inline-flex items-center gap-1.5 rounded-full bg-black px-4 py-2 text-[12px] font-bold text-[#68ed00]"
               >
                 Entrar para ver saldo

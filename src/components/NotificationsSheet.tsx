@@ -142,6 +142,7 @@ export function NotificationsBell() {
     return (
       <Link
         to="/login"
+        search={{ redirect: "/" }}
         aria-label="Notificações"
         className="press grid h-9 w-9 place-items-center rounded-full bg-[#1a1a1a] border border-[#2a2a2a] text-white"
       >
