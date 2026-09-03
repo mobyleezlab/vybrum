@@ -23,9 +23,9 @@ jobs:
             exit 1
           fi
 
-          ENDPOINT="${SUPABASE_URL%/}/rest/v1/packs?select=id&limit=1"
+          ENDPOINT="${SUPABASE_URL%/}/rest/v1/_keep_alive_heartbeat?select=id&limit=1"
           echo "Execução: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          echo "Endpoint: ${SUPABASE_URL%/}/rest/v1/packs?select=id&limit=1"
+          echo "Endpoint: ${SUPABASE_URL%/}/rest/v1/_keep_alive_heartbeat?select=id&limit=1"
 
           STATUS=$(curl -sS -o /tmp/keepalive.json -w '%{http_code}' \
             --max-time 20 --connect-timeout 10 --retry 2 --retry-delay 5 \
