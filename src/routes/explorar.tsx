@@ -109,7 +109,7 @@ function ExplorarPage() {
           : list.map((m) => {
               const badge = categoryBadge(m.category);
               return (
-                <Link key={m.code} to="/editor" search={{ model: m.code }} className="press block overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]">
+                <Link key={m.code} to="/editor" search={{ model: m.code, kit: undefined }} className="press block overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]">
                   <div className="relative" style={{ aspectRatio: "4 / 5" }}>
                     {m.thumbnail_url ? (
                       <img src={m.thumbnail_url} alt={m.name} className="h-full w-full object-contain p-3" loading="lazy" />

@@ -46,7 +46,7 @@ function ModelCard({ m }: { m: ModelRow }) {
   return (
     <Link
       to="/editor"
-      search={{ model: m.code }}
+      search={{ model: m.code, kit: undefined }}
       className="press group block w-[150px] shrink-0"
     >
       <div className="relative overflow-hidden rounded-2xl border border-[#2a2a2a] bg-[#0f0f0f]">
@@ -205,6 +205,7 @@ function FeaturedHero() {
     <section className="px-4 pt-1">
       <Link
         to="/editor"
+        search={{ model: undefined, kit: undefined }}
         className="press relative block overflow-hidden rounded-3xl bg-[#68ed00]"
       >
         <div className="relative grid gap-3 p-5">
